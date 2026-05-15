@@ -1,0 +1,302 @@
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  background:#f4f6f9;
+  font-family:sans-serif;
+  color:#222;
+}
+
+.admin-container{
+  max-width:1400px;
+  margin:auto;
+  padding:30px;
+}
+
+.admin-header{
+  margin-bottom:30px;
+}
+
+.admin-header h1{
+  font-size:40px;
+  margin-bottom:10px;
+}
+
+.admin-header h2{
+  font-size:28px;
+  margin-bottom:10px;
+}
+
+.admin-header p{
+  color:#666;
+}
+
+.top-control{
+  margin-bottom:30px;
+}
+
+.date-box label{
+  display:block;
+  margin-bottom:8px;
+  font-weight:bold;
+}
+
+.date-box input{
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:10px;
+}
+
+.admin-wrapper{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:25px;
+}
+
+.admin-section{
+  background:white;
+  padding:25px;
+  border-radius:20px;
+  box-shadow:0 3px 10px rgba(0,0,0,0.08);
+}
+.admin-title{
+  font-size:28px;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+
+.admin-subtitle{
+  color:#666;
+  margin-bottom:20px;
+}
+
+.admin-table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+.admin-table th{
+  background:#0b5ed7;
+  color:white;
+  padding:14px;
+  font-size:16px;
+}
+
+.admin-table td{
+  border:1px solid #ddd;
+  padding:10px;
+  vertical-align:top;
+  font-size:13px;
+  height:220px;
+}
+.time-col{
+  width:42px;
+}
+.time-cell{
+  width:42px;
+  min-width:42px;
+  font-size:12px;
+  font-weight:700;
+  text-align:center;
+  background:#f8f9fa;
+  vertical-align:middle !important;
+  padding:2px !important;
+  line-height:1.2;
+}
+.guest-row{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-height:80px;
+}
+
+.guest-line{
+  font-size:14px;
+  line-height:1.5;
+}
+.empty-cell{
+  color:#999;
+  text-align:center;
+}
+
+@media(max-width:768px){
+
+  .admin-header h1{
+    font-size:28px;
+  }
+
+  .admin-header h2{
+    font-size:22px;
+  }
+
+  .guest-row{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+}
+.guest-row{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  align-items:flex-start;
+  justify-content:flex-start;
+  min-height:180px;
+}
+
+.guest-line{
+  width:100%;
+  line-height:1.5;
+  font-size:14px;
+  border-bottom:1px dashed #eee;
+  padding-bottom:4px;
+}
+.admin-table{
+  width:100%;
+  table-layout:fixed;
+}
+.regular-wrapper{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  
+}
+.reserve-btn{
+  margin-top:10px;
+  padding:5px 10px;
+  border:none;
+  border-radius:6px;
+  background:#5775a1;
+  color:white;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.reserve-btn:hover{
+  opacity:0.9;
+}
+.popup{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.45);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+.hidden{
+  display:none;
+}
+
+.popup-box{
+  width:520px;
+  background:white;
+  border-radius:18px;
+  padding:25px;
+}
+
+.popup-title{
+  font-size:24px;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+
+.popup-time{
+  color:#666;
+  margin-bottom:20px;
+}
+
+.form-row{
+  display:flex;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.form-row input{
+  flex:1;
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:8px;
+}
+
+.mini-title{
+  font-size:14px;
+  font-weight:bold;
+  margin-top:15px;
+  margin-bottom:8px;
+}
+
+.count-row{
+  display:flex;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.count-box{
+  flex:1;
+}
+
+.count-box span{
+  display:block;
+  font-size:12px;
+  margin-bottom:5px;
+}
+
+.count-box select{
+  width:100%;
+  padding:8px;
+  border:1px solid #ccc;
+  border-radius:8px;
+}
+
+.popup-btn-row{
+  display:flex;
+  gap:10px;
+  margin-top:20px;
+}
+
+.save-btn,
+.close-btn{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  color:white;
+  cursor:pointer;
+}
+
+.save-btn{
+  background:#0b5ed7;
+}
+
+.close-btn{
+  background:#777;
+}
+.empty-cell{
+  text-align:center;
+  vertical-align:top;
+  padding-top:18px;
+}
+
+.empty-text{
+  font-size:13px;
+  color:#999;
+  margin-bottom:10px;
+}
+.guest-line{
+  cursor:pointer;
+}
+.guest-line:hover{
+  opacity:0.7;
+}
+.delete-btn{
+  flex:1;
+  border:none;
+  border-radius:10px;
+  background:#d60000;
+  color:white;
+  cursor:pointer;
+}
