@@ -252,7 +252,7 @@
 
     <div class="compact-item">
 
-      <span>ベビーカー</span>
+      <span>特大( ベビーカー/ゴルフバック ）</span>
 
       <select>
         <option>0</option>
@@ -324,7 +324,52 @@
     </div>
 
   </div>
+<!-- SEARCH RESULT -->
 
+<div id="resultPopup" class="popup hidden">
+
+  <div class="popup-card small-popup">
+
+    <div class="popup-header">
+      ご予約内容
+    </div>
+
+    <div id="resultContent"></div>
+
+    <div class="button-row">
+
+      <button
+        type="button"
+        id="openEditBtn"
+        class="action-btn"
+      >
+        修正する
+      </button>
+
+      <button
+        type="button"
+        id="cancelBookingBtn"
+        class="action-btn delete-btn"
+      >
+        キャンセルする
+      </button>
+
+      <button
+        type="button"
+        id="closeResultPopup"
+        class="action-btn"
+      >
+        閉じる
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <script src="./app.js"></script>
 
 </body>

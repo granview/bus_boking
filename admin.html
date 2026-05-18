@@ -24,17 +24,14 @@
 <body>
 
   <div class="admin-container">
+	
 
     <!-- DATE -->
-
+<h1 style="text-align: center ">送迎バス</h1>
     <section class="top-control">
 
+
       <div class="date-box">
-
-        <label>
-          ご利用日
-        </label>
-
         <input
           type="date"
           id="adminDate"
@@ -43,7 +40,35 @@
       </div>
 
     </section>
+<div class="search-area">
 
+  <input
+    type="date"
+    id="searchDate"
+  >
+
+  <input
+    type="text"
+    id="searchRoom"
+    placeholder="部屋番号"
+  >
+
+  <input
+    type="text"
+    id="searchName"
+    placeholder="名前"
+  >
+
+  <button id="searchBtn">
+    検索
+  </button>
+ <button id="clearSearchBtn">
+    ×
+  </button>
+
+</div>
+
+<div id="searchResult"></div>
     <!-- MAIN -->
 
     <div class="admin-wrapper">
@@ -605,63 +630,83 @@
 
         </div>
 
-        <div class="mini-title">
-          荷物
-        </div>
+       <!-- STAY -->
 
-        <div class="count-row">
 
-          <div class="count-box">
+<!-- LUGGAGE -->
 
-            <span>
-              大
-            </span>
+<div class="mini-title">
+  荷物
+</div>
+<div class="stay-row">
 
-            <select>
+  <label class="stay-label">
 
-              <option>0</option>
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
+    <input
+      type="checkbox"
+      id="stayCheck"
+    >
 
-            </select>
+    ステイ
 
-          </div>
+  </label>
 
-          <div class="count-box">
+</div>
 
-            <span>
-              中
-            </span>
 
-            <select>
+        <div class="count-row luggage-row">
 
-              <option>0</option>
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
+  <div class="count-box">
 
-            </select>
+    <span>
+      大
+    </span>
 
-          </div>
+    <select class="luggage-select">
 
-          <div class="count-box">
+      <option>0</option>
+      <option>1</option>
+      <option>2</option>
+      <option>3</option>
 
-            <span>
-              ベビーカー
-            </span>
+    </select>
 
-            <select>
+  </div>
 
-              <option>0</option>
-              <option>1</option>
-              <option>2</option>
+  <div class="count-box">
 
-            </select>
+    <span>
+      中
+    </span>
 
-          </div>
+    <select class="luggage-select">
 
-        </div>
+      <option>0</option>
+      <option>1</option>
+      <option>2</option>
+      <option>3</option>
+
+    </select>
+
+  </div>
+
+  <div class="count-box">
+
+    <span>
+      ベビーカー
+    </span>
+
+    <select class="luggage-select">
+
+      <option>0</option>
+      <option>1</option>
+      <option>2</option>
+
+    </select>
+
+  </div>
+
+</div>
 
         <div class="popup-btn-row">
 

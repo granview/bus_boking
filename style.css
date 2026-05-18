@@ -339,3 +339,55 @@ form{
   }
 
 }
+/* =========================
+   MANAGE POPUP
+========================= */
+
+#manageForm{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+#manageForm label{
+  font-size:14px;
+  font-weight:bold;
+  margin-bottom:4px;
+}
+
+#manageForm input{
+  width:100%;
+  height:46px;
+  padding:10px 14px;
+  border:1px solid #ccc;
+  border-radius:10px;
+  font-size:15px;
+}
+
+#manageForm button{
+  height:48px;
+  border:none;
+  border-radius:12px;
+  font-size:15px;
+  cursor:pointer;
+}
+
+.confirm-btn{
+  background:#0b5ed7;
+  color:white;
+}
+
+.close-btn{
+  background:#777;
+  color:white;
+}
+
+.confirm-btn:hover,
+.close-btn:hover{
+  opacity:0.9;
+}
+#resultContent{
+  line-height:2;
+  font-size:16px;
+  margin-bottom:20px;
+}

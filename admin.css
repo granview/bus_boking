@@ -13,7 +13,7 @@ body{
 .admin-container{
   max-width:1400px;
   margin:auto;
-  padding:30px;
+  padding:10px;
 }
 
 .admin-header{
@@ -42,6 +42,7 @@ body{
   display:block;
   margin-bottom:8px;
   font-weight:bold;
+ text-align: center;
 }
 
 .date-box input{
@@ -299,4 +300,226 @@ body{
   background:#d60000;
   color:white;
   cursor:pointer;
+}
+.empty-text{
+
+  font-size: 24px;
+
+  font-weight: bold;
+
+  text-align: center;
+
+  margin-bottom: 10px;
+
+  color: #2f7d32;
+
+}
+
+.few-seat{
+
+  color: #d6a300;
+
+}
+
+.full-seat{
+
+  color: #d60000;
+
+  font-size: 30px;
+
+}
+/* DATE AREA */
+
+.top-control{
+
+  display: flex;
+
+  justify-content: center;
+
+  margin-bottom: 20px;
+
+}
+
+.date-box{
+
+  text-align: center;
+
+}
+
+/* DATE INPUT */
+
+#adminDate{
+
+  font-size: 28px;
+
+  font-weight: bold;
+
+  text-align: center;
+
+  padding: 10px 20px;
+
+  border-radius: 12px;
+
+  border: 2px solid #ccc;
+
+}
+.search-box{
+
+  display:flex;
+
+  justify-content:flex-end;
+
+  gap:10px;
+
+  margin:10px 0;
+
+}
+
+.search-box input{
+
+  width:180px;
+
+  padding:8px;
+
+  border:1px solid #ccc;
+
+  border-radius:6px;
+
+}
+.search-area{
+
+  display:flex;
+
+  justify-content:flex-end;
+
+  align-items:center;
+
+  gap:8px;
+
+  margin-bottom:10px;
+
+}
+.search-area input{
+
+  height:30px;
+
+  padding:0 8px;
+
+  border:1px solid #ccc;
+
+  border-radius:6px;
+
+  font-size:13px;
+
+}
+
+.search-area button{
+
+  height:30px;
+
+  padding:0 12px;
+
+  border:none;
+
+  background:#1e4f95;
+
+  color:white;
+
+  border-radius:6px;
+
+  cursor:pointer;
+
+}
+#searchResult{
+
+  display:flex;
+
+  justify-content:flex-end;
+
+  margin-bottom:10px;
+
+}.search-line{
+
+  width:	500px;
+
+  display:flex;
+
+  align-items:center;
+
+  gap:18px;
+
+  background:#f3f3f3;
+
+  border-radius:10px;
+
+  padding:10px 14px;
+
+  cursor:pointer;
+
+  font-size:14px;
+
+  box-shadow:0 2px 5px rgba(0,0,0,0.08);
+
+}
+
+.search-line:hover{
+
+  background:#e7e7e7;
+
+}
+.search-line:hover{
+
+  background:#e4e4e4;
+
+}
+
+.search-room{
+
+  width:55px;
+
+  font-weight:bold;
+
+}
+
+.search-name{
+
+  width:100px;
+
+}
+
+.search-people{
+
+  width:50px;
+
+}
+
+.search-luggage{
+
+  flex:1;
+
+}
+#clearSearchBtn{
+
+  width:32px;
+
+  height:32px;
+
+  border:none;
+
+  border-radius:50%;
+
+  background:#ddd;
+
+  font-size:18px;
+
+  font-weight:bold;
+
+  cursor:pointer;
+
+}
+
+#clearSearchBtn:hover{
+
+  background:#bbb;
+
 }
