@@ -84,69 +84,88 @@ const regularSlots = [
 ];
 function getMaxPeopleByLuggage(
   time,
-  luggagePoint
+  totalLuggagePoint
 ){
 
-  // 7名 shuttle
+  // =========================
+  // SHUTTLE 7名
+  // =========================
 
   if(time >= "07:30"){
 
-    if(luggagePoint <= 4){
-
+    // ít hành lý
+    if(totalLuggagePoint <= 7){
+	
       return 7;
 
     }
 
-    if(luggagePoint <= 8){
+    // hơi nhiều
+    if(totalLuggagePoint <= 8){
 
       return 6;
 
     }
 
-    if(luggagePoint <= 10){
+    // nhiều
+    if(totalLuggagePoint <= 10){
 
       return 5;
 
     }
 
-    if(luggagePoint <= 12){
+    // rất nhiều
+    if(totalLuggagePoint <= 12){
 
       return 4;
 
     }
 
+    // quá tải
     return 0;
 
   }
 
-  // 8名車
+  // =========================
+  // EARLY 8名 / 7名
+  // =========================
 
   else{
 
-    if(luggagePoint <= 6){
+    // ít hành lý
+    if(totalLuggagePoint <= 8){
 
       return 8;
 
     }
 
-    if(luggagePoint <= 8){
+    // hơi nhiều
+    if(totalLuggagePoint <= 10){
 
-  return 7;
+      return 7;
 
-}
+    }
 
-    if(luggagePoint <= 14){
+    // nhiều
+    if(totalLuggagePoint <= 14){
 
       return 6;
 
     }
 
+    // rất nhiều
+    if(totalLuggagePoint <= 18){
+
+      return 5;
+
+    }
+
+    // quá tải
     return 0;
 
   }
 
-}
-// =========================
+}// =========================
 // HTML
 // =========================
 
@@ -182,6 +201,17 @@ document.getElementById("manageForm");
 
 const busDate =
 document.getElementById("busDate");
+const confirmPopup =
+document.getElementById("confirmPopup");
+
+const confirmContent =
+document.getElementById("confirmContent");
+
+const finalConfirmBtn =
+document.getElementById("finalConfirmBtn");
+
+const backEditBtn =
+document.getElementById("backEditBtn");
 
 
 // =========================
@@ -203,6 +233,7 @@ tomorrow.toISOString().split("T")[0];
 // =========================
 
 let currentRef = null;
+let pendingBookingData = null;
 
 
 // =========================
@@ -248,7 +279,7 @@ function createFirebaseCard(
     </p>
 
     <button ${remain <= 0 ? "disabled" : ""}>
-  Reserve
+  予約
 </button>
 
   `;
@@ -388,7 +419,7 @@ if(data){
 
     // EARLY
 
-    earlySlots.forEach(time=>{
+   earlySlots.forEach(time=>{
 
   const booked8 =
   usedMap[time + "_8名車"] || 0;
@@ -396,25 +427,36 @@ if(data){
   const booked7 =
   usedMap[time + "_7名車"] || 0;
 
-  const totalBooked =
-  booked8 + booked7;
+  let remain = 0;
 
-  const remain =
-  15 - totalBooked;
+  // ưu tiên xe 8
+
+  if(booked8 < 8){
+
+    remain = 8 - booked8;
+
+  }
+
+  // xe 8 đầy mới tính xe 7
+
+  else{
+
+    remain = 7 - booked7;
+
+  }
 
   earlyContainer.appendChild(
 
     createFirebaseCard(
       time,
       remain,
-      totalBooked,
-      15
+      booked8 + booked7,
+      booked8 < 8 ? 8 : 7
     )
 
   );
 
 });
-
     // REGULAR
 
     regularSlots.forEach(time=>{
@@ -521,9 +563,19 @@ popup.dataset.time <= "07:00"
     let used8 = 0;
 let used7 = 0;
 let usedShuttle = 0;
+let luggage8 = 0;
+let luggage7 = 0;
+let luggageShuttle = 0;
 
 Object.entries(firebaseData || {})
 .forEach(([id,item])=>{
+  const point =
+
+(Number(item.large || 0) * 2)
++
+(Number(item.medium || 0) * 1)
++
+(Number(item.stroller || 0) * 2.5);
 
   if(id === currentBookingId){
 
@@ -540,18 +592,21 @@ Object.entries(firebaseData || {})
   if(item.car === "8名車"){
 
     used8 += Number(item.adults || 0);
+luggage8 += point;
 
   }
 
   else if(item.car === "7名車"){
 
     used7 += Number(item.adults || 0);
+luggage7 += point;
 
   }
 
   else if(item.car === "Shuttle"){
 
     usedShuttle += Number(item.adults || 0);
+luggageShuttle += point;
 
   }
 
@@ -562,31 +617,47 @@ getMaxPeopleByLuggage(
   popup.dataset.time,
   luggagePoint
 );
-    if(remain <= 0){
 
-  alert("満席です");
-
-  return;
-
-}
-
-    let carType = "";
+let carType = "";
 let remain = 0;
-
 // ======================
 // EARLY TIME
 // ======================
 
 if(popup.dataset.time <= "07:00"){
 
+  // luggage after adding booking
+
+  const totalLuggage8 =
+  luggage8 + luggagePoint;
+
+  const totalLuggage7 =
+  luggage7 + luggagePoint;
+
+  // max people by luggage
+
+  const maxSeat8 =
+  getMaxPeopleByLuggage(
+    popup.dataset.time,
+    totalLuggage8
+  );
+
+  const maxSeat7 =
+  getMaxPeopleByLuggage(
+    popup.dataset.time,
+    totalLuggage7
+  );
+
   // ======================
-  // ƯU TIÊN XE 8
+  // ưu tiên xe 8
   // ======================
 
   if(
-    used8 + adults <= maxPeopleByLuggage
-    &&
+
     used8 + adults <= 8
+    &&
+    used8 + adults <= maxSeat8
+
   ){
 
     carType = "8名車";
@@ -597,11 +668,15 @@ if(popup.dataset.time <= "07:00"){
   }
 
   // ======================
-  // OVERFLOW SANG XE 7
+  // dùng xe 7
   // ======================
 
   else if(
+
     used7 + adults <= 7
+    &&
+    used7 + adults <= maxSeat7
+
   ){
 
     carType = "7名車";
@@ -620,20 +695,28 @@ if(popup.dataset.time <= "07:00"){
   }
 
 }
-
 // ======================
 // REGULAR SHUTTLE
 // ======================
 
 else{
 
-  if(
-    usedShuttle + adults >
-    maxPeopleByLuggage
-  ){
+  const totalLuggageShuttle =
+luggageShuttle + luggagePoint;
+
+const maxSeatShuttle =
+getMaxPeopleByLuggage(
+  popup.dataset.time,
+  totalLuggageShuttle
+);
+
+if(
+  usedShuttle + adults >
+  maxSeatShuttle
+){
 
     alert(
-      `荷物が多いため最大 ${maxPeopleByLuggage} 名までです`
+      `荷物が多いため,フロントまでです`
     );
 
     return;
@@ -709,65 +792,23 @@ bookingSource: "guest",
 
     };
 
-    if(currentBookingId){
+    pendingBookingData = data;
 
-  // SAME DATE
+confirmContent.innerHTML = `
 
-  if(currentBookingDate === data.date){
+  <div>お名前：${data.name}</div>
+  <div>電話番号：${data.phone}</div>
+  <div>チェックイン：${data.checkin}</div>
+  <div>ご利用日：${data.date}</div>
+  <div>時間：${data.time}</div>
+  <div>人数：${data.adults}名</div>
+  <div>車両：${data.car}</div>
 
-    db.ref(
+`;
 
-      "reservations/" +
-      currentBookingDate +
-      "/" +
-      currentBookingId
+popup.classList.add("hidden");
 
-    ).update(data);
-
-  }
-
-  // DATE CHANGED
-
-  else{
-
-    db.ref(
-      "reservations/" +
-      data.date
-    )
-    .push(data)
-    .then(()=>{
-
-      return db.ref(
-
-        "reservations/" +
-        currentBookingDate +
-        "/" +
-        currentBookingId
-
-      ).remove();
-
-    });
-
-  }
-
-  alert("予約修正完了");
-
-}
-
-    else{
-
-      db.ref(
-        "reservations/" +
-        data.date
-      ).push(data);
-
-      alert("予約完了");
-
-    }
-
-    resetBookingState();
-
-    popup.classList.add("hidden");
+confirmPopup.classList.remove("hidden");
 
   });
 
@@ -869,32 +910,37 @@ Object.entries(bookings)
 
     resultContent.innerHTML = `
 
-      <div>
-        お名前：
-        ${currentBooking.name}
-      </div>  
-　　　<div>
-        電話番号：
-        ${currentBooking.phone}
-      </div>   
-      <div>
-       チェックイン：
-         ${currentBooking.checkin}
-      </div>
- 　　<div>
-        バス予約日：
-        ${currentBooking.date}
-      </div>
-      <div>
-        時間：
-        ${currentBooking.time}
-      </div>
+<div>
+  お名前：
+  ${currentBooking.name}
+</div>
 
-      <div>
-        人数：
-        ${currentBooking.adults}名
-      </div>
-    `;
+<div>
+  電話番号：
+  ${currentBooking.phone}
+</div>
+
+<div>
+  チェックイン：
+  ${currentBooking.checkin}
+</div>
+
+<div>
+  バス予約日：
+  ${currentBooking.date}
+</div>
+
+<div>
+  時間：
+  ${currentBooking.time}
+</div>
+
+<div>
+  人数：
+  ${currentBooking.adults}名
+</div>
+
+`;
 
   });
 
@@ -916,7 +962,7 @@ openEditBtn.addEventListener("click",()=>{
 });cancelBookingBtn.addEventListener("click",()=>{
 
   const ok =
-  confirm("予約をキャンセルしますか？");
+  確認("予約をキャンセルしますか？");
 
   if(!ok){
 
@@ -955,3 +1001,83 @@ busDate.addEventListener("change",()=>{
 // =========================
 
 renderSlots();
+backEditBtn.addEventListener("click",()=>{
+
+  confirmPopup.classList.add("hidden");
+
+  popup.classList.remove("hidden");
+
+});
+finalConfirmBtn.addEventListener("click",()=>{
+
+  const data = pendingBookingData;
+
+  if(!data){
+
+    return;
+
+  }
+
+  // EDIT
+
+  if(currentBookingId){
+
+    if(currentBookingDate === data.date){
+
+      db.ref(
+
+        "reservations/" +
+        currentBookingDate +
+        "/" +
+        currentBookingId
+
+      ).update(data);
+
+    }
+
+    else{
+
+      db.ref(
+        "reservations/" +
+        data.date
+      )
+      .push(data)
+      .then(()=>{
+
+        return db.ref(
+
+          "reservations/" +
+          currentBookingDate +
+          "/" +
+          currentBookingId
+
+        ).remove();
+
+      });
+
+    }
+
+    alert("予約修正完了");
+
+  }
+
+  // NEW BOOKING
+
+  else{
+
+    db.ref(
+      "reservations/" +
+      data.date
+    ).push(data);
+
+    alert("予約完了");
+
+  }
+
+  pendingBookingData = null;
+
+  resetBookingState();
+
+  confirmPopup.classList.add("hidden");
+
+});

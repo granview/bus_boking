@@ -15,7 +15,10 @@
 
     <header class="header">
 
-      <h1>ホテルグランビュー福岡</h1>
+     <img src="https://granview.co.jp/fukuokaap/fukuoka_airport.svg"　style = "size 90%">
+<div class="schedule-subtitle">
+         ホテルグランビュー福岡空港｜福岡・博多
+        </div>
 
       <h2>送客バス　国内線まで</h2>
 
@@ -44,7 +47,7 @@
         </div>
 
         <div class="schedule-subtitle">
-          最大15名（8名車優先）
+          最大8名（満席時は7名車）
         </div>
 
         <div id="earlySlots" class="slots-grid"></div>
@@ -134,7 +137,7 @@
         チェックイン
       </label>
       <div class="sub-note">
-        ひ
+        日付
       </div>
 
 
@@ -272,7 +275,7 @@
       type="submit"
       class="action-btn"
     >
-      Confirm
+      確認
     </button>
 
     <button
@@ -280,7 +283,7 @@
       id="closePopup"
       class="action-btn"
     >
-      Close
+    閉じる
     </button>
 
   </div>
@@ -289,7 +292,41 @@
   </div>
 
   </div>
+<!-- CONFIRM POPUP -->
 
+<div id="confirmPopup" class="popup hidden">
+
+  <div class="popup-card small-popup">
+
+    <div class="popup-header">
+      内容確認
+    </div>
+
+    <div id="confirmContent"></div>
+
+    <div class="button-row">
+
+      <button
+        type="button"
+        id="finalConfirmBtn"
+        class="action-btn"
+      >
+        予約確定
+      </button>
+
+      <button
+        type="button"
+        id="backEditBtn"
+        class="action-btn"
+      >
+        修正する
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
   <!-- MANAGE POPUP -->
 
   <div id="managePopup" class="popup hidden">
@@ -297,7 +334,7 @@
     <div class="popup-card small-popup">
 
       <div class="popup-header">
-        Reservation Lookup
+        予約確認
       </div>
 
       <form id="manageForm">
@@ -312,11 +349,11 @@
         <input type="date" required>
 
         <button type="submit" class="confirm-btn">
-          Search Reservation
+          検索
         </button>
 
         <button type="button" id="closeManagePopup" class="close-btn">
-          Close
+          閉じる
         </button>
 
       </form>
