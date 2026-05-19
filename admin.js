@@ -1,3 +1,4 @@
+
 // FIREBASE CONFIG
 let dragBooking = null;
 

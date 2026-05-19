@@ -1070,7 +1070,7 @@ finalConfirmBtn.addEventListener("click",()=>{
       data.date
     ).push(data);
 
-    alert("予約完了");
+    alert("予約完了、5分前にロビーでお待ちください");
 
   }
 
