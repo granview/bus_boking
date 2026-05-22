@@ -1,3 +1,7 @@
+/* ========================================
+RESET
+======================================== */
+
 *{
   margin:0;
   padding:0;
@@ -10,11 +14,39 @@ body{
   color:#222;
 }
 
+
+/* ========================================
+LAYOUT
+======================================== */
+
 .admin-container{
   max-width:1400px;
   margin:auto;
   padding:10px;
 }
+
+.admin-wrapper{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:25px;
+}
+
+.admin-section{
+  background:white;
+  padding:25px;
+  border-radius:20px;
+  box-shadow:0 3px 10px rgba(0,0,0,0.08);
+}
+
+.regular-wrapper{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+}
+
+
+/* ========================================
+HEADER
+======================================== */
 
 .admin-header{
   margin-bottom:30px;
@@ -34,35 +66,6 @@ body{
   color:#666;
 }
 
-.top-control{
-  margin-bottom:30px;
-}
-
-.date-box label{
-  display:block;
-  margin-bottom:8px;
-  font-weight:bold;
- text-align: center;
-}
-
-.date-box input{
-  padding:10px;
-  border:1px solid #ccc;
-  border-radius:10px;
-}
-
-.admin-wrapper{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:25px;
-}
-
-.admin-section{
-  background:white;
-  padding:25px;
-  border-radius:20px;
-  box-shadow:0 3px 10px rgba(0,0,0,0.08);
-}
 .admin-title{
   font-size:28px;
   font-weight:bold;
@@ -74,9 +77,46 @@ body{
   margin-bottom:20px;
 }
 
+
+/* ========================================
+DATE AREA
+======================================== */
+
+.top-control{
+  display:flex;
+  justify-content:center;
+  margin-bottom:20px;
+}
+
+.date-box{
+  text-align:center;
+}
+
+.date-box label{
+  display:block;
+  margin-bottom:8px;
+  font-weight:bold;
+}
+
+#adminDate{
+  font-size:28px;
+  font-weight:bold;
+  text-align:center;
+  padding:10px 20px;
+  border-radius:12px;
+  border:2px solid #ccc;
+  background:#fff;
+}
+
+
+/* ========================================
+TABLE
+======================================== */
+
 .admin-table{
   width:100%;
   border-collapse:collapse;
+  table-layout:fixed;
 }
 
 .admin-table th{
@@ -93,9 +133,11 @@ body{
   font-size:13px;
   height:220px;
 }
+
 .time-col{
   width:42px;
 }
+
 .time-cell{
   width:42px;
   min-width:42px;
@@ -107,38 +149,40 @@ body{
   padding:2px !important;
   line-height:1.2;
 }
-.guest-row{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  min-height:80px;
-}
 
-.guest-line{
-  font-size:14px;
-  line-height:1.5;
-}
+
+/* ========================================
+EMPTY SEAT
+======================================== */
+
 .empty-cell{
-  color:#999;
   text-align:center;
+  vertical-align:top;
+  padding-top:18px;
 }
 
-@media(max-width:768px){
-
-  .admin-header h1{
-    font-size:28px;
-  }
-
-  .admin-header h2{
-    font-size:22px;
-  }
-
-  .guest-row{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-
+.empty-text{
+  font-size:24px;
+  font-weight:bold;
+  text-align:center;
+  margin-bottom:10px;
+  color:#2f7d32;
 }
+
+.few-seat{
+  color:#d6a300;
+}
+
+.full-seat{
+  color:#d60000;
+  font-size:30px;
+}
+
+
+/* ========================================
+GUEST
+======================================== */
+
 .guest-row{
   display:flex;
   flex-direction:column;
@@ -153,17 +197,54 @@ body{
   line-height:1.5;
   font-size:14px;
   border-bottom:1px dashed #eee;
-  padding-bottom:4px;
+  padding:4px 0;
+  cursor:pointer;
+  transition:0.2s;
+  user-select:none;
 }
-.admin-table{
-  width:100%;
-  table-layout:fixed;
+
+.guest-line:hover{
+  opacity:0.7;
 }
-.regular-wrapper{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  
+
+
+/* ========================================
+DONE
+======================================== */
+
+.guest-line.done{
+  background:#dff5e8;
+  border-left:6px solid #45b36b;
+  text-decoration:line-through;
+  opacity:0.75;
 }
+
+
+/* ========================================
+MOVED OLD
+======================================== */
+
+.guest-line.moved{
+  color:#d89b00;
+  text-decoration:line-through;
+  font-weight:bold;
+}
+
+
+/* ========================================
+MOVED NEW
+======================================== */
+
+.guest-line.moved-new{
+  color:#d89b00;
+  font-weight:bold;
+  text-decoration:none;
+}
+
+/* ========================================
+BUTTON
+======================================== */
+
 .reserve-btn{
   margin-top:10px;
   padding:5px 10px;
@@ -173,11 +254,18 @@ body{
   color:white;
   font-size:12px;
   cursor:pointer;
+  transition:0.2s;
 }
 
 .reserve-btn:hover{
   opacity:0.9;
 }
+
+
+/* ========================================
+POPUP
+======================================== */
+
 .popup{
   position:fixed;
   inset:0;
@@ -194,9 +282,12 @@ body{
 
 .popup-box{
   width:520px;
+  max-width:95%;
   background:white;
   border-radius:18px;
   padding:25px;
+  max-height:90vh;
+  overflow-y:auto;
 }
 
 .popup-title{
@@ -209,6 +300,11 @@ body{
   color:#666;
   margin-bottom:20px;
 }
+
+
+/* ========================================
+FORM
+======================================== */
 
 .form-row{
   display:flex;
@@ -253,6 +349,11 @@ body{
   border-radius:8px;
 }
 
+
+/* ========================================
+POPUP BUTTON
+======================================== */
+
 .popup-btn-row{
   display:flex;
   gap:10px;
@@ -260,7 +361,8 @@ body{
 }
 
 .save-btn,
-.close-btn{
+.close-btn,
+.delete-btn{
   flex:1;
   padding:12px;
   border:none;
@@ -276,250 +378,194 @@ body{
 .close-btn{
   background:#777;
 }
-.empty-cell{
-  text-align:center;
-  vertical-align:top;
-  padding-top:18px;
-}
 
-.empty-text{
-  font-size:13px;
-  color:#999;
-  margin-bottom:10px;
-}
-.guest-line{
-  cursor:pointer;
-}
-.guest-line:hover{
-  opacity:0.7;
-}
 .delete-btn{
-  flex:1;
-  border:none;
-  border-radius:10px;
   background:#d60000;
-  color:white;
-  cursor:pointer;
-}
-.empty-text{
-
-  font-size: 24px;
-
-  font-weight: bold;
-
-  text-align: center;
-
-  margin-bottom: 10px;
-
-  color: #2f7d32;
-
 }
 
-.few-seat{
 
-  color: #d6a300;
+/* ========================================
+SEARCH
+======================================== */
 
-}
-
-.full-seat{
-
-  color: #d60000;
-
-  font-size: 30px;
-
-}
-/* DATE AREA */
-
-.top-control{
-
-  display: flex;
-
-  justify-content: center;
-
-  margin-bottom: 20px;
-
-}
-
-.date-box{
-
-  text-align: center;
-
-}
-
-/* DATE INPUT */
-
-#adminDate{
-
-  font-size: 28px;
-
-  font-weight: bold;
-
-  text-align: center;
-
-  padding: 10px 20px;
-
-  border-radius: 12px;
-
-  border: 2px solid #ccc;
-
-}
-.search-box{
-
-  display:flex;
-
-  justify-content:flex-end;
-
-  gap:10px;
-
-  margin:10px 0;
-
-}
-
-.search-box input{
-
-  width:180px;
-
-  padding:8px;
-
-  border:1px solid #ccc;
-
-  border-radius:6px;
-
-}
 .search-area{
-
   display:flex;
-
   justify-content:flex-end;
-
   align-items:center;
-
   gap:8px;
-
   margin-bottom:10px;
-
+  flex-wrap:wrap;
 }
+
 .search-area input{
-
-  height:30px;
-
-  padding:0 8px;
-
+  height:32px;
+  padding:0 10px;
   border:1px solid #ccc;
-
   border-radius:6px;
-
   font-size:13px;
-
 }
 
 .search-area button{
-
-  height:30px;
-
-  padding:0 12px;
-
-  border:none;
-
-  background:#1e4f95;
-
-  color:white;
-
-  border-radius:6px;
-
-  cursor:pointer;
-
-}
-#searchResult{
-
-  display:flex;
-
-  justify-content:flex-end;
-
-  margin-bottom:10px;
-
-}.search-line{
-
-  width:	500px;
-
-  display:flex;
-
-  align-items:center;
-
-  gap:18px;
-
-  background:#f3f3f3;
-
-  border-radius:10px;
-
-  padding:10px 14px;
-
-  cursor:pointer;
-
-  font-size:14px;
-
-  box-shadow:0 2px 5px rgba(0,0,0,0.08);
-
-}
-
-.search-line:hover{
-
-  background:#e7e7e7;
-
-}
-.search-line:hover{
-
-  background:#e4e4e4;
-
-}
-
-.search-room{
-
-  width:55px;
-
-  font-weight:bold;
-
-}
-
-.search-name{
-
-  width:100px;
-
-}
-
-.search-people{
-
-  width:50px;
-
-}
-
-.search-luggage{
-
-  flex:1;
-
-}
-#clearSearchBtn{
-
-  width:32px;
-
   height:32px;
-
+  padding:0 14px;
   border:none;
-
-  border-radius:50%;
-
-  background:#ddd;
-
-  font-size:18px;
-
-  font-weight:bold;
-
+  background:#1e4f95;
+  color:white;
+  border-radius:6px;
   cursor:pointer;
+}
 
+#clearSearchBtn{
+  width:32px;
+  height:32px;
+  border:none;
+  border-radius:50%;
+  background:#ddd;
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer;
 }
 
 #clearSearchBtn:hover{
-
   background:#bbb;
+}
 
+#searchResult{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:8px;
+  margin-bottom:10px;
+}
+
+.search-line{
+  width:500px;
+  max-width:100%;
+  display:flex;
+  align-items:center;
+  gap:18px;
+  background:#f3f3f3;
+  border-radius:10px;
+  padding:10px 14px;
+  cursor:pointer;
+  font-size:14px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.08);
+  transition:0.2s;
+}
+
+.search-line:hover{
+  background:#e4e4e4;
+}
+
+.search-room{
+  width:55px;
+  font-weight:bold;
+}
+
+.search-name{
+  width:100px;
+}
+
+.search-people{
+  width:50px;
+}
+
+.search-luggage{
+  flex:1;
+}
+
+
+/* ========================================
+MOBILE
+======================================== */
+
+@media(max-width:768px){
+
+  .admin-wrapper{
+    grid-template-columns:1fr;
+  }
+
+  .admin-header h1{
+    font-size:28px;
+  }
+
+  .admin-header h2{
+    font-size:22px;
+  }
+
+  .popup-box{
+    width:95%;
+    padding:18px;
+  }
+
+  .form-row{
+    flex-direction:column;
+  }
+
+  .count-row{
+    flex-wrap:wrap;
+  }
+
+  .count-box{
+    min-width:45%;
+  }
+
+  .guest-line{
+    font-size:12px;
+  }
+
+  .empty-text{
+    font-size:18px;
+  }
+
+  #adminDate{
+    width:100%;
+    font-size:22px;
+  }
+
+  .search-line{
+    font-size:12px;
+    gap:10px;
+    padding:8px;
+  }
+
+}
+/* OLD MOVED */
+
+/* OLD MOVED */
+
+.guest-line.moved{
+  color:#d89b00;
+  font-weight:bold;
+  text-decoration:none;
+}
+.moved-old-text{
+
+  text-decoration:line-through;
+
+}
+
+.move-arrow{
+
+  text-decoration:none !important;
+
+  margin-left:6px;
+
+}
+
+/* NEW MOVED */
+
+.guest-line.moved-new{
+
+  color:#d89b00;
+
+  font-weight:bold;
+
+}
+/* CANCELLED */
+.guest-line.cancelled{
+  color:#d60000 !important;
+  text-decoration:line-through;
+  font-weight:bold;
+  opacity:0.8;
 }
