@@ -1281,11 +1281,17 @@ async function exportExcel(){
     const text =
 `${item.room} ${item.name} ${item.adults}名`;
 
-    sheet[cell] = {
-      t:"s",
-      v: old + text
-    };
+    if(!sheet[cell]){
 
+  sheet[cell] = {
+    t:"s",
+    v:""
+  };
+
+}
+
+sheet[cell].v =
+old + text;
   });
 
   // download
