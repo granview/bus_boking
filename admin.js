@@ -1173,8 +1173,127 @@ adminDate.addEventListener("change",()=>{
 });
 
 
-// ========================================
-// START
-// ========================================
+document
+.getElementById("exportExcelBtn")
+.addEventListener("click", exportExcel);
 
+async function exportExcel(){
+
+  const date = adminDate.value;
+
+  // load template
+
+  const response =
+  await fetch("bus_booking.xlsx");
+
+  const arrayBuffer =
+  await response.arrayBuffer();
+
+  const workbook =
+  XLSX.read(arrayBuffer, {
+    type:"array"
+  });
+
+  const sheet =
+  workbook.Sheets[
+    workbook.SheetNames[0]
+  ];
+
+  // firebase data
+
+  const snapshot =
+  await db.ref(
+    "reservations/" + date
+  ).get();
+
+  const data =
+  snapshot.val();
+
+  if(!data){
+
+    alert("データなし");
+    return;
+
+  }
+
+  // mapping cell
+
+  const cellMap = {
+
+
+  "06:05_8名車":"C5",
+  "06:05_7名車":"D5",
+
+  // 06:20
+
+  "06:20_8名車":"C15",
+  "06:20_7名車":"D15",
+
+  // 06:40
+
+  "06:40_8名車":"C25",
+  "06:40_7名車":"D25",
+
+  // 07:00
+
+  "07:00_8名車":"C35",
+  "07:00_7名車":"D35",
+
+  "07:30_Shuttle":"G3",
+
+  "08:00_Shuttle":"G15",
+  "08:30_Shuttle":"G27",
+  "09:00_Shuttle":"I3",
+  "09:30_Shuttle":"G27",
+  "10:00_Shuttle":"G27"
+
+
+  };
+
+  // ghi dữ liệu
+
+  Object.values(data)
+  .forEach(item=>{
+
+    if(
+      item.cancelledAt
+      ||
+      item.status === "moved"
+    ){
+      return;
+    }
+
+    const key =
+    item.time + "_" + item.car;
+
+    const cell =
+    cellMap[key];
+
+    if(!cell){
+      return;
+    }
+
+    const old =
+    sheet[cell]
+    ? sheet[cell].v + "\n"
+    : "";
+
+    const text =
+`${item.room} ${item.name} ${item.adults}名`;
+
+    sheet[cell] = {
+      t:"s",
+      v: old + text
+    };
+
+  });
+
+  // download
+
+  XLSX.writeFile(
+    workbook,
+    `bus_${date}.xlsx`
+  );
+
+}
 loadReservations();
