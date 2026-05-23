@@ -80,6 +80,9 @@ document.getElementById("clearSearchBtn");
 const searchResult =
 document.getElementById("searchResult");
 
+const exportExcelBtn =
+document.getElementById("exportExcelBtn");
+
 
 // ========================================
 // DEFAULT DATE
@@ -148,7 +151,7 @@ function getLuggagePoint(item){
 
     +
 
-    Number(item.medium || 0) * 1
+    Number(item.medium || 0)
 
     +
 
@@ -160,7 +163,7 @@ function getLuggagePoint(item){
 
 
 // ========================================
-// MAX PEOPLE BY LUGGAGE
+// MAX PEOPLE
 // ========================================
 
 function getMaxPeopleByLuggage(
@@ -171,27 +174,19 @@ function getMaxPeopleByLuggage(
   if(time >= "07:30"){
 
     if(totalLuggagePoint <= 4){
-
       return 7;
-
     }
 
     if(totalLuggagePoint <= 8){
-
       return 6;
-
     }
 
     if(totalLuggagePoint <= 10){
-
       return 5;
-
     }
 
     if(totalLuggagePoint <= 12){
-
       return 4;
-
     }
 
     return 0;
@@ -201,21 +196,15 @@ function getMaxPeopleByLuggage(
   else{
 
     if(totalLuggagePoint <= 6){
-
       return 8;
-
     }
 
     if(totalLuggagePoint <= 8){
-
       return 7;
-
     }
 
     if(totalLuggagePoint <= 14){
-
       return 6;
-
     }
 
     return 0;
@@ -229,7 +218,7 @@ function getMaxPeopleByLuggage(
 // OPEN POPUP
 // ========================================
 
-reserveBtns.forEach(btn => {
+reserveBtns.forEach(btn=>{
 
   btn.addEventListener("click",()=>{
 
@@ -353,12 +342,10 @@ reserveForm.addEventListener("submit",(e)=>{
   if(editId){
 
     db.ref(
-
       "reservations/" +
       popup.dataset.editDate +
       "/" +
       editId
-
     ).set(data);
 
   }
@@ -366,7 +353,8 @@ reserveForm.addEventListener("submit",(e)=>{
   else{
 
     db.ref(
-      "reservations/" + data.date
+      "reservations/" +
+      data.date
     ).push(data);
 
   }
@@ -395,7 +383,8 @@ function loadReservations(){
 
   currentReservationRef =
   db.ref(
-    "reservations/" + selectedDate
+    "reservations/" +
+    selectedDate
   );
 
   currentReservationRef.on("value",(snapshot)=>{
@@ -432,30 +421,23 @@ function loadReservations(){
     Object.entries(data || {})
     .forEach(([id,item])=>{
 
-      // moved old khong tinh ghe
-
       if(
-  item.status === "moved"
-  ||
-  item.cancelledAt
-){
+        item.status === "moved"
+        ||
+        item.cancelledAt
+      ){
+        return;
+      }
 
-  return;
-
-}
       const key =
       item.time + "_" + item.car;
 
       if(!usedMap[key]){
-
         usedMap[key] = 0;
-
       }
 
       if(!luggageMap[key]){
-
         luggageMap[key] = 0;
-
       }
 
       usedMap[key] +=
@@ -476,15 +458,11 @@ function loadReservations(){
 
       const btn =
       document.querySelector(
-
 `.reserve-btn[data-time="${time}"][data-car="${car}"]`
-
       );
 
       if(!btn){
-
         return;
-
       }
 
       const td =
@@ -551,12 +529,10 @@ function loadReservations(){
     // NO DATA
 
     if(!data){
-
       return;
-
     }
 
-    // RENDER GUEST
+    // RENDER
 
     Object.entries(data)
     .forEach(([id,item])=>{
@@ -565,157 +541,96 @@ function loadReservations(){
 
       const btn =
       document.querySelector(
-
 `.reserve-btn[data-time="${item.time}"][data-car="${item.car}"]`
-
       );
 
       if(!btn){
-
         return;
-
       }
 
       const td =
       btn.closest("td");
 
-      let guestRow =
+      const guestRow =
       td.querySelector(".guest-row");
-
-      if(!guestRow){
-
-        guestRow =
-        document.createElement("div");
-
-        guestRow.className =
-        "guest-row";
-
-        td.prepend(guestRow);
-
-      }
-
-      // luggage
 
       let luggage = "";
 
       if(item.large > 0){
-
         luggage += `(大${item.large})`;
-
       }
 
       if(item.medium > 0){
-
         luggage += `(中${item.medium})`;
-
       }
 
       if(item.stroller > 0){
-
         luggage += `(ベビ${item.stroller})`;
-
       }
 
       const total =
-
       Number(item.adults || 0)
-
       +
-
       Number(item.lapChild || 0);
+
+      const line =
+      document.createElement("div");
+
+      line.className =
+      "guest-line";
+
+      if(item.cancelledAt){
+        line.classList.add("cancelled");
+      }
+
+      if(item.status === "done"){
+        line.classList.add("done");
+      }
+
+      if(item.status === "moved"){
+        line.classList.add("moved");
+      }
+
+      if(item.status === "moved-new"){
+        line.classList.add("moved-new");
+      }
 
       let stayText = "";
 
       if(item.stay){
-
-        stayText =
-        " (ステイ)";
-
+        stayText = " (ステイ)";
       }
 
-      // move label
+      if(item.status === "moved"){
 
-      // create line
-
-const line =
-document.createElement("div");
-line.className =
-"guest-line";
-
-if(item.cancelledAt){
-
-  line.classList.add("cancelled");
-
-}
-
-
-
-line.draggable = true;
-
-
-// DONE
-
-if(item.status === "done"){
-
-  line.classList.add("done");
-
-}
-
-
-// MOVED OLD
-
-if(item.status === "moved"){
-
-  line.classList.add("moved");
-
-}
-
-
-// MOVED NEW
-
-if(item.status === "moved-new"){
-
-  line.classList.add("moved-new");
-
-}
-
-
-// moved old
-
-if(item.status === "moved"){
-
-  line.innerHTML = `
-
+        line.innerHTML = `
 <span class="moved-old-text">
-
-${item.room || ""}　
-${item.name || ""}　
-${total}名
-${luggage}
-${stayText}
-
+${item.room || ""}
+ ${item.name || ""}
+ ${total}名
+ ${luggage}
+ ${stayText}
 </span>
 
 <span class="move-arrow">
-
 → ${item.movedToTime}
-
 </span>
-
 `;
 
-}
+      }
 
+      else{
 
-// normal + moved-new
+        line.innerText =
+`${item.room || ""}
+ ${item.name || ""}
+ ${total}名
+ ${luggage}
+ ${stayText}`;
 
-else{
+      }
 
-  line.innerText =
-
-`${item.room || ""}　${item.name || ""}　${total}名 ${luggage}${stayText}`;
-
-}
+      line.draggable = true;
 
       // DRAG
 
@@ -730,11 +645,10 @@ else{
       let clickTimer = null;
 
       line.addEventListener("click",()=>{
- if(item.cancelledAt){
 
-    return;
-
-  }
+        if(item.cancelledAt){
+          return;
+        }
 
         if(clickTimer){
 
@@ -745,17 +659,14 @@ else{
           const newStatus =
 
           item.status === "done"
-
           ? "active"
           : "done";
 
           db.ref(
-
             "reservations/" +
             item.date +
             "/" +
             item.id
-
           ).update({
 
             status: newStatus
@@ -843,43 +754,31 @@ deleteBtn.addEventListener("click",()=>{
   popup.dataset.editId;
 
   if(!editId){
-
     return;
-
   }
 
   const ok =
   confirm("削除しますか？");
 
   if(!ok){
-
     return;
-
   }
-
-  // booking date
 
   const bookingDate =
   popup.dataset.editDate;
-
-  // today
 
   const today =
   new Date()
   .toISOString()
   .split("T")[0];
 
-  const ref = db.ref(
-
+  const ref =
+  db.ref(
     "reservations/" +
     bookingDate +
     "/" +
     editId
-
   );
-
-  // TODAY
-  // chỉ cancelled
 
   if(bookingDate === today){
 
@@ -891,9 +790,6 @@ deleteBtn.addEventListener("click",()=>{
 
   }
 
-  // OLD DATE
-  // xóa thật
-
   else{
 
     ref.remove();
@@ -903,6 +799,8 @@ deleteBtn.addEventListener("click",()=>{
   popup.classList.add("hidden");
 
 });
+
+
 // ========================================
 // STAY CHECK
 // ========================================
@@ -930,117 +828,6 @@ stayCheck.addEventListener("change",()=>{
     });
 
   }
-
-});
-
-
-// ========================================
-// DRAG DROP
-// ========================================
-
-document.querySelectorAll("td")
-.forEach(td=>{
-
-  td.addEventListener("dragover",(e)=>{
-
-    e.preventDefault();
-
-  });
-
-  td.addEventListener("drop",()=>{
-
-    if(!dragBooking){
-
-      return;
-
-    }
-
-    const btn =
-    td.querySelector(".reserve-btn");
-
-    if(!btn){
-
-      return;
-
-    }
-
-    const newTime =
-    btn.dataset.time;
-
-    const newCar =
-    btn.dataset.car;
-
-    if(
-      dragBooking.time === newTime
-      &&
-      dragBooking.car === newCar
-    ){
-
-      dragBooking = null;
-
-      return;
-
-    }
-
-    // OLD
-
-    db.ref(
-
-      "reservations/" +
-      dragBooking.date +
-      "/" +
-      dragBooking.id
-
-    ).update({
-
-      status: "moved",
-
-      movedToTime: newTime,
-
-      movedToCar: newCar,
-
-      movedAt: Date.now()
-
-    });
-
-    // NEW
-
-    const newData = {
-
-      ...dragBooking,
-
-      time: newTime,
-
-      car: newCar,
-
-      status: "moved-new",
-
-      movedFromTime:
-      dragBooking.time,
-
-      movedFromCar:
-      dragBooking.car,
-
-      movedAt:
-      Date.now(),
-
-      createdAt:
-      Date.now()
-
-    };
-
-    delete newData.id;
-
-    db.ref(
-
-      "reservations/" +
-      dragBooking.date
-
-    ).push(newData);
-
-    dragBooking = null;
-
-  });
 
 });
 
@@ -1101,18 +888,14 @@ searchBtn.addEventListener("click",()=>{
         room &&
         !roomText.includes(room)
       ){
-
         return;
-
       }
 
       if(
         name &&
         !nameText.includes(name)
       ){
-
         return;
-
       }
 
       found = true;
@@ -1123,8 +906,7 @@ searchBtn.addEventListener("click",()=>{
       div.className =
       "search-line";
 
-      div.innerHTML =
-`
+      div.innerHTML = `
 <div>${item.time}</div>
 <div>${item.room}</div>
 <div>${item.name}</div>
@@ -1173,133 +955,185 @@ adminDate.addEventListener("change",()=>{
 });
 
 
-document
-.getElementById("exportExcelBtn")
-.addEventListener("click", exportExcel);
+// ========================================
+// EXPORT EXCEL
+// ========================================
+
+exportExcelBtn.addEventListener(
+  "click",
+  exportExcel
+);
 
 async function exportExcel(){
 
-  const date = adminDate.value;
+  try{
 
-  // load template
+    const date =
+    adminDate.value;
 
-  const response =
-  await fetch("bus_booking.xlsx");
+    // TEMPLATE
 
-  const arrayBuffer =
-  await response.arrayBuffer();
+    const response =
+    await fetch("./bus_booking.xlsx");
 
-  const workbook =
-  XLSX.read(arrayBuffer, {
-    type:"array"
-  });
+    const arrayBuffer =
+    await response.arrayBuffer();
 
-  const sheet =
-  workbook.Sheets[
-    workbook.SheetNames[0]
-  ];
+    const workbook =
+    XLSX.read(arrayBuffer,{
+      type:"array"
+    });
 
-  // firebase data
+    // SHEET
 
-  const snapshot =
-  await db.ref(
-    "reservations/" + date
-  ).get();
+    const sheetName =
+    workbook.SheetNames[0];
 
-  const data =
-  snapshot.val();
+    const sheet =
+    workbook.Sheets[sheetName];
 
-  if(!data){
+    // DATE
 
-    alert("データなし");
-    return;
+    const [year,month,day] =
+    date.split("-");
+
+    sheet["D1"] = {
+      t:"s",
+      v: month
+    };
+
+    sheet["E1"] = {
+      t:"s",
+      v: day
+    };
+
+    // DATA
+
+    const snapshot =
+    await db.ref(
+      "reservations/" + date
+    ).get();
+
+    const data =
+    snapshot.val();
+
+    if(!data){
+
+      alert("データなし");
+      return;
+
+    }
+
+    // CELL MAP
+
+    const cellMap = {
+
+      "06:05_8名車":"C5",
+      "06:05_7名車":"D5",
+
+      "06:20_8名車":"C15",
+      "06:20_7名車":"D15",
+
+      "06:40_8名車":"C25",
+      "06:40_7名車":"D25",
+
+      "07:00_8名車":"C35",
+      "07:00_7名車":"D35",
+
+      "07:30_Shuttle":"G5",
+      "08:00_Shuttle":"G15",
+      "08:30_Shuttle":"G25",
+
+      "09:00_Shuttle":"I5",
+      "09:30_Shuttle":"I15",
+      "10:00_Shuttle":"I25"
+
+    };
+
+    // CLEAR
+
+    Object.values(cellMap)
+    .forEach(cell=>{
+
+      if(sheet[cell]){
+
+        sheet[cell].v = "";
+
+      }
+
+    });
+
+    // WRITE
+
+    Object.values(data)
+    .forEach(item=>{
+
+      if(
+        item.cancelledAt
+        ||
+        item.status === "moved"
+      ){
+        return;
+      }
+
+      const key =
+      item.time + "_" + item.car;
+
+      const cell =
+      cellMap[key];
+
+      if(!cell){
+        return;
+      }
+
+      if(!sheet[cell]){
+
+        sheet[cell] = {
+          t:"s",
+          v:""
+        };
+
+      }
+
+      let current =
+      sheet[cell].v || "";
+
+      const text =
+`${item.room || ""}
+ ${item.name || ""}
+ ${item.adults || 0}名`;
+
+      if(current){
+
+        current += "\n";
+
+      }
+
+      sheet[cell].v =
+      current + text;
+
+    });
+
+    XLSX.writeFile(
+      workbook,
+      `bus_${date}.xlsx`
+    );
 
   }
 
-  // mapping cell
+  catch(error){
 
-  const cellMap = {
+    console.error(error);
 
+    alert("Excel出力エラー");
 
-  "06:05_8名車":"C5",
-  "06:05_7名車":"D5",
-
-  // 06:20
-
-  "06:20_8名車":"C15",
-  "06:20_7名車":"D15",
-
-  // 06:40
-
-  "06:40_8名車":"C25",
-  "06:40_7名車":"D25",
-
-  // 07:00
-
-  "07:00_8名車":"C35",
-  "07:00_7名車":"D35",
-
-  "07:30_Shuttle":"G3",
-
-  "08:00_Shuttle":"G15",
-  "08:30_Shuttle":"G27",
-  "09:00_Shuttle":"I3",
-  "09:30_Shuttle":"G27",
-  "10:00_Shuttle":"G27"
-
-
-  };
-
-  // ghi dữ liệu
-
-  Object.values(data)
-  .forEach(item=>{
-
-    if(
-      item.cancelledAt
-      ||
-      item.status === "moved"
-    ){
-      return;
-    }
-
-    const key =
-    item.time + "_" + item.car;
-
-    const cell =
-    cellMap[key];
-
-    if(!cell){
-      return;
-    }
-
-    const old =
-    sheet[cell]
-    ? sheet[cell].v + "\n"
-    : "";
-
-    const text =
-`${item.room} ${item.name} ${item.adults}名`;
-
-    if(!sheet[cell]){
-
-  sheet[cell] = {
-    t:"s",
-    v:""
-  };
+  }
 
 }
 
-sheet[cell].v =
-old + text;
-  });
 
-  // download
+// ========================================
+// START
+// ========================================
 
-  XLSX.writeFile(
-    workbook,
-    `bus_${date}.xlsx`
-  );
-
-}
 loadReservations();
