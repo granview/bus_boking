@@ -27,8 +27,14 @@ LAYOUT
 
 .admin-wrapper{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:25px;
+
+  grid-template-columns:
+  minmax(0,1fr)
+  minmax(0,1fr);
+
+  gap:18px;
+
+  align-items:start;
 }
 
 .admin-section{
@@ -128,10 +134,14 @@ TABLE
 
 .admin-table td{
   border:1px solid #ddd;
-  padding:10px;
+
+  padding:8px;
+
   vertical-align:top;
+
   font-size:13px;
-  height:220px;
+
+  height:260px;
 }
 
 .time-col{
@@ -185,22 +195,39 @@ GUEST
 
 .guest-row{
   display:flex;
+
   flex-direction:column;
-  gap:6px;
-  align-items:flex-start;
-  justify-content:flex-start;
-  min-height:180px;
+
+  gap:4px;
+
+  width:100%;
+
+  min-height:210px;
 }
 
 .guest-line{
   width:100%;
-  line-height:1.5;
-  font-size:14px;
+  height:32px;
+
+  display:flex;
+  align-items:center;
+
+  padding:0 8px;
+
   border-bottom:1px dashed #eee;
-  padding:4px 0;
+
+  font-size:13px;
+  font-weight:500;
+
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+
   cursor:pointer;
-  transition:0.2s;
-  user-select:none;
+
+  transition:background 0.2s;
+
+  user-select:text;
 }
 
 .guest-line:hover{
@@ -479,54 +506,72 @@ SEARCH
 MOBILE
 ======================================== */
 
-@media(max-width:768px){
+@media(max-width:1024px){
 
   .admin-wrapper{
+
     grid-template-columns:1fr;
+
   }
 
-  .admin-header h1{
-    font-size:28px;
+  .regular-wrapper{
+
+    grid-template-columns:1fr;
+
   }
 
-  .admin-header h2{
-    font-size:22px;
-  }
+  .admin-section{
 
-  .popup-box{
-    width:95%;
+    overflow-x:auto;
+
     padding:18px;
+
   }
 
-  .form-row{
-    flex-direction:column;
+  .admin-title{
+
+    font-size:24px;
+
   }
 
-  .count-row{
-    flex-wrap:wrap;
+  .admin-table th{
+
+    font-size:14px;
+
+    padding:10px;
+
   }
 
-  .count-box{
-    min-width:45%;
+  .admin-table td{
+
+    height:240px;
+
   }
 
   .guest-line{
+
     font-size:12px;
+
   }
 
   .empty-text{
-    font-size:18px;
+
+    font-size:20px;
+
   }
 
   #adminDate{
+
     width:100%;
+
     font-size:22px;
+
   }
 
-  .search-line{
-    font-size:12px;
-    gap:10px;
-    padding:8px;
+  .popup-box{
+
+    width:95%;
+
   }
 
 }
@@ -568,4 +613,231 @@ MOBILE
   text-decoration:line-through;
   font-weight:bold;
   opacity:0.8;
+
+}
+/* ========================================
+DATE NAVIGATION
+======================================== */
+
+.top-control{
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+  gap:14px;
+
+  margin-bottom:24px;
+
+}
+
+#adminDate{
+
+  height:54px;
+
+  font-size:28px;
+
+  font-weight:bold;
+
+  text-align:center;
+
+  padding:0 24px;
+
+  border-radius:16px;
+
+  border:2px solid #d8e4ff;
+
+  background:white;
+
+  color:#0b5ed7;
+
+  box-shadow:
+  0 3px 10px rgba(0,0,0,0.08);
+
+  transition:0.2s;
+
+}
+
+#adminDate:focus{
+
+  outline:none;
+
+  border-color:#0b5ed7;
+
+  box-shadow:
+  0 0 0 4px rgba(11,94,215,0.12);
+
+}
+
+
+/* LEFT + RIGHT BUTTON */
+
+.date-arrow{
+
+  width:54px;
+
+  height:54px;
+
+  border:2px solid #d8e4ff;
+
+  border-radius:16px;
+
+  background:white;
+
+  color:#0b5ed7;
+
+  font-size:26px;
+
+  font-weight:bold;
+
+  cursor:pointer;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  box-shadow:
+  0 3px 10px rgba(0,0,0,0.08);
+
+  transition:
+  all 0.2s ease;
+
+}
+
+.date-arrow:hover{
+
+  background:#f4f8ff;
+
+  border-color:#0b5ed7;
+
+  transform:translateY(-2px);
+
+  box-shadow:
+  0 8px 18px rgba(11,94,215,0.18);
+
+}
+
+.date-arrow:active{
+
+  transform:scale(0.95);
+
+}
+
+
+/* ========================================
+EXPORT BUTTON
+======================================== */
+
+#exportExcelBtn{
+
+  height:48px;
+
+  padding:0 24px;
+
+  border:none;
+
+  border-radius:14px;
+
+  background:linear-gradient(
+    135deg,
+    #1b9c5a,
+    #37c978
+  );
+
+  color:white;
+
+  font-size:15px;
+
+  font-weight:700;
+
+  letter-spacing:0.5px;
+
+  cursor:pointer;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  gap:8px;
+
+  box-shadow:
+  0 4px 14px rgba(27,156,90,0.25);
+
+  transition:
+  transform 0.15s,
+  box-shadow 0.2s,
+  opacity 0.2s;
+
+}
+
+#exportExcelBtn::before{
+
+  content:"📥";
+
+  font-size:18px;
+
+}
+
+#exportExcelBtn:hover{
+
+  transform:translateY(-2px);
+
+  box-shadow:
+  0 8px 18px rgba(27,156,90,0.35);
+
+  opacity:0.96;
+
+}
+
+#exportExcelBtn:active{
+
+  transform:scale(0.96);
+
+}
+
+
+/* ========================================
+MOBILE
+======================================== */
+
+@media(max-width:768px){
+
+  .top-control{
+
+    gap:8px;
+
+    flex-wrap:wrap;
+
+  }
+
+  .date-arrow{
+
+    width:46px;
+
+    height:46px;
+
+    font-size:24px;
+
+  }
+
+  #adminDate{
+
+    width:100%;
+
+    font-size:22px;
+
+  }
+
+  #exportExcelBtn{
+
+    width:100%;
+
+  }
+
 }

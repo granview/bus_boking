@@ -19,62 +19,90 @@
     href="./admin.css"
   >
 
-
 </head>
 
 <body>
 
   <div class="admin-container">
-	
 
-    <!-- DATE -->
-<h1 style="text-align: center ">送迎バス</h1>
+    <!-- HEADER -->
+
+    <h1 class="main-title">
+      送迎バス
+    </h1>
+
+    <!-- TOP CONTROL -->
+
     <section class="top-control">
 
+  <!-- PREV DAY -->
+  <button
+    type="button"
+    class="date-arrow"
+    id="prevDateBtn"
+  >
+    ◀
+  </button>
 
-      <div class="date-box">
-        <input
-          type="date"
-          id="adminDate"
-        >
+  <!-- DATE -->
+  <div class="date-box">
 
-      </div>
+    <input
+      type="date"
+      id="adminDate"
+    >
+
+  </div>
+
+  <!-- NEXT DAY -->
+  <button
+    type="button"
+    class="date-arrow"
+    id="nextDateBtn"
+  >
+    ▶
+  </button>
+
+</section>
+
+    <!-- SEARCH -->
+
+    <section class="search-area">
+
+      <input
+        type="date"
+        id="searchDate"
+      >
+
+      <input
+        type="text"
+        id="searchRoom"
+        placeholder="部屋番号"
+      >
+
+      <input
+        type="text"
+        id="searchName"
+        placeholder="名前"
+      >
+
+      <button id="searchBtn">
+        検索
+      </button>
+
+      <button id="clearSearchBtn">
+        ×
+      </button>
 
     </section>
-<div class="search-area">
 
-  <input
-    type="date"
-    id="searchDate"
-  >
+    <div id="searchResult"></div>
 
-  <input
-    type="text"
-    id="searchRoom"
-    placeholder="部屋番号"
-  >
-
-  <input
-    type="text"
-    id="searchName"
-    placeholder="名前"
-  >
-
-  <button id="searchBtn">
-    検索
-  </button>
- <button id="clearSearchBtn">
-    ×
-  </button>
-
-</div>
-
-<div id="searchResult"></div>
     <!-- MAIN -->
 
     <div class="admin-wrapper">
 
-      <!-- 6:05 - 7:00 -->
+      <!-- MORNING -->
 
       <section class="admin-section">
 
@@ -123,7 +151,7 @@
                 <div class="guest-row"></div>
 
                 <div class="empty-text">
-                  空き
+                  空きあり
                 </div>
 
                 <button
@@ -141,7 +169,7 @@
                 <div class="guest-row"></div>
 
                 <div class="empty-text">
-                  空き
+                  空きあり
                 </div>
 
                 <button
@@ -169,7 +197,7 @@
                 <div class="guest-row"></div>
 
                 <div class="empty-text">
-                  空き
+                  空きあり
                 </div>
 
                 <button
@@ -187,7 +215,7 @@
                 <div class="guest-row"></div>
 
                 <div class="empty-text">
-                  空き
+                  空きあり
                 </div>
 
                 <button
@@ -215,7 +243,7 @@
                 <div class="guest-row"></div>
 
                 <div class="empty-text">
-                  空き
+                  空きあり
                 </div>
 
                 <button
@@ -233,7 +261,7 @@
                 <div class="guest-row"></div>
 
                 <div class="empty-text">
-                  空き
+                  空きあり
                 </div>
 
                 <button
@@ -261,7 +289,7 @@
                 <div class="guest-row"></div>
 
                 <div class="empty-text">
-                  空き
+                  空きあり
                 </div>
 
                 <button
@@ -279,7 +307,7 @@
                 <div class="guest-row"></div>
 
                 <div class="empty-text">
-                  空き
+                  空きあり
                 </div>
 
                 <button
@@ -300,7 +328,7 @@
 
       </section>
 
-      <!-- 7:30 - 10:00 -->
+      <!-- SHUTTLE -->
 
       <section class="admin-section">
 
@@ -349,7 +377,7 @@
                   <div class="guest-row"></div>
 
                   <div class="empty-text">
-                    空き
+                    空きあり
                   </div>
 
                   <button
@@ -377,7 +405,7 @@
                   <div class="guest-row"></div>
 
                   <div class="empty-text">
-                    空き
+                    空きあり
                   </div>
 
                   <button
@@ -405,7 +433,7 @@
                   <div class="guest-row"></div>
 
                   <div class="empty-text">
-                    空き
+                    空きあり
                   </div>
 
                   <button
@@ -459,7 +487,7 @@
                   <div class="guest-row"></div>
 
                   <div class="empty-text">
-                    空き
+                    空きあり
                   </div>
 
                   <button
@@ -487,7 +515,7 @@
                   <div class="guest-row"></div>
 
                   <div class="empty-text">
-                    空き
+                    空きあり
                   </div>
 
                   <button
@@ -515,7 +543,7 @@
                   <div class="guest-row"></div>
 
                   <div class="empty-text">
-                    空き
+                    空きあり
                   </div>
 
                   <button
@@ -533,14 +561,20 @@
             </tbody>
 
           </table>
-<button id="exportExcelBtn">
-  Excel出力
-</button>
+
+        </div>
+
+        <!-- EXPORT -->
+
+        <div class="excel-area">
+
+          <button id="exportExcelBtn">
+            Excel出力
+          </button>
 
         </div>
 
       </section>
-
 
     </div>
 
@@ -562,10 +596,11 @@
       <div
         class="popup-time"
         id="popupTime"
-      >
-      </div>
+      ></div>
 
       <form id="reserveForm">
+
+        <!-- ROOM + NAME -->
 
         <div class="form-row">
 
@@ -578,26 +613,30 @@
           <input
             type="text"
             placeholder="お名前"
-            
           >
 
         </div>
+
+        <!-- PHONE -->
 
         <div class="form-row">
 
           <input
             type="number"
             placeholder="電話番号"
-            
           >
 
         </div>
+
+        <!-- PEOPLE -->
 
         <div class="mini-title">
           ご利用人数
         </div>
 
         <div class="count-row">
+
+          <!-- ADULT -->
 
           <div class="count-box">
 
@@ -617,6 +656,8 @@
 
           </div>
 
+          <!-- CHILD -->
+
           <div class="count-box">
 
             <span>
@@ -635,110 +676,117 @@
 
         </div>
 
-       <!-- STAY -->
+        <!-- LUGGAGE -->
 
+        <div class="mini-title">
+          荷物
+        </div>
 
-<!-- LUGGAGE -->
+        <!-- STAY -->
 
-<div class="mini-title">
-  荷物
-</div>
-<div class="stay-row">
+        <div class="stay-row">
 
-  <label class="stay-label">
+          <label class="stay-label">
 
-    <input
-      type="checkbox"
-      id="stayCheck"
-    >
+            <input
+              type="checkbox"
+              id="stayCheck"
+            >
 
-    ステイ
+            ステイ
 
-  </label>
+          </label>
 
-</div>
-
+        </div>
 
         <div class="count-row luggage-row">
 
-  <div class="count-box">
+          <!-- LARGE -->
 
-    <span>
-      大
-    </span>
+          <div class="count-box">
 
-    <select class="luggage-select">
+            <span>
+              大
+            </span>
 
-      <option>0</option>
-      <option>1</option>
-      <option>2</option>
-      <option>3</option>
+            <select class="luggage-select">
 
-    </select>
+              <option>0</option>
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
 
-  </div>
+            </select>
 
-  <div class="count-box">
+          </div>
 
-    <span>
-      中
-    </span>
+          <!-- MEDIUM -->
 
-    <select class="luggage-select">
+          <div class="count-box">
 
-      <option>0</option>
-      <option>1</option>
-      <option>2</option>
-      <option>3</option>
+            <span>
+              中
+            </span>
 
-    </select>
+            <select class="luggage-select">
 
-  </div>
+              <option>0</option>
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
 
-  <div class="count-box">
+            </select>
 
-    <span>
-      ベビーカー
-    </span>
+          </div>
 
-    <select class="luggage-select">
+          <!-- STROLLER -->
 
-      <option>0</option>
-      <option>1</option>
-      <option>2</option>
+          <div class="count-box">
 
-    </select>
+            <span>
+              ベビーカー
+            </span>
 
-  </div>
+            <select class="luggage-select">
 
-</div>
+              <option>0</option>
+              <option>1</option>
+              <option>2</option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+        <!-- BUTTON -->
 
         <div class="popup-btn-row">
 
-  <button
-    type="submit"
-    class="save-btn"
-  >
-    保存
-  </button>
+          <button
+            type="submit"
+            class="save-btn"
+          >
+            保存
+          </button>
 
-  <button
-    type="button"
-    id="deleteBtn"
-    class="delete-btn"
-  >
-    削除
-  </button>
+          <button
+            type="button"
+            id="deleteBtn"
+            class="delete-btn"
+          >
+            削除
+          </button>
 
-  <button
-    type="button"
-    id="closePopup"
-    class="close-btn"
-  >
-    閉じる
-  </button>
+          <button
+            type="button"
+            id="closePopup"
+            class="close-btn"
+          >
+            閉じる
+          </button>
 
-</div>
+        </div>
 
       </form>
 
@@ -748,12 +796,15 @@
 
   <!-- FIREBASE -->
 
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-  <script src="./admin.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
+
+<script src="admin.js"></script>
 
 </body>
 
