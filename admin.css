@@ -4,7 +4,7 @@ RESET
 
 *{
   margin:0;
-  padding:0;
+ padding0;
   box-sizing:border-box;
 }
 
@@ -22,7 +22,7 @@ LAYOUT
 .admin-container{
   max-width:1400px;
   margin:auto;
-  padding:10px;
+ padding10px;
 }
 
 .admin-wrapper{
@@ -39,7 +39,7 @@ LAYOUT
 
 .admin-section{
   background:white;
-  padding:25px;
+ padding:5px;
   border-radius:20px;
   box-shadow:0 3px 10px rgba(0,0,0,0.08);
 }
@@ -108,7 +108,7 @@ DATE AREA
   font-size:28px;
   font-weight:bold;
   text-align:center;
-  padding:10px 20px;
+ padding10px 20px;
   border-radius:12px;
   border:2px solid #ccc;
   background:#fff;
@@ -128,14 +128,14 @@ TABLE
 .admin-table th{
   background:#0b5ed7;
   color:white;
-  padding:14px;
+ padding14px;
   font-size:16px;
 }
 
 .admin-table td{
   border:1px solid #ddd;
 
-  padding:8px;
+ padding8px;
 
   vertical-align:top;
 
@@ -156,7 +156,7 @@ TABLE
   text-align:center;
   background:#f8f9fa;
   vertical-align:middle !important;
-  padding:2px !important;
+ padding2px !important;
   line-height:1.2;
 }
 
@@ -212,11 +212,11 @@ GUEST
   display:flex;
   align-items:center;
 
-  padding:0 8px;
+
 
   border-bottom:1px dashed #eee;
 
-  font-size:13px;
+  font-size:13.5px;
   font-weight:500;
 
   white-space:nowrap;
@@ -274,7 +274,7 @@ BUTTON
 
 .reserve-btn{
   margin-top:10px;
-  padding:5px 10px;
+ .admin-section 5px 10px;
   border:none;
   border-radius:6px;
   background:#5775a1;
@@ -312,7 +312,7 @@ POPUP
   max-width:95%;
   background:white;
   border-radius:18px;
-  padding:25px;
+ .admin-section 25px;
   max-height:90vh;
   overflow-y:auto;
 }
@@ -341,7 +341,7 @@ FORM
 
 .form-row input{
   flex:1;
-  padding:10px;
+ .admin-section10px;
   border:1px solid #ccc;
   border-radius:8px;
 }
@@ -371,7 +371,7 @@ FORM
 
 .count-box select{
   width:100%;
-  padding:8px;
+ .admin-section8px;
   border:1px solid #ccc;
   border-radius:8px;
 }
@@ -391,7 +391,7 @@ POPUP BUTTON
 .close-btn,
 .delete-btn{
   flex:1;
-  padding:12px;
+ admin-section12px;
   border:none;
   border-radius:10px;
   color:white;
@@ -426,7 +426,7 @@ SEARCH
 
 .search-area input{
   height:32px;
-  padding:0 10px;
+ padding0 10px;
   border:1px solid #ccc;
   border-radius:6px;
   font-size:13px;
@@ -434,7 +434,7 @@ SEARCH
 
 .search-area button{
   height:32px;
-  padding:0 14px;
+ padding0 14px;
   border:none;
   background:#1e4f95;
   color:white;
@@ -473,7 +473,7 @@ SEARCH
   gap:18px;
   background:#f3f3f3;
   border-radius:10px;
-  padding:10px 14px;
+ padding10px 14px;
   cursor:pointer;
   font-size:14px;
   box-shadow:0 2px 5px rgba(0,0,0,0.08);
@@ -524,7 +524,7 @@ MOBILE
 
     overflow-x:auto;
 
-    padding:18px;
+   padding18px;
 
   }
 
@@ -538,7 +538,7 @@ MOBILE
 
     font-size:14px;
 
-    padding:10px;
+   padding10px;
 
   }
 
@@ -643,7 +643,7 @@ DATE NAVIGATION
 
   text-align:center;
 
-  padding:0 24px;
+ padding0 24px;
 
   border-radius:16px;
 
@@ -733,10 +733,10 @@ EXPORT BUTTON
 ======================================== */
 
 #exportExcelBtn{
-
+ 
   height:48px;
 
-  padding:0 24px;
+ padding0: 24px;
 
   border:none;
 
