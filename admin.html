@@ -2,810 +2,416 @@
 <html lang="ja">
 
 <head>
-
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <title>
-    Shuttle Bus Admin
-  </title>
-
-  <link
-    rel="stylesheet"
-    href="./admin.css"
-  >
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>送迎バス 管理</title>
+    <link rel="stylesheet" href="./admin.css">
 </head>
 
 <body>
 
-  <div class="admin-container">
+    <div class="admin-header">
+        <div class="header-title">送迎バス運行管理</div>
+        <div class="header-controls">
+            <button class="nav-btn" id="prevDay">&#8592;</button>
+            <input type="date" id="adminDate">
+            <button class="nav-btn" id="nextDay">&#8594;</button>
+            <button class="update-btn" id="updateBtn">更新</button>
+        </div>
+        <div class="search-box-wrap">
+            <div class="search-area">
 
-    <!-- HEADER -->
+                <div class="search-bar-wrap">
 
-    <h1 class="main-title">
-      送迎バス
-    </h1>
+                    <input type="text" id="searchInput" placeholder="部屋番号 / 名前">
 
-    <!-- TOP CONTROL -->
+                    <button id="searchBtn">
+                        検索
+                    </button>
+                    <button id="clearSearchBtn">クリア</button>
 
-    <section class="top-control">
+                </div>
 
-  <!-- PREV DAY -->
-  <button
-    type="button"
-    class="date-arrow"
-    id="prevDateBtn"
-  >
-    ◀
-  </button>
+                <div id="searchResults"></div>
 
-  <!-- DATE -->
-  <div class="date-box">
-
-    <input
-      type="date"
-      id="adminDate"
-    >
-
-  </div>
-
-  <!-- NEXT DAY -->
-  <button
-    type="button"
-    class="date-arrow"
-    id="nextDateBtn"
-  >
-    ▶
-  </button>
-
-</section>
-
-    <!-- SEARCH -->
-
-    <section class="search-area">
-
-      <input
-        type="date"
-        id="searchDate"
-      >
-
-      <input
-        type="text"
-        id="searchRoom"
-        placeholder="部屋番号"
-      >
-
-      <input
-        type="text"
-        id="searchName"
-        placeholder="名前"
-      >
-
-      <button id="searchBtn">
-        検索
-      </button>
-
-      <button id="clearSearchBtn">
-        ×
-      </button>
-
-    </section>
-
-    <div id="searchResult"></div>
-
-    <!-- MAIN -->
-
-    <div class="admin-wrapper">
-
-      <!-- MORNING -->
-
-      <section class="admin-section">
-
-        <div class="admin-title">
-          6:05 - 7:00
+            </div>
         </div>
 
-        <div class="admin-subtitle">
-          最大15名（8名車優先）
+        <div class="page-toggle-bar">
+            <button class="toggle-page-btn active" id="btnPageEarly">06:05 ～ 07:00</button>
+            <button class="toggle-page-btn" id="btnPageLate">07:30 ～ 10:00</button>
         </div>
-
-        <table class="admin-table">
-
-          <thead>
-
-            <tr>
-
-              <th class="time-col">
-                時間
-              </th>
-
-              <th>
-                8名車
-              </th>
-
-              <th>
-                7名車
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            <!-- 06:05 -->
-
-            <tr>
-
-              <td class="time-cell">
-                06:05
-              </td>
-
-              <td>
-
-                <div class="guest-row"></div>
-
-                <div class="empty-text">
-                  空きあり
-                </div>
-
-                <button
-                  class="reserve-btn"
-                  data-time="06:05"
-                  data-car="8名車"
-                >
-                  ＋予約
-                </button>
-
-              </td>
-
-              <td>
-
-                <div class="guest-row"></div>
-
-                <div class="empty-text">
-                  空きあり
-                </div>
-
-                <button
-                  class="reserve-btn"
-                  data-time="06:05"
-                  data-car="7名車"
-                >
-                  ＋予約
-                </button>
-
-              </td>
-
-            </tr>
-
-            <!-- 06:20 -->
-
-            <tr>
-
-              <td class="time-cell">
-                06:20
-              </td>
-
-              <td>
-
-                <div class="guest-row"></div>
-
-                <div class="empty-text">
-                  空きあり
-                </div>
-
-                <button
-                  class="reserve-btn"
-                  data-time="06:20"
-                  data-car="8名車"
-                >
-                  ＋予約
-                </button>
-
-              </td>
-
-              <td>
-
-                <div class="guest-row"></div>
-
-                <div class="empty-text">
-                  空きあり
-                </div>
-
-                <button
-                  class="reserve-btn"
-                  data-time="06:20"
-                  data-car="7名車"
-                >
-                  ＋予約
-                </button>
-
-              </td>
-
-            </tr>
-
-            <!-- 06:40 -->
-
-            <tr>
-
-              <td class="time-cell">
-                06:40
-              </td>
-
-              <td>
-
-                <div class="guest-row"></div>
-
-                <div class="empty-text">
-                  空きあり
-                </div>
-
-                <button
-                  class="reserve-btn"
-                  data-time="06:40"
-                  data-car="8名車"
-                >
-                  ＋予約
-                </button>
-
-              </td>
-
-              <td>
-
-                <div class="guest-row"></div>
-
-                <div class="empty-text">
-                  空きあり
-                </div>
-
-                <button
-                  class="reserve-btn"
-                  data-time="06:40"
-                  data-car="7名車"
-                >
-                  ＋予約
-                </button>
-
-              </td>
-
-            </tr>
-
-            <!-- 07:00 -->
-
-            <tr>
-
-              <td class="time-cell">
-                07:00
-              </td>
-
-              <td>
-
-                <div class="guest-row"></div>
-
-                <div class="empty-text">
-                  空きあり
-                </div>
-
-                <button
-                  class="reserve-btn"
-                  data-time="07:00"
-                  data-car="8名車"
-                >
-                  ＋予約
-                </button>
-
-              </td>
-
-              <td>
-
-                <div class="guest-row"></div>
-
-                <div class="empty-text">
-                  空きあり
-                </div>
-
-                <button
-                  class="reserve-btn"
-                  data-time="07:00"
-                  data-car="7名車"
-                >
-                  ＋予約
-                </button>
-
-              </td>
-
-            </tr>
-
-          </tbody>
-
-        </table>
-
-      </section>
-
-      <!-- SHUTTLE -->
-
-      <section class="admin-section">
-
-        <div class="admin-title">
-          7:30 - 10:00
-        </div>
-
-        <div class="admin-subtitle">
-          最大7名
-        </div>
-
-        <div class="regular-wrapper">
-
-          <!-- LEFT -->
-
-          <table class="admin-table">
-
-            <thead>
-
-              <tr>
-
-                <th class="time-col">
-                  時間
-                </th>
-
-                <th>
-                  Shuttle
-                </th>
-
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              <!-- 07:30 -->
-
-              <tr>
-
-                <td class="time-cell">
-                  07:30
-                </td>
-
-                <td>
-
-                  <div class="guest-row"></div>
-
-                  <div class="empty-text">
-                    空きあり
-                  </div>
-
-                  <button
-                    class="reserve-btn"
-                    data-time="07:30"
-                    data-car="Shuttle"
-                  >
-                    ＋予約
-                  </button>
-
-                </td>
-
-              </tr>
-
-              <!-- 08:00 -->
-
-              <tr>
-
-                <td class="time-cell">
-                  08:00
-                </td>
-
-                <td>
-
-                  <div class="guest-row"></div>
-
-                  <div class="empty-text">
-                    空きあり
-                  </div>
-
-                  <button
-                    class="reserve-btn"
-                    data-time="08:00"
-                    data-car="Shuttle"
-                  >
-                    ＋予約
-                  </button>
-
-                </td>
-
-              </tr>
-
-              <!-- 08:30 -->
-
-              <tr>
-
-                <td class="time-cell">
-                  08:30
-                </td>
-
-                <td>
-
-                  <div class="guest-row"></div>
-
-                  <div class="empty-text">
-                    空きあり
-                  </div>
-
-                  <button
-                    class="reserve-btn"
-                    data-time="08:30"
-                    data-car="Shuttle"
-                  >
-                    ＋予約
-                  </button>
-
-                </td>
-
-              </tr>
-
-            </tbody>
-
-          </table>
-
-          <!-- RIGHT -->
-
-          <table class="admin-table">
-
-            <thead>
-
-              <tr>
-
-                <th class="time-col">
-                  時間
-                </th>
-
-                <th>
-                  Shuttle
-                </th>
-
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              <!-- 09:00 -->
-
-              <tr>
-
-                <td class="time-cell">
-                  09:00
-                </td>
-
-                <td>
-
-                  <div class="guest-row"></div>
-
-                  <div class="empty-text">
-                    空きあり
-                  </div>
-
-                  <button
-                    class="reserve-btn"
-                    data-time="09:00"
-                    data-car="Shuttle"
-                  >
-                    ＋予約
-                  </button>
-
-                </td>
-
-              </tr>
-
-              <!-- 09:30 -->
-
-              <tr>
-
-                <td class="time-cell">
-                  09:30
-                </td>
-
-                <td>
-
-                  <div class="guest-row"></div>
-
-                  <div class="empty-text">
-                    空きあり
-                  </div>
-
-                  <button
-                    class="reserve-btn"
-                    data-time="09:30"
-                    data-car="Shuttle"
-                  >
-                    ＋予約
-                  </button>
-
-                </td>
-
-              </tr>
-
-              <!-- 10:00 -->
-
-              <tr>
-
-                <td class="time-cell">
-                  10:00
-                </td>
-
-                <td>
-
-                  <div class="guest-row"></div>
-
-                  <div class="empty-text">
-                    空きあり
-                  </div>
-
-                  <button
-                    class="reserve-btn"
-                    data-time="10:00"
-                    data-car="Shuttle"
-                  >
-                    ＋予約
-                  </button>
-
-                </td>
-
-              </tr>
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-        <!-- EXPORT -->
-
-        <div class="excel-area">
-
-          <button id="exportExcelBtn">
-            Excel出力
-          </button>
-
-        </div>
-
-      </section>
-
     </div>
 
-  </div>
+    <div class="admin-container">
+        <div class="admin-wrapper">
 
-  <!-- POPUP -->
+            <section class="admin-section" id="pageEarlyView">
+                <div class="admin-table-flex">
 
-  <div
-    id="reservePopup"
-    class="popup hidden"
-  >
+                    <div class="table-flex-header">
+                        <div class="th-cell time-col">時間</div>
+                        <div class="th-cell car-col">ラッキータクシー</div>
+                        <div class="th-cell car-col">ホテル車</div>
+                    </div>
 
-    <div class="popup-box">
+                    <div class="table-flex-row">
+                        <div class="time-block-cell">06:05</div>
+                        <div class="car-data-containers">
+                            <div class="car-cell-box" data-time="06:05" data-car="ラッキータクシー">
+                                <div class="guest-row"></div>
+                                <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                <button class="reserve-btn" data-time="06:05" data-car="ラッキータクシー">＋ 予約</button>
+                            </div>
+                            <div class="car-cell-box" data-time="06:05" data-car="ホテル">
+                                <div class="guest-row"></div>
+                                <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                <button class="reserve-btn" data-time="06:05" data-car="ホテル">＋ 予約</button>
+                            </div>
+                        </div>
+                    </div>
 
-      <div class="popup-title">
-        予約登録
-      </div>
+                    <div class="table-flex-row">
+                        <div class="time-block-cell">06:20</div>
+                        <div class="car-data-containers">
+                            <div class="car-cell-box" data-time="06:20" data-car="ラッキータクシー">
+                                <div class="guest-row"></div>
+                                <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                <button class="reserve-btn" data-time="06:20" data-car="ラッキータクシー">＋ 予約</button>
+                            </div>
+                            <div class="car-cell-box" data-time="06:20" data-car="ホテル">
+                                <div class="guest-row"></div>
+                                <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                <button class="reserve-btn" data-time="06:20" data-car="ホテル">＋ 予約</button>
+                            </div>
+                        </div>
+                    </div>
 
-      <div
-        class="popup-time"
-        id="popupTime"
-      ></div>
+                    <div class="table-flex-row">
+                        <div class="time-block-cell">06:40</div>
+                        <div class="car-data-containers">
+                            <div class="car-cell-box" data-time="06:40" data-car="ラッキータクシー">
+                                <div class="guest-row"></div>
+                                <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                <button class="reserve-btn" data-time="06:40" data-car="ラッキータクシー">＋ 予約</button>
+                            </div>
+                            <div class="car-cell-box" data-time="06:40" data-car="ホテル">
+                                <div class="guest-row"></div>
+                                <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                <button class="reserve-btn" data-time="06:40" data-car="ホテル">＋ 予約</button>
+                            </div>
+                        </div>
+                    </div>
 
-      <form id="reserveForm">
+                    <div class="table-flex-row">
+                        <div class="time-block-cell">07:00</div>
+                        <div class="car-data-containers">
+                            <div class="car-cell-box" data-time="07:00" data-car="ラッキータクシー">
+                                <div class="guest-row"></div>
+                                <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                <button class="reserve-btn" data-time="07:00" data-car="ラッキータクシー">＋ 予約</button>
+                            </div>
+                            <div class="car-cell-box" data-time="07:00" data-car="ホテル">
+                                <div class="guest-row"></div>
+                                <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                <button class="reserve-btn" data-time="07:00" data-car="ホテル">＋ 予約</button>
+                            </div>
+                        </div>
+                    </div>
 
-        <!-- ROOM + NAME -->
+                </div>
+            </section>
+            <div class="top-action-bar">
+                <button id="exportExcelBtn">EX出力</button>
+                <button id="showAllBookingsBtn">全予約</button>
+            </div>
+            <!-- ===================================== -->
+            <!-- ALL BOOKINGS POPUP -->
+            <!-- ===================================== -->
 
-        <div class="form-row">
+            <div id="allBookingsPopup" class="popup hidden">
 
-          <input
-            type="number"
-            placeholder="部屋番号"
-            required
-          >
+                <div class="popup-box booking-list-popup">
 
-          <input
-            type="text"
-            placeholder="お名前"
-          >
+                    <div class="popup-title">
+                        当日の予約一覧
+                    </div>
 
+                    <div id="allBookingsList" class="all-bookings-list">
+                    </div>
+
+                    <div class="popup-bottom-buttons">
+
+                        <button type="button" id="closeAllBookingsBtn" class="gray-btn">
+                            閉じる
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="right-col hidden" id="pageLateView">
+                <section class="admin-section">
+                    <div class="regular-wrapper">
+
+                        <div class="admin-table-flex single-car-layout" style="flex:1;">
+
+                            <div class="table-flex-header">
+                                <div class="th-cell time-col">時間</div>
+                                <div class="th-cell car-col">ホテル車</div>
+                                <div class="th-cell time-col mid-time-col">時間</div>
+                                <div class="th-cell car-col">ホテル車</div>
+                            </div>
+
+                            <div class="table-flex-row">
+                                <div class="time-block-cell">07:30</div>
+                                <div class="car-data-containers" style="flex: 1;">
+                                    <div class="car-cell-box" data-time="07:30" data-car="ホテル">
+                                        <div class="guest-row"></div>
+                                        <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                        <button class="reserve-btn" data-time="07:30" data-car="ホテル">＋ 予約</button>
+                                    </div>
+                                </div>
+
+                                <div class="time-block-cell mid-time-col">09:00</div>
+                                <div class="car-data-containers" style="flex: 1;">
+                                    <div class="car-cell-box" data-time="09:00" data-car="ホテル">
+                                        <div class="guest-row"></div>
+                                        <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                        <button class="reserve-btn" data-time="09:00" data-car="ホテル">＋ 予約</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="table-flex-row">
+                                <div class="time-block-cell">08:00</div>
+                                <div class="car-data-containers" style="flex: 1;">
+                                    <div class="car-cell-box" data-time="08:00" data-car="ホテル">
+                                        <div class="guest-row"></div>
+                                        <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                        <button class="reserve-btn" data-time="08:00" data-car="ホテル">＋ 予約</button>
+                                    </div>
+                                </div>
+
+                                <div class="time-block-cell mid-time-col">09:30</div>
+                                <div class="car-data-containers" style="flex: 1;">
+                                    <div class="car-cell-box" data-time="09:30" data-car="ホテル">
+                                        <div class="guest-row"></div>
+                                        <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                        <button class="reserve-btn" data-time="09:30" data-car="ホテル">＋ 予約</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="table-flex-row">
+                                <div class="time-block-cell">08:30</div>
+                                <div class="car-data-containers" style="flex: 1;">
+                                    <div class="car-cell-box" data-time="08:30" data-car="ホテル">
+                                        <div class="guest-row"></div>
+                                        <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                        <button class="reserve-btn" data-time="08:30" data-car="ホテル">＋ 予約</button>
+                                    </div>
+                                </div>
+
+                                <div class="time-block-cell mid-time-col">10:00</div>
+                                <div class="car-data-containers" style="flex: 1;">
+                                    <div class="car-cell-box" data-time="10:00" data-car="ホテル">
+                                        <div class="guest-row"></div>
+                                        <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                        <button class="reserve-btn" data-time="10:00" data-car="ホテル">＋ 予約</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </section>
+
+                <div class="info-panel">
+                    <div class="info-panel-header">連絡・管理</div>
+                    <div class="info-panel-body">
+                        <div class="info-half">
+                            <div class="info-sub-title">配車センター</div>
+                            <div class="taxi-name">ラッキータクシー</div>
+                            <div class="taxi-tel">092-541-7755</div>
+                            <div class="taxi-note">※不要時は22:00までに要連絡</div>
+                        </div>
+                        <div class="info-half">
+                            <div class="info-sub-title">送客車カギ管理</div>
+                            <table class="key-table">
+                                <tr>
+                                    <td>貸出</td>
+                                    <td>
+                                        <div style="display:flex; gap:4px;">
+                                            <input type="time" id="keyLendTime">
+                                            <input type="text" placeholder="名前" id="keyLendName" style="width:70px;">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>返却</td>
+                                    <td>
+                                        <div style="display:flex; gap:4px;">
+                                            <input type="time" id="keyReturnTime">
+                                            <input type="text" placeholder="名前" id="keyReturnName" style="width:70px;">
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
-
-        <!-- PHONE -->
-
-        <div class="form-row">
-
-          <input
-            type="number"
-            placeholder="電話番号"
-          >
-
-        </div>
-
-        <!-- PEOPLE -->
-
-        <div class="mini-title">
-          ご利用人数
-        </div>
-
-        <div class="count-row">
-
-          <!-- ADULT -->
-
-          <div class="count-box">
-
-            <span>
-              大人
-            </span>
-
-            <select>
-
-              <option>0</option>
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-              <option>4</option>
-
-            </select>
-
-          </div>
-
-          <!-- CHILD -->
-
-          <div class="count-box">
-
-            <span>
-              膝上
-            </span>
-
-            <select>
-
-              <option>0</option>
-              <option>1</option>
-              <option>2</option>
-
-            </select>
-
-          </div>
-
-        </div>
-
-        <!-- LUGGAGE -->
-
-        <div class="mini-title">
-          荷物
-        </div>
-
-        <!-- STAY -->
-
-        <div class="stay-row">
-
-          <label class="stay-label">
-
-            <input
-              type="checkbox"
-              id="stayCheck"
-            >
-
-            ステイ
-
-          </label>
-
-        </div>
-
-        <div class="count-row luggage-row">
-
-          <!-- LARGE -->
-
-          <div class="count-box">
-
-            <span>
-              大
-            </span>
-
-            <select class="luggage-select">
-
-              <option>0</option>
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-
-            </select>
-
-          </div>
-
-          <!-- MEDIUM -->
-
-          <div class="count-box">
-
-            <span>
-              中
-            </span>
-
-            <select class="luggage-select">
-
-              <option>0</option>
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-
-            </select>
-
-          </div>
-
-          <!-- STROLLER -->
-
-          <div class="count-box">
-
-            <span>
-              ベビーカー
-            </span>
-
-            <select class="luggage-select">
-
-              <option>0</option>
-              <option>1</option>
-              <option>2</option>
-
-            </select>
-
-          </div>
-
-        </div>
-
-        <!-- BUTTON -->
-
-        <div class="popup-btn-row">
-
-          <button
-            type="submit"
-            class="save-btn"
-          >
-            保存
-          </button>
-
-          <button
-            type="button"
-            id="deleteBtn"
-            class="delete-btn"
-          >
-            削除
-          </button>
-
-          <button
-            type="button"
-            id="closePopup"
-            class="close-btn"
-          >
-            閉じる
-          </button>
-
-        </div>
-
-      </form>
-
     </div>
 
-  </div>
+    <div id="reservePopup" class="popup hidden">
+        <div class="popup-box clear-popup">
+            <div class="popup-header">
+                <div class="popup-title-centered">予約登録</div>
+            </div>
+            <form id="reserveForm">
+                <div class="popup-body clear-body">
 
-  <!-- FIREBASE -->
+                    <div class="popup-panel-segment">
+                        <div class="form-inline-row">
+                            <div class="form-group size-room">
+                                <label class="field-label">部屋番号</label>
+                                <input type="number" id="inputRoom">
+                            </div>
+                            <div class="form-group size-name">
+                                <label class="field-label">お名前</label>
+                                <input type="text" id="inputName">
+                            </div>
+                            <div class="form-group size-stay">
+                                <label class="field-label">ステイ</label>
+                                <button type="button" class="stay-toggle-btn" id="stayToggle">OFF</button>
+                            </div>
+                        </div>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+                        <div class="form-inline-row flex-align-start"
+                            style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #e5e7eb;">
+                            <div class="form-group size-adult-counter">
+                                <label class="field-label highlight-label">大人 (名)</label>
+                                <div class="stepper-input adult-stepper">
+                                    <button type="button" class="step-btn minus">&#8722;</button>
+                                    <input type="number" value="0" min="0" max="20" id="selAdults">
+                                    <button type="button" class="step-btn plus">&#43;</button>
+                                </div>
+                            </div>
+                            <div class="form-group size-infant-counter">
+                                <label class="field-label infant-label">添い寝 (名)</label>
+                                <div class="stepper-input infant-stepper">
+                                    <button type="button" class="step-btn minus">&#8722;</button>
+                                    <input type="number" value="0" min="0" max="10" id="selSoinet">
+                                    <button type="button" class="step-btn plus">&#43;</button>
+                                </div>
+                            </div>
+                            <div class="form-group size-seat-toggle">
+                                <label class="field-label infant-label">添い寝座席</label>
+                                <div class="seat-toggle-compact">
+                                    <button type="button" class="seat-btn-compact" id="btnSeatAri">あり</button>
+                                    <button type="button" class="seat-btn-compact" id="btnSeatNashi">なし</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+                    <div class="popup-panel-segment luggage-separated-segment">
+                        <div class="luggage-compact-grid">
+                            <div class="lug-compact-item">
+                                <span class="lug-label-text">特大</span>
+                                <div class="stepper-input minified">
+                                    <button type="button" class="step-btn minus">&#8722;</button>
+                                    <input type="number" value="0" min="0" max="10" id="lugTokudai">
+                                    <button type="button" class="step-btn plus">&#43;</button>
+                                </div>
+                            </div>
+                            <div class="lug-compact-item">
+                                <span class="lug-label-text">大</span>
+                                <div class="stepper-input minified">
+                                    <button type="button" class="step-btn minus">&#8722;</button>
+                                    <input type="number" value="0" min="0" max="10" id="lugLarge">
+                                    <button type="button" class="step-btn plus">&#43;</button>
+                                </div>
+                            </div>
+                            <div class="lug-compact-item">
+                                <span class="lug-label-text">中</span>
+                                <div class="stepper-input minified">
+                                    <button type="button" class="step-btn minus">&#8722;</button>
+                                    <input type="number" value="0" min="0" max="10" id="lugMedium">
+                                    <button type="button" class="step-btn plus">&#43;</button>
+                                </div>
+                            </div>
+                            <div class="lug-compact-item">
+                                <span class="lug-label-text">小</span>
+                                <div class="stepper-input minified">
+                                    <button type="button" class="step-btn minus">&#8722;</button>
+                                    <input type="number" value="0" min="0" max="10" id="lugSmall">
+                                    <button type="button" class="step-btn plus">&#43;</button>
+                                </div>
+                            </div>
+                        </div>
 
-<script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+                        <div class="form-group" style="margin-top: 14px;">
+                            <label class="field-label">備考・その他の荷物</label>
+                            <input type="text" id="inputNote">
+                        </div>
+                    </div>
 
-<script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
+                </div>
+                <div class="popup-btn-row">
+                    <button type="submit" class="save-btn">保存する</button>
+                    <button type="button" id="deleteBtn" class="delete-btn">削除</button>
+                    <button type="button" id="closePopup" class="close-btn">閉じる</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-<script src="admin.js"></script>
+    <div id="passwordPopup" class="popup hidden">
+        <div class="pwd-popup-box">
+            <div class="pwd-popup-header">パスワード確認</div>
+            <div class="pwd-popup-body">
+                <p class="pwd-alert-text">パスワードを入力してください。</p>
+                <input type="password" id="pwdInput" maxlength="4">
+            </div>
+            <div class="pwd-popup-footer">
+                <button id="pwdCancelBtn" class="pwd-btn cancel">キャンセル</button>
+                <button id="pwdConfirmBtn" class="pwd-btn confirm">確認</button>
+            </div>
+        </div>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/default.css">
 
+        <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/index.min.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/scroll-behaviour.min.js"></script>
+
+        <script>
+            window.addEventListener("load", function () {
+
+                if (window.MobileDragDrop) {
+
+                    MobileDragDrop.polyfill({
+                        dragImageTranslateOverride:
+                            MobileDragDrop.scrollBehaviourDragImageTranslateOverride
+                    });
+
+                }
+
+            });
+        </script>
+        <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+        <script src="./admin.js"></script>
+    </div>
 </body>
 
 </html>

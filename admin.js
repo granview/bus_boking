@@ -1,1402 +1,1801 @@
-// ========================================
-// FIREBASE
-// ========================================
+// ── FIREBASE CONFIG ──
+let dragBooking = null;
+
+let pendingTargetTime = null;
+let pendingTargetCar = null;
+let pendingActionType = null; // 'delete_form', 'delete_quick', 'move'
+let pendingItemData = null;
 
 const firebaseConfig = {
-
-  apiKey: "AIzaSyDppkqjWkRyL_JYFrHF7MWvTFAACwgxU-c",
-
-  authDomain:
-  "bus-boking-283a9.firebaseapp.com",
-
-  databaseURL:
-  "https://bus-boking-283a9-default-rtdb.asia-southeast1.firebasedatabase.app",
-
-  projectId:
-  "bus-boking-283a9",
-
-  storageBucket:
-  "bus-boking-283a9.firebasestorage.app",
-
-  messagingSenderId:
-  "536319278949",
-
-  appId:
-  "1:536319278949:web:3bf4ce8021e2b326086b8c"
-
+    apiKey: "AIzaSyDppkqjWkRyL_JYFrHF7MWvTFAACwgxU-c",
+    authDomain: "bus-boking-283a9.firebaseapp.com",
+    databaseURL: "https://bus-boking-283a9-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "bus-boking-283a9",
+    storageBucket: "bus-boking-283a9.firebasestorage.app",
+    messagingSenderId: "536319278949",
+    appId: "1:536319278949:web:3bf4ce8021e2b326086b8c"
 };
 
 firebase.initializeApp(firebaseConfig);
-
 const db = firebase.database();
 
+// ── ELEMENTS ──
+const reserveBtns = document.querySelectorAll(".reserve-btn");
+const popup = document.getElementById("reservePopup");
+const closePopup = document.getElementById("closePopup");
+const deleteBtn = document.getElementById("deleteBtn");
+const reserveForm = document.getElementById("reserveForm");
+const adminDate = document.getElementById("adminDate");
+const prevDayBtn = document.getElementById("prevDay");
+const nextDayBtn = document.getElementById("nextDay");
+const updateBtn = document.getElementById("updateBtn");
 
-// ========================================
-// GLOBAL
-// ========================================
+const btnPageEarly = document.getElementById("btnPageEarly");
+const btnPageLate = document.getElementById("btnPageLate");
+const pageEarlyView = document.getElementById("pageEarlyView");
+const pageLateView = document.getElementById("pageLateView");
+
+// Password Elements
+const passwordPopup = document.getElementById("passwordPopup");
+const pwdInput = document.getElementById("pwdInput");
+const pwdCancelBtn = document.getElementById("pwdCancelBtn");
+const pwdConfirmBtn = document.getElementById("pwdConfirmBtn");
+
+// Form fields
+const inputRoom = document.getElementById("inputRoom");
+const inputName = document.getElementById("inputName");
+const inputNote = document.getElementById("inputNote");
+const selAdults = document.getElementById("selAdults");
+const selSoinet = document.getElementById("selSoinet");
+const btnSeatAri = document.getElementById("btnSeatAri");
+const btnSeatNashi = document.getElementById("btnSeatNashi");
+const stayToggle = document.getElementById("stayToggle");
+const lugTokudai = document.getElementById("lugTokudai");
+const lugLarge = document.getElementById("lugLarge");
+const lugMedium = document.getElementById("lugMedium");
+const lugSmall = document.getElementById("lugSmall");
+const searchInput = document.getElementById("searchInput");
+const showAllBookingsBtn =
+    document.getElementById("showAllBookingsBtn");
+
+const allBookingsPopup =
+    document.getElementById("allBookingsPopup");
+
+const allBookingsList =
+    document.getElementById("allBookingsList");
+
+const closeAllBookingsBtn =
+    document.getElementById("closeAllBookingsBtn");
 
 let currentReservationRef = null;
-
-let dragBooking = null;
-
-
-// ========================================
-// HTML
-// ========================================
-
-const reserveBtns =
-document.querySelectorAll(".reserve-btn");
-
-const popup =
-document.getElementById("reservePopup");
-
-const popupTime =
-document.getElementById("popupTime");
-
-const closePopup =
-document.getElementById("closePopup");
-
-const deleteBtn =
-document.getElementById("deleteBtn");
-
-const reserveForm =
-document.getElementById("reserveForm");
-
-const stayCheck =
-document.getElementById("stayCheck");
-
-const luggageSelects =
-document.querySelectorAll(".luggage-select");
-
-const adminDate =
-document.getElementById("adminDate");
-
-const searchDate =
-document.getElementById("searchDate");
-
-const searchRoom =
-document.getElementById("searchRoom");
-
-const searchName =
-document.getElementById("searchName");
-
-const searchBtn =
-document.getElementById("searchBtn");
-
-const clearSearchBtn =
-document.getElementById("clearSearchBtn");
-
-const searchResult =
-document.getElementById("searchResult");
-
-const exportExcelBtn =
-document.getElementById("exportExcelBtn");
-
-const prevDateBtn =
-document.getElementById("prevDateBtn");
-
-const nextDateBtn =
-document.getElementById("nextDateBtn");
-
-
-// ========================================
-// DEFAULT DATE
-// ========================================
-
-const tomorrow = new Date();
-
-tomorrow.setDate(
-  tomorrow.getDate() + 1
-);
-
-adminDate.value =
-tomorrow.toISOString().split("T")[0];
-
-searchDate.value =
-adminDate.value;
-
-
-// ========================================
-// SEAT MAP
-// ========================================
+let soinetSeatStatus = "";
+let stayActive = false;
 
 const seatMap = {
-
-  "06:05_8名車": 8,
-  "06:05_7名車": 7,
-
-  "06:20_8名車": 8,
-  "06:20_7名車": 7,
-
-  "06:40_8名車": 8,
-  "06:40_7名車": 7,
-
-  "07:00_8名車": 8,
-  "07:00_7名車": 7,
-
-  "07:30_Shuttle": 7,
-  "08:00_Shuttle": 7,
-  "08:30_Shuttle": 7,
-  "09:00_Shuttle": 7,
-  "09:30_Shuttle": 7,
-  "10:00_Shuttle": 7
-
+    "06:05_ラッキータクシー": 8, "06:05_ホテル": 6,
+    "06:20_ラッキータクシー": 8, "06:20_ホテル": 6,
+    "06:40_ラッキータクシー": 8, "06:40_ホテル": 6,
+    "07:00_ラッキータクシー": 8, "07:00_ホテル": 6,
+    "07:30_ホテル": 6, "08:00_ホテル": 6, "08:30_ホテル": 6,
+    "09:00_ホテル": 6, "09:30_ホテル": 6, "10:00_ホテル": 6
 };
 
+// ── TRANG TOGGLE ──
+document.addEventListener("DOMContentLoaded", () => {
+    // Hàm xử lý chuyển sang ca sớm (06:05 ～ 07:00)
+    const switchToEarly = () => {
+        btnPageEarly.classList.add("active");
+        btnPageLate.classList.remove("active");
+        pageEarlyView.classList.remove("hidden");
+        pageLateView.classList.add("hidden");
+    };
 
-// ========================================
-// LUGGAGE
-// ========================================
+    // Hàm xử lý chuyển sang ca muộn (07:30 ～ 10:00)
+    const switchToLate = () => {
+        btnPageLate.classList.add("active");
+        btnPageEarly.classList.remove("active");
+        pageLateView.classList.remove("hidden");
+        pageEarlyView.classList.add("hidden");
+    };
 
-function getLuggagePoint(item){
+    // Xử lý sự kiện click chuột bình thường
+    btnPageEarly.addEventListener("click", switchToEarly);
+    btnPageLate.addEventListener("click", switchToLate);
 
-  return (
-
-    Number(item.large || 0) * 2
-
-    +
-
-    Number(item.medium || 0)
-
-    +
-
-    Number(item.stroller || 0) * 2.5
-
-  );
-
-}
-
-
-// ========================================
-// MAX PEOPLE
-// ========================================
-
-function getMaxPeopleByLuggage(
-  time,
-  totalLuggagePoint
-){
-
-  if(time >= "07:30"){
-
-    if(totalLuggagePoint <= 4){
-      return 7;
-    }
-
-    if(totalLuggagePoint <= 8){
-      return 6;
-    }
-
-    if(totalLuggagePoint <= 10){
-      return 5;
-    }
-
-    if(totalLuggagePoint <= 12){
-      return 4;
-    }
-
-    return 0;
-
-  }
-
-  else{
-
-    if(totalLuggagePoint <= 6){
-      return 8;
-    }
-
-    if(totalLuggagePoint <= 8){
-      return 7;
-    }
-
-    if(totalLuggagePoint <= 14){
-      return 6;
-    }
-
-    return 0;
-
-  }
-
-}
-
-
-// ========================================
-// OPEN POPUP
-// ========================================
-
-reserveBtns.forEach(btn=>{
-
-  btn.addEventListener("click",()=>{
-
-    popup.classList.remove("hidden");
-
-    popup.dataset.time =
-    btn.dataset.time;
-
-    popup.dataset.car =
-    btn.dataset.car;
-
-    popup.dataset.editId = "";
-
-    popup.dataset.editDate = "";
-
-    popupTime.innerText =
-`${btn.dataset.time}　${btn.dataset.car}`;
-
-    reserveForm.reset();
-
-    stayCheck.checked = false;
-
-    luggageSelects.forEach(select=>{
-
-      select.disabled = false;
-
+    // 🌟 TỰ ĐỘNG CHUYỂN TRANG KHI KÉO THẢ (Hỗ trợ PC & iPad)
+    // Khi đang kéo khách và rê chuột/ngón tay đè lên nút Ca sớm
+    btnPageEarly.addEventListener("dragover", (e) => {
+        e.preventDefault(); // Bắt buộc phải có để cho phép thả dữ liệu
+        if (dragBooking) {
+            switchToEarly();
+        }
     });
 
-  });
-
+    // Khi đang kéo khách và rê chuột/ngón tay đè lên nút Ca muộn
+    btnPageLate.addEventListener("dragover", (e) => {
+        e.preventDefault(); // Bắt buộc phải có để cho phép thả dữ liệu
+        if (dragBooking) {
+            switchToLate();
+        }
+    });
 });
 
+function getDateString(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+}
+const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+adminDate.value = getDateString(tomorrow);
 
-// ========================================
-// CLOSE POPUP
-// ========================================
+prevDayBtn.addEventListener("click", () => { const d = new Date(adminDate.value); d.setDate(d.getDate() - 1); adminDate.value = getDateString(d); loadReservations(); });
+nextDayBtn.addEventListener("click", () => { const d = new Date(adminDate.value); d.setDate(d.getDate() + 1); adminDate.value = getDateString(d); loadReservations(); });
+updateBtn.addEventListener("click", () => { const nextDay = new Date(); nextDay.setDate(nextDay.getDate() + 1); adminDate.value = getDateString(nextDay); loadReservations(); });
+adminDate.addEventListener("change", () => loadReservations());
 
-closePopup.addEventListener("click",()=>{
+btnSeatAri.addEventListener("click", () => { soinetSeatStatus = soinetSeatStatus === "ari" ? "" : "ari"; updateSeatBtns(); });
+btnSeatNashi.addEventListener("click", () => { soinetSeatStatus = soinetSeatStatus === "nashi" ? "" : "nashi"; updateSeatBtns(); });
 
-  popup.classList.add("hidden");
+function updateSeatBtns() {
+    btnSeatAri.className = "seat-btn-compact" + (soinetSeatStatus === "ari" ? " selected-ari" : "");
+    btnSeatNashi.className = "seat-btn-compact" + (soinetSeatStatus === "nashi" ? " selected-nashi" : "");
+}
 
+stayToggle.addEventListener("click", () => {
+    stayActive = !stayActive; stayToggle.textContent = stayActive ? "ON" : "OFF"; stayToggle.classList.toggle("active", stayActive);
 });
 
-
-// ========================================
-// SAVE
-// ========================================
-
-reserveForm.addEventListener("submit",(e)=>{
-
-  e.preventDefault();
-
-  const inputs =
-  reserveForm.querySelectorAll("input");
-
-  const selects =
-  reserveForm.querySelectorAll("select");
-
-  const adults =
-  Number(selects[0].value);
-
-  if(adults <= 0){
-
-    alert("人数を入力してください");
-
-    return;
-
-  }
-
-  const data = {
-
-    bookingSource: "staff",
-
-    date:
-    adminDate.value,
-
-    time:
-    popup.dataset.time,
-
-    car:
-    popup.dataset.car,
-
-    stay:
-    stayCheck.checked,
-
-    room:
-    inputs[0].value,
-
-    name:
-    inputs[1].value,
-
-    adults:
-    adults,
-
-    lapChild:
-    Number(selects[1].value),
-
-    large:
-    Number(selects[2].value),
-
-    medium:
-    Number(selects[3].value),
-
-    stroller:
-    Number(selects[4].value),
-
-    createdAt:
-    Date.now(),
-
-    status:
-    "active"
-
-  };
-
-  const editId =
-  popup.dataset.editId;
-
-  if(editId){
-
-    db.ref(
-      "reservations/" +
-      popup.dataset.editDate +
-      "/" +
-      editId
-    ).set(data);
-
-  }
-
-  else{
-
-    db.ref(
-      "reservations/" +
-      data.date
-    ).push(data);
-
-  }
-
-  popup.classList.add("hidden");
-
-  reserveForm.reset();
-
-});
-
-
-// ========================================
-// LOAD
-// ========================================
-
-function loadReservations(){
-
-  const selectedDate =
-  adminDate.value;
-
-  if(currentReservationRef){
-
-    currentReservationRef.off();
-
-  }
-
-  currentReservationRef =
-  db.ref(
-    "reservations/" +
-    selectedDate
-  );
-
-  currentReservationRef.on("value",(snapshot)=>{
-
-    const data =
-    snapshot.val();
-
-    // CLEAR
-
-    document
-    .querySelectorAll(".guest-row")
-    .forEach(row=>{
-
-      row.innerHTML = "";
-
+function initReserveButtons() {
+    document.querySelectorAll(".reserve-btn").forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true));
     });
 
-    document
-    .querySelectorAll(".empty-text")
-    .forEach(el=>{
-
-      el.innerText = "空きあり";
-
-      el.classList.remove(
-        "few-seat",
-        "full-seat"
-      );
-
-    });
-
-    // USED MAP
-
-    const usedMap = {};
-    const luggageMap = {};
-
-    Object.entries(data || {})
-    .forEach(([id,item])=>{
-
-      if(
-        item.cancelledAt
-        ||
-        item.status === "moved"
-      ){
-        return;
-      }
-
-      const key =
-      item.time + "_" + item.car;
-
-      if(!usedMap[key]){
-        usedMap[key] = 0;
-      }
-
-      if(!luggageMap[key]){
-        luggageMap[key] = 0;
-      }
-
-      usedMap[key] +=
-      Number(item.adults || 0);
-
-      luggageMap[key] +=
-      getLuggagePoint(item);
-
-    });
-
-    // SEAT STATUS
-
-    Object.keys(seatMap)
-    .forEach(key=>{
-
-      const [time,car] =
-      key.split("_");
-
-      const btn =
-      document.querySelector(
-`.reserve-btn[data-time="${time}"][data-car="${car}"]`
-      );
-
-      if(!btn){
-        return;
-      }
-
-      const td =
-      btn.closest("td");
-
-      const emptyText =
-      td.querySelector(".empty-text");
-
-      const maxSeat =
-      seatMap[key];
-
-      const used =
-      usedMap[key] || 0;
-
-      const luggage =
-      luggageMap[key] || 0;
-
-      const luggageLimit =
-      getMaxPeopleByLuggage(
-        time,
-        luggage
-      );
-
-      const max =
-      Math.min(
-        maxSeat,
-        luggageLimit
-      );
-
-      const remain =
-      max - used;
-
-      if(remain <= 0){
-
-        emptyText.innerText =
-`満席 (${used}名)`;
-
-        emptyText.classList.add(
-          "full-seat"
-        );
-
-      }
-
-      else if(remain === 1){
-
-        emptyText.innerText =
-        "残り1席";
-
-        emptyText.classList.add(
-          "few-seat"
-        );
-
-      }
-
-      else{
-
-        emptyText.innerText =
-`残り${remain}席`;
-
-      }
-
-    });
-
-    // NO DATA
-
-    if(!data){
-      return;
-    }
-
-    // RENDER
-
-    Object.entries(data)
-    .forEach(([id,item])=>{
-
-      item.id = id;
-
-      const btn =
-      document.querySelector(
-`.reserve-btn[data-time="${item.time}"][data-car="${item.car}"]`
-      );
-
-      if(!btn){
-        return;
-      }
-
-      const td =
-      btn.closest("td");
-
-      const guestRow =
-      td.querySelector(".guest-row");
-
-      const line =
-      document.createElement("div");
-
-      line.className =
-      "guest-line";
-
-      line.draggable = true;
-
-      // STATUS CLASS
-
-
-      if(item.status === "done"){
-        line.classList.add("done");
-      }
-
-      if(item.status === "moved"){
-        line.classList.add("moved");
-      }
-
-      if(item.status === "moved-new"){
-        line.classList.add("moved-new");
-      }
-
-      // TEXT
-
-      let luggage = "";
-
-      if(item.large > 0){
-        luggage += `(大${item.large})`;
-      }
-
-      if(item.medium > 0){
-        luggage += `(中${item.medium})`;
-      }
-
-      if(item.stroller > 0){
-        luggage += `(ベビ${item.stroller})`;
-      }
-
-      let stayText = "";
-
-      if(item.stay){
-        stayText = " (ステイ)";
-      }
-
-      const total =
-      Number(item.adults || 0)
-      +
-      Number(item.lapChild || 0);
-
-      const guestText =
-(item.room || "") +
-"｜" +
-(item.name || "") +
-"｜" +
-total +
-"名 " +
-luggage +
-stayText;
-
-      if(item.status === "moved"){
-
-  line.innerHTML = `
-  <span class="moved-old-text">
-    ${guestText}
-  </span>
-
-  <span class="move-arrow">
-    → ${item.movedToTime || ""}
-  </span>
-  `;
-
-}
-
-else{
-
-  line.innerHTML = `
-  <span>
-    ${guestText}
-  </span>
-  `;
-
-}
-
-// CANCEL TEXT
-
-if(item.cancelledAt){
-
-  line.classList.add("cancelled");
-
-  line.innerHTML += `
-  <div class="cancel-text">
-    キャンセル済み
-  </div>
-  `;
-
-}
-
-      // ========================================
-      // DRAG
-      // ========================================
-
-      line.addEventListener("dragstart",()=>{
-
-        dragBooking = item;
-
-      });
-
-      // ========================================
-      // CLICK
-      // ========================================
-
-      let clickTimer = null;
-
-      line.addEventListener("click",()=>{
-
-        if(item.cancelledAt){
-
-  if(clickTimer){
-
-    clearTimeout(clickTimer);
-
-    clickTimer = null;
-
-    db.ref(
-      "reservations/" +
-      item.date +
-      "/" +
-      item.id
-    ).update({
-
-      cancelledAt: null,
-      status: "active"
-
-    });
-
-    return;
-
-  }
-
-}
-        if(clickTimer){
-
-          clearTimeout(clickTimer);
-
-          clickTimer = null;
-
-          const newStatus =
-          item.status === "done"
-          ? "active"
-          : "done";
-
-          db.ref(
-            "reservations/" +
-            item.date +
-            "/" +
-            item.id
-          ).update({
-
-            status: newStatus
-
-          });
-
-          return;
-
-        }
-
-        clickTimer = setTimeout(()=>{
-
-          popup.classList.remove("hidden");
-
-          popup.dataset.editId =
-          item.id;
-
-          popup.dataset.editDate =
-          item.date;
-
-          popup.dataset.time =
-          item.time;
-
-          popup.dataset.car =
-          item.car;
-
-          popupTime.innerText =
-`${item.time}　${item.car}`;
-
-          const inputs =
-          reserveForm.querySelectorAll("input");
-
-          const selects =
-          reserveForm.querySelectorAll("select");
-
-          inputs[0].value =
-          item.room || "";
-
-          inputs[1].value =
-          item.name || "";
-
-          selects[0].value =
-          item.adults || 0;
-
-          selects[1].value =
-          item.lapChild || 0;
-
-          selects[2].value =
-          item.large || 0;
-
-          selects[3].value =
-          item.medium || 0;
-
-          selects[4].value =
-          item.stroller || 0;
-
-          stayCheck.checked =
-          item.stay || false;
-
-          clickTimer = null;
-
-        },250);
-
-      });
-
-      guestRow.appendChild(line);
-
-    });
-
-    // ========================================
-    // DROP AREA
-    // ========================================
-
-    document
-    .querySelectorAll("td")
-    .forEach(td=>{
-
-      td.addEventListener("dragover",(e)=>{
-
-        e.preventDefault();
-
-      });
-
-      td.addEventListener("drop",()=>{
-
-        if(!dragBooking){
-          return;
-        }
-
-        const targetBtn =
-        td.querySelector(".reserve-btn");
-
-        if(!targetBtn){
-          return;
-        }
-
-        const newTime =
-        targetBtn.dataset.time;
-
-        const newCar =
-        targetBtn.dataset.car;
-
-        // SAME PLACE
-
-        if(
-          dragBooking.time === newTime
-          &&
-          dragBooking.car === newCar
-        ){
-
-          dragBooking = null;
-
-          return;
-
-        }
-
-        // OLD → MOVED
-
-        db.ref(
-          "reservations/" +
-          dragBooking.date +
-          "/" +
-          dragBooking.id
-        ).update({
-
-          status: "moved",
-
-          movedToTime:
-          newTime + " " + newCar
-
+    document.querySelectorAll(".reserve-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            popup.dataset.time = btn.dataset.time;
+            popup.dataset.car = btn.dataset.car;
+            popup.dataset.editId = "";
+            popup.dataset.editDate = "";
+            popup.classList.remove("hidden");
+            resetForm();
         });
+    });
+}
 
-        // NEW DATA
+function resetForm() {
+    reserveForm.reset(); soinetSeatStatus = ""; updateSeatBtns(); stayActive = false;
+    stayToggle.textContent = "OFF"; stayToggle.classList.remove("active");
+    document.querySelectorAll('.stepper-input input').forEach(input => input.value = 0);
+}
+
+closePopup.addEventListener("click", () => { popup.classList.add("hidden"); });
+
+reserveForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    // 1. Kiểm tra bắt buộc nhập Số phòng (Không được để trống)
+    const roomValue = inputRoom.value.trim();
+    if (!roomValue) {
+        alert("部屋番号を入力してください (Vui lòng nhập số phòng)");
+        inputRoom.focus();
+        return;
+    }
+
+    // 2. Kiểm tra bắt buộc nhập Số hành khách (Người lớn phải lớn hơn 0)
+    const adults = Number(selAdults.value) || 0;
+    if (adults <= 0) {
+        alert("大人 の人数を入力してください (Vui lòng nhập số lượng người lớn)");
+        selAdults.focus();
+        return;
+    }
+
+    // Nếu thỏa mãn cả 2 điều kiện trên thì tiến hành lưu dữ liệu lên Firebase
+    const data = {
+        bookingSource: "staff",
+        date: adminDate.value,
+        time: popup.dataset.time,
+        car: popup.dataset.car,
+        stay: stayActive,
+        room: roomValue, // Sử dụng giá trị đã trim khoảng trắng
+        name: inputName.value,
+        note: inputNote.value,
+        adults: adults,
+        soinet: Number(selSoinet.value) || 0,
+        soinetSeat: soinetSeatStatus,
+        tokudai: Number(lugTokudai.value) || 0,
+        large: Number(lugLarge.value) || 0,
+        medium: Number(lugMedium.value) || 0,
+        small: Number(lugSmall.value) || 0,
+        stroller: 0,
+        golf: 0,
+        createdAt: Date.now()
+    };
+
+    const editId = popup.dataset.editId;
+    if (editId) {
+        db.ref("reservations/" + popup.dataset.editDate + "/" + editId).set(data);
+    } else {
+        db.ref("reservations/" + data.date).push(data)
+            .then(() => {
+                alert("保存しました");
+            })
+            .catch((error) => {
+                console.error(error);
+                alert("保存失敗");
+            });
+    }
+
+    popup.classList.add("hidden");
+    resetForm();
+    popup.dataset.editId = "";
+});
+
+// ── CUSTOM PASSWORD POPUP HANDLING ──
+function openPasswordCheck(actionType, extraData = null) {
+    pendingActionType = actionType; pendingItemData = extraData;
+    pwdInput.value = ""; passwordPopup.classList.remove("hidden"); pwdInput.focus();
+}
+
+pwdCancelBtn.addEventListener("click", () => { passwordPopup.classList.add("hidden"); dragBooking = null; pendingItemData = null; });
+pwdConfirmBtn.addEventListener("click", executeSecureAction);
+pwdInput.addEventListener("keypress", (e) => { if (e.key === "Enter") executeSecureAction(); });
+
+async function executeSecureAction() {
+
+    if (pwdInput.value !== "0000") {
+        alert("パスワードが違います。");
+        return;
+    }
+
+    passwordPopup.classList.add("hidden");
+
+    // =========================
+    // DELETE FORM
+    // =========================
+
+    if (pendingActionType === "delete_form") {
+
+        const today = new Date();
+
+        const y = today.getFullYear();
+
+        const m = String(
+            today.getMonth() + 1
+        ).padStart(2, "0");
+
+        const d = String(
+            today.getDate()
+        ).padStart(2, "0");
+
+        const todayStr = `${y}-${m}-${d}`;
+
+        const ref = db.ref(
+            "reservations/" +
+            popup.dataset.editDate +
+            "/" +
+            popup.dataset.editId
+        );
+
+        // ngày tương lai -> xóa luôn
+        if (popup.dataset.editDate > todayStr) {
+
+            await ref.remove();
+
+        }
+
+        // hôm nay / quá khứ
+        else {
+
+            await ref.update({
+                status: "canceled"
+            });
+
+        }
+
+        popup.classList.add("hidden");
+
+        resetForm();
+
+        popup.dataset.editId = "";
+
+    }
+
+    // =========================
+    // QUICK DELETE
+    // =========================
+
+    else if (pendingActionType === "delete_quick") {
+
+        if (!pendingItemData) return;
+
+        const today = new Date();
+
+        const y = today.getFullYear();
+
+        const m = String(
+            today.getMonth() + 1
+        ).padStart(2, "0");
+
+        const d = String(
+            today.getDate()
+        ).padStart(2, "0");
+
+        const todayStr = `${y}-${m}-${d}`;
+
+        const ref = db.ref(
+            "reservations/" +
+            pendingItemData.date +
+            "/" +
+            pendingItemData.id
+        );
+
+        // ngày tương lai -> xóa luôn
+        if (pendingItemData.date > todayStr) {
+
+            await ref.remove();
+
+        }
+
+        // hôm nay / quá khứ
+        else {
+
+            await ref.update({
+                status: "canceled"
+            });
+
+        }
+
+    }
+
+    // =========================
+    // MOVE BOOKING
+    // =========================
+
+    else if (pendingActionType === "move") {
+
+        if (!dragBooking) return;
+
+        const today = new Date();
+
+        const y = today.getFullYear();
+
+        const m = String(
+            today.getMonth() + 1
+        ).padStart(2, "0");
+
+        const d = String(
+            today.getDate()
+        ).padStart(2, "0");
+
+        const todayStr = `${y}-${m}-${d}`;
+
+        const oldRef = db.ref(
+            "reservations/" +
+            dragBooking.date +
+            "/" +
+            dragBooking.id
+        );
+
+        // =========================
+        // BOOKING CŨ
+        // =========================
+
+        // ngày tương lai -> xóa luôn
+        if (dragBooking.date > todayStr) {
+
+            await oldRef.remove();
+
+        }
+
+        // hôm nay / quá khứ -> giữ lại
+        else {
+
+            await oldRef.update({
+                status: "moved",
+                movedTo: pendingTargetTime
+            });
+
+        }
+
+        // =========================
+        // BOOKING MỚI
+        // =========================
 
         const newData = {
 
-          bookingSource:
-          dragBooking.bookingSource || "staff",
+            ...dragBooking,
 
-          date:
-          dragBooking.date,
+            time: pendingTargetTime,
 
-          time:
-          newTime,
+            car: pendingTargetCar,
 
-          car:
-          newCar,
+            movedFrom: dragBooking.time,
 
-          stay:
-          dragBooking.stay || false,
-
-          room:
-          dragBooking.room || "",
-
-          name:
-          dragBooking.name || "",
-
-          adults:
-          dragBooking.adults || 0,
-
-          lapChild:
-          dragBooking.lapChild || 0,
-
-          large:
-          dragBooking.large || 0,
-
-          medium:
-          dragBooking.medium || 0,
-
-          stroller:
-          dragBooking.stroller || 0,
-
-          createdAt:
-          Date.now(),
-
-          status:
-          "moved-new"
+            createdAt: Date.now()
 
         };
 
-        db.ref(
-          "reservations/" +
-          dragBooking.date
+        delete newData.id;
+        delete newData.status;
+        delete newData.movedTo;
+
+        await db.ref(
+            "reservations/" +
+            dragBooking.date
         ).push(newData);
+
+        // =========================
+        // AUTO SWITCH TAB
+        // =========================
+
+        const earlyHours = [
+            "06:05",
+            "06:20",
+            "06:40",
+            "07:00"
+        ];
+
+        const lateHours = [
+            "07:30",
+            "08:00",
+            "08:30",
+            "09:00",
+            "09:30",
+            "10:00"
+        ];
+
+        if (
+            lateHours.includes(
+                pendingTargetTime
+            )
+        ) {
+
+            btnPageLate.click();
+
+        }
+        else if (
+            earlyHours.includes(
+                pendingTargetTime
+            )
+        ) {
+
+            btnPageEarly.click();
+
+        }
 
         dragBooking = null;
 
-      });
+    }
+
+    pendingItemData = null;
+
+}
+function applySearchFilter() {
+
+    const keyword =
+        searchInput.value
+            .trim()
+            .toLowerCase();
+
+    document.querySelectorAll(".guest-line")
+        .forEach(line => {
+
+            const room =
+                (line.dataset.room || "")
+                    .toLowerCase();
+
+            const name =
+                (line.dataset.name || "")
+                    .toLowerCase();
+
+            const matched =
+                room.includes(keyword) ||
+                name.includes(keyword);
+
+            line.style.display =
+                matched ? "" : "none";
+
+        });
+
+}
+deleteBtn.addEventListener("click", () => { if (!popup.dataset.editId) return; openPasswordCheck("delete_form"); });
+
+// ── LOAD RESERVATIONS ──
+function loadReservations() {
+
+    const selectedDate = adminDate.value;
+
+    if (currentReservationRef) {
+        currentReservationRef.off();
+    }
+
+    currentReservationRef =
+        db.ref("reservations/" + selectedDate);
+
+    currentReservationRef.on("value", (snapshot) => {
+
+        const data = snapshot.val();
+
+        // =========================
+        // RESET UI
+        // =========================
+
+        document.querySelectorAll(".guest-row")
+            .forEach(row => row.innerHTML = "");
+
+        document.querySelectorAll(".empty-text")
+            .forEach(el => {
+
+                el.classList.remove(
+                    "few-seat",
+                    "full-seat"
+                );
+
+                el.innerHTML =
+                    "予約済 <span class='seat-count-num'>0</span>名";
+
+            });
+
+        // =========================
+        // SEAT COUNT
+        // =========================
+
+        const usedMap = {};
+
+        if (data) {
+
+            Object.entries(data).forEach(([id, item]) => {
+
+                // canceled + moved cũ KHÔNG tính ghế
+                if (
+                    item.status === "canceled" ||
+                    item.status === "moved"
+                ) {
+                    return;
+                }
+
+                const key =
+                    item.time + "_" + item.car;
+
+                if (!usedMap[key]) {
+                    usedMap[key] = 0;
+                }
+
+                let totalSeats =
+                    Number(item.adults || 0);
+
+                if (item.soinetSeat === "ari") {
+
+                    totalSeats +=
+                        Number(item.soinet || 0);
+
+                }
+
+                usedMap[key] += totalSeats;
+
+            });
+
+        }
+
+        // =========================
+        // UPDATE SEAT LABEL
+        // =========================
+
+        Object.keys(seatMap).forEach(key => {
+
+            const [time, car] =
+                key.split(/_(.+)/);
+
+            const btn = document.querySelector(
+                `.reserve-btn[data-time="${time}"][data-car="${car}"]`
+            );
+
+            if (!btn) return;
+
+            const td =
+                btn.closest(".car-cell-box");
+
+            if (!td) return;
+
+            const emptyText =
+                td.querySelector(".empty-text");
+
+            if (!emptyText) return;
+
+            const max = seatMap[key];
+
+            const used = usedMap[key] || 0;
+
+            const remain = max - used;
+
+            if (remain <= 0) {
+
+                emptyText.innerHTML =
+                    `予約済 <span class='seat-count-num'>${used}</span>名 <span class='seat-full-label'>満車</span>`;
+
+                emptyText.classList.add(
+                    "full-seat"
+                );
+
+            }
+            else if (remain === 1) {
+
+                emptyText.innerHTML =
+                    `予約済 <span class='seat-count-num'>${used}</span>名`;
+
+                emptyText.classList.add(
+                    "few-seat"
+                );
+
+            }
+            else {
+
+                emptyText.innerHTML =
+                    `予約済 <span class='seat-count-num'>${used}</span>名`;
+
+            }
+
+        });
+
+        initReserveButtons();
+
+        if (!data) return;
+
+        // =========================
+        // RENDER BOOKINGS
+        // =========================
+
+        Object.entries(data).forEach(([id, item]) => {
+
+            item.id = id;
+            item.date = selectedDate;
+
+            const btn = document.querySelector(
+                `.reserve-btn[data-time="${item.time}"][data-car="${item.car}"]`
+            );
+
+            if (!btn) return;
+
+            const td =
+                btn.closest(".car-cell-box");
+
+            if (!td) return;
+
+            let guestRow =
+                td.querySelector(".guest-row");
+
+            if (!guestRow) {
+
+                guestRow =
+                    document.createElement("div");
+
+                guestRow.className = "guest-row";
+
+                td.prepend(guestRow);
+
+            }
+
+            // =========================
+            // STATUS
+            // =========================
+
+            const isCanceled =
+                item.status === "canceled";
+
+            const isMoved =
+                item.status === "moved";
+
+            const isDone =
+                item.status === "done";
+
+            // =========================
+            // CREATE LINE
+            // =========================
+
+            const line =
+                document.createElement("div");
+
+            line.className = "guest-line";
+
+            line.dataset.room = item.room || "";
+            line.dataset.name = item.name || "";
+
+            if (isDone) {
+                line.classList.add("is-done");
+            }
+
+            if (isMoved) {
+                line.classList.add("is-moved");
+            }
+
+            if (isCanceled) {
+                line.classList.add("is-canceled");
+            }
+
+            // =========================
+            // PAX
+            // =========================
+
+            const adultsCount =
+                Number(item.adults || 0);
+
+            const soinetCount =
+                Number(item.soinet || 0);
+
+            let paxDisplay = `
+                <span class="flat-pax">
+                    ${adultsCount}名
+                </span>
+            `;
+
+            if (soinetCount > 0) {
+
+                const seatLabel =
+                    item.soinetSeat === "ari"
+                        ? "席あり"
+                        : "席なし";
+
+                paxDisplay += `
+                    <span class="flat-inf-label">
+                        + ${soinetCount}INF
+                    </span>
+
+                    <span class="flat-inf-bracket">
+                        (${seatLabel})
+                    </span>
+                `;
+
+            }
+
+            // =========================
+            // LUGGAGE
+            // =========================
+
+            let luggageText = "";
+
+            if (Number(item.tokudai || 0) > 0) {
+                luggageText += ` (特大${item.tokudai})`;
+            }
+
+            if (Number(item.large || 0) > 0) {
+                luggageText += ` (大${item.large})`;
+            }
+
+            if (Number(item.medium || 0) > 0) {
+                luggageText += ` (中${item.medium})`;
+            }
+
+            if (Number(item.small || 0) > 0) {
+                luggageText += ` (小${item.small})`;
+            }
+
+            if (
+                item.note &&
+                item.note.trim() !== ""
+            ) {
+
+                luggageText +=
+                    ` (${item.note.trim()})`;
+
+            }
+
+            // =========================
+            // STAY
+            // =========================
+
+            const stayText = item.stay
+                ? `<span class="stay-label">[ステイ]</span>`
+                : "";
+
+            // =========================
+            // MAIN CONTENT
+            // =========================
+
+            const mainContentBlock =
+                document.createElement("div");
+
+            mainContentBlock.className =
+                "guest-main-content-block";
+
+            mainContentBlock.innerHTML = `
+                <span class="flat-room">
+                    R${item.room || "-"}
+                </span>
+
+                ${paxDisplay}
+
+                <span class="guest-name-text">
+                    ${item.name || ""}
+                </span>様
+
+                ${stayText}
+
+                <span class="lug-text-summary">
+                    ${luggageText}
+                </span>
+            `;
+
+            // =========================
+            // RIGHT SIDE
+            // =========================
+
+            const rightActionsBlock =
+                document.createElement("div");
+
+            rightActionsBlock.className =
+                "guest-right-actions-block";
+
+            // moved old booking
+            if (isMoved && item.movedTo) {
+
+                rightActionsBlock.innerHTML += `
+                    <span class="dest-label">
+                        → ${item.movedTo}
+                    </span>
+                `;
+
+            }
+
+            // moved new booking
+            if (item.movedFrom) {
+
+                rightActionsBlock.innerHTML += `
+                    <span class="from-label">
+                        ← ${item.movedFrom}
+                    </span>
+                `;
+
+            }
+
+            // canceled delete button
+            if (isCanceled) {
+
+                const quickDelBtn =
+                    document.createElement("button");
+
+                quickDelBtn.className =
+                    "quick-del-btn";
+
+                quickDelBtn.innerHTML = "&times;";
+
+                quickDelBtn.type = "button";
+
+                quickDelBtn.addEventListener(
+                    "click",
+                    (e) => {
+
+                        e.stopPropagation();
+
+                        openPasswordCheck(
+                            "delete_quick",
+                            item
+                        );
+
+                    }
+                );
+
+                rightActionsBlock.appendChild(
+                    quickDelBtn
+                );
+
+            }
+
+            // =========================
+            // DRAG
+            // =========================
+
+            if (!isCanceled && !isMoved) {
+
+                line.draggable = true;
+
+                line.addEventListener(
+                    "dragstart",
+                    () => {
+
+                        dragBooking = item;
+
+                    }
+                );
+
+            }
+
+            // =========================
+            // CLICK EDIT
+            // =========================
+
+            line.addEventListener("click", (e) => {
+
+                if (
+                    e.target.classList.contains(
+                        "quick-del-btn"
+                    )
+                ) return;
+
+                popup.classList.remove("hidden");
+
+                popup.dataset.editId = item.id;
+
+                popup.dataset.editDate =
+                    item.date;
+
+                popup.dataset.time =
+                    item.time;
+
+                popup.dataset.car =
+                    item.car;
+
+                inputRoom.value =
+                    item.room || "";
+
+                inputName.value =
+                    item.name || "";
+
+                inputNote.value =
+                    item.note || "";
+
+                selAdults.value =
+                    item.adults || 0;
+
+                selSoinet.value =
+                    item.soinet || 0;
+
+                soinetSeatStatus =
+                    item.soinetSeat || "";
+
+                updateSeatBtns();
+
+                stayActive =
+                    item.stay || false;
+
+                stayToggle.textContent =
+                    stayActive ? "ON" : "OFF";
+
+                stayToggle.classList.toggle(
+                    "active",
+                    stayActive
+                );
+
+                lugTokudai.value =
+                    item.tokudai || 0;
+
+                lugLarge.value =
+                    item.large || 0;
+
+                lugMedium.value =
+                    item.medium || 0;
+
+                lugSmall.value =
+                    item.small || 0;
+
+            });
+
+            // =========================
+            // DOUBLE CLICK
+            // =========================
+
+            line.addEventListener(
+                "dblclick",
+                async () => {
+
+                    if (
+                        !isTodayBooking(item.date)
+                    ) return;
+
+                    if (isMoved) return;
+
+                    const ref = db.ref(
+                        "reservations/" +
+                        item.date +
+                        "/" +
+                        item.id
+                    );
+
+                    try {
+
+                        // done -> normal
+                        if (isDone) {
+
+                            await ref.child(
+                                "status"
+                            ).remove();
+
+                        }
+
+                        // canceled -> normal
+                        else if (isCanceled) {
+
+                            await ref.child(
+                                "status"
+                            ).remove();
+
+                        }
+
+                        // normal -> done
+                        else {
+
+                            await ref.update({
+                                status: "done"
+                            });
+
+                        }
+
+                    }
+                    catch (error) {
+
+                        console.error(error);
+
+                        alert("更新失敗");
+
+                    }
+
+                }
+            );
+
+            // =========================
+            // APPEND
+            // =========================
+
+            line.appendChild(mainContentBlock);
+
+            line.appendChild(rightActionsBlock);
+
+            guestRow.appendChild(line);
+            applySearchFilter();
+
+        });
 
     });
-
-  });
 
 }
 
+// ── DRAG & DROP LIÊN TRANG ──
+document.querySelectorAll(".car-cell-box").forEach(td => {
+    td.addEventListener("dragover", (e) => { e.preventDefault(); td.classList.add("drag-over"); });
+    td.addEventListener("dragleave", () => td.classList.remove("drag-over"));
+    td.addEventListener("drop", () => {
+        td.classList.remove("drag-over"); if (!dragBooking) return;
 
-// ========================================
-// DELETE
-// ========================================
+        // Lấy thông tin khung giờ và loại xe của ô vừa thả chuột
+        pendingTargetTime = td.dataset.time;
+        pendingTargetCar = td.dataset.car;
 
-deleteBtn.addEventListener("click",()=>{
+        if (dragBooking.time === pendingTargetTime && dragBooking.car === pendingTargetCar) { dragBooking = null; return; }
+        const ok = confirm(
+            `${dragBooking.room}を${pendingTargetTime}へ移動しますか？`
+        );
 
-  const editId =
-  popup.dataset.editId;
+        if (!ok) {
+            dragBooking = null;
+            return;
+        }
 
-  if(!editId){
-    return;
-  }
+        openPasswordCheck("move");
+    });
+});
 
-  const ok =
-  confirm("削除しますか？");
+document.querySelectorAll('.stepper-input').forEach(stepper => {
+    const minusBtn = stepper.querySelector('.minus'); const plusBtn = stepper.querySelector('.plus'); const input = stepper.querySelector('input[type="number"]');
+    minusBtn.addEventListener('click', () => { let val = parseInt(input.value) || 0; let min = parseInt(input.min) || 0; if (val > min) input.value = val - 1; });
+    plusBtn.addEventListener('click', () => { let val = parseInt(input.value) || 0; let max = parseInt(input.max) || 99; if (val < max) input.value = val + 1; });
+});
+function isTodayBooking(dateStr) {
+    const today = new Date();
 
-  if(!ok){
-    return;
-  }
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, "0");
+    const d = String(today.getDate()).padStart(2, "0");
 
-  const bookingDate =
-  popup.dataset.editDate;
-
-  const today =
-  new Date()
-  .toISOString()
-  .split("T")[0];
-
-  const ref =
-  db.ref(
-    "reservations/" +
-    bookingDate +
-    "/" +
-    editId
-  );
-
-  if(bookingDate === today){
-
-  ref.update({
-
-    cancelledAt: Date.now(),
-    status: "cancelled"
-
-  });
-
+    return dateStr === `${y}-${m}-${d}`;
 }
-  else{
-
-    ref.remove();
-
-  }
-
-  popup.classList.add("hidden");
-
+searchInput.addEventListener("input", () => {
+    applySearchFilter();
 });
+const searchBtn =
+    document.getElementById("searchBtn");
 
+const clearSearchBtn =
+    document.getElementById("clearSearchBtn");
+const searchResults =
+    document.getElementById("searchResults");
+clearSearchBtn.addEventListener(
+    "click",
+    () => {
 
-// ========================================
-// STAY
-// ========================================
+        searchInput.value = "";
 
-stayCheck.addEventListener("change",()=>{
+        searchResults.innerHTML = "";
 
-  if(stayCheck.checked){
-
-    luggageSelects.forEach(select=>{
-
-      select.value = 0;
-
-      select.disabled = true;
-
-    });
-
-  }
-
-  else{
-
-    luggageSelects.forEach(select=>{
-
-      select.disabled = false;
-
-    });
-
-  }
-
-});
-
-
-// ========================================
-// SEARCH
-// ========================================
-
-searchBtn.addEventListener("click",()=>{
-
-  const date =
-  searchDate.value;
-
-  const room =
-  searchRoom.value
-  .trim()
-  .toLowerCase();
-
-  const name =
-  searchName.value
-  .trim()
-  .toLowerCase();
-
-  db.ref(
-    "reservations/" + date
-  )
-  .get()
-  .then(snapshot=>{
-
-    const data =
-    snapshot.val();
-
-    searchResult.innerHTML = "";
-
-    if(!data){
-
-      searchResult.innerHTML =
-      "データなし";
-
-      return;
+        searchInput.blur();
 
     }
+);
 
-    let found = false;
 
-    Object.entries(data)
-    .forEach(([id,item])=>{
 
-      const roomText =
-      String(item.room || "")
-      .toLowerCase();
 
-      const nameText =
-      String(item.name || "")
-      .toLowerCase();
+searchBtn.addEventListener(
+    "click",
+    async () => {
 
-      if(
-        room &&
-        !roomText.includes(room)
-      ){
-        return;
-      }
+        const keyword =
+            searchInput.value
+                .trim()
+                .toLowerCase();
 
-      if(
-        name &&
-        !nameText.includes(name)
-      ){
-        return;
-      }
+        if (!keyword) return;
 
-      found = true;
+        searchResults.innerHTML = "";
 
-      const div =
-      document.createElement("div");
+        const snapshot =
+            await db.ref("reservations").once("value");
 
-      div.className =
-      "search-line";
+        const allData =
+            snapshot.val();
 
-      div.innerHTML = `
-<div>${item.time}</div>
-<div>${item.room}</div>
-<div>${item.name}</div>
-<div>${item.adults}名</div>
-`;
+        if (!allData) return;
 
-      searchResult.appendChild(div);
+        Object.entries(allData).forEach(
+            ([date, bookings]) => {
 
-    });
+                Object.entries(bookings).forEach(
+                    ([id, item]) => {
 
-    if(!found){
+                        const room =
+                            String(item.room || "")
+                                .toLowerCase();
 
-      searchResult.innerHTML =
-      "見つかりません";
+                        const name =
+                            String(item.name || "")
+                                .toLowerCase();
+
+                        if (
+                            !room.includes(keyword) &&
+                            !name.includes(keyword)
+                        ) {
+                            return;
+                        }
+
+                        // hành lý
+                        let luggage = "";
+
+                        if (item.tokudai > 0) {
+                            luggage += `特大${item.tokudai} `;
+                        }
+
+                        if (item.large > 0) {
+                            luggage += `大${item.large} `;
+                        }
+
+                        if (item.medium > 0) {
+                            luggage += `中${item.medium} `;
+                        }
+
+                        if (item.small > 0) {
+                            luggage += `小${item.small} `;
+                        }
+
+                        const div =
+                            document.createElement("div");
+
+                        div.className =
+                            "search-result-item";
+
+                        div.innerHTML = `
+
+                            <div class="search-result-top">
+                                ${date}
+                                ${item.time}
+                                (${item.car})
+                            </div>
+
+                            <div class="search-result-sub">
+
+                                部屋:
+                                ${item.room || "-"}
+
+                                ／ 名前:
+                                ${item.name || "-"}
+
+                                ／ 人数:
+                                ${item.adults || 0}名
+
+                                <br>
+
+                                荷物:
+                                ${luggage || "なし"}
+
+                            </div>
+
+                        `;
+
+                        // click để mở form edit
+                        div.addEventListener(
+                            "click",
+                            () => {
+
+                                popup.classList.remove(
+                                    "hidden"
+                                );
+
+                                popup.dataset.editId =
+                                    id;
+
+                                popup.dataset.editDate =
+                                    date;
+
+                                popup.dataset.time =
+                                    item.time;
+
+                                popup.dataset.car =
+                                    item.car;
+
+                                inputRoom.value =
+                                    item.room || "";
+
+                                inputName.value =
+                                    item.name || "";
+
+                                inputNote.value =
+                                    item.note || "";
+
+                                selAdults.value =
+                                    item.adults || 0;
+
+                                selSoinet.value =
+                                    item.soinet || 0;
+
+                                soinetSeatStatus =
+                                    item.soinetSeat || "";
+
+                                updateSeatBtns();
+
+                                stayActive =
+                                    item.stay || false;
+
+                                stayToggle.textContent =
+                                    stayActive
+                                        ? "ON"
+                                        : "OFF";
+
+                                stayToggle.classList.toggle(
+                                    "active",
+                                    stayActive
+                                );
+
+                                lugTokudai.value =
+                                    item.tokudai || 0;
+
+                                lugLarge.value =
+                                    item.large || 0;
+
+                                lugMedium.value =
+                                    item.medium || 0;
+
+                                lugSmall.value =
+                                    item.small || 0;
+
+                            }
+                        );
+
+                        searchResults.appendChild(div);
+
+                    }
+                );
+
+            }
+        );
 
     }
-
-  });
-
-});
-
-
-// ========================================
-// CLEAR SEARCH
-// ========================================
-
-clearSearchBtn.addEventListener("click",()=>{
-
-  searchRoom.value = "";
-
-  searchName.value = "";
-
-  searchResult.innerHTML = "";
-
-});
-
-
-// ========================================
-// DATE CHANGE
-// ========================================
-
-adminDate.addEventListener("change",()=>{
-
-  loadReservations();
-
-});
-// ========================================
-// PREV DATE
-// ========================================
-
-prevDateBtn.addEventListener("click",()=>{
-
-  const date =
-  new Date(adminDate.value);
-
-  date.setDate(
-    date.getDate() - 1
-  );
-
-  adminDate.value =
-  date.toISOString()
-  .split("T")[0];
-
-  loadReservations();
-
-});
-
-
-// ========================================
-// NEXT DATE
-// ========================================
-
-nextDateBtn.addEventListener("click",()=>{
-
-  const date =
-  new Date(adminDate.value);
-
-  date.setDate(
-    date.getDate() + 1
-  );
-
-  adminDate.value =
-  date.toISOString()
-  .split("T")[0];
-
-  loadReservations();
-
-});
-
-
+);
 // ========================================
 // EXPORT EXCEL
 // ========================================
 
+const exportExcelBtn =
+    document.getElementById("exportExcelBtn");
+
 exportExcelBtn.addEventListener(
-  "click",
-  exportExcel
+    "click",
+    exportExcel
 );
 
-async function exportExcel(){
+async function exportExcel() {
 
-  try{
+    try {
 
-    const date = adminDate.value;
+        const date =
+            adminDate.value;
 
-    const response =
-    await fetch("./bus_booking.xlsx");
+        const response =
+            await fetch("./bus_booking.xlsx");
 
-    const arrayBuffer =
-    await response.arrayBuffer();
+        const arrayBuffer =
+            await response.arrayBuffer();
 
-    const workbook =
-    new ExcelJS.Workbook();
+        const workbook =
+            new ExcelJS.Workbook();
 
-    await workbook.xlsx.load(arrayBuffer);
+        await workbook.xlsx.load(arrayBuffer);
 
-    const sheet =
-    workbook.worksheets[0];
+        const sheet =
+            workbook.worksheets[0];
 
-    const [year,month,day] =
-    date.split("-");
+        // DATE
 
-    // DATE
+        const weekList = [
+            "日",
+            "月",
+            "火",
+            "水",
+            "木",
+            "金",
+            "土"
+        ];
 
-   const weekList = [
-  "日",
-  "月",
-  "火",
-  "水",
-  "木",
-  "金",
-  "土"
-];
+        const dateObj =
+            new Date(date);
 
-const dateObj =
-new Date(date);
+        const week =
+            weekList[dateObj.getDay()];
 
-const week =
-weekList[dateObj.getDay()];
+        const [year, month, day] =
+            date.split("-");
 
-sheet.getCell("I1").value =
-`${Number(month)}月 ${Number(day)}日（${week}）`;
-sheet.getCell("D1").value =
-`${Number(month)}月 ${Number(day)}日（${week}）`;
+        sheet.getCell("I1").value =
+            `${Number(month)}月 ${Number(day)}日（${week}）`;
 
-    // FIREBASE
+        sheet.getCell("D1").value =
+            `${Number(month)}月 ${Number(day)}日（${week}）`;
 
-    const snapshot =
-    await db.ref(
-      "reservations/" + date
-    ).get();
+        // FIREBASE
 
-    const data =
-    snapshot.val();
+        const snapshot =
+            await db.ref(
+                "reservations/" + date
+            ).get();
 
-    if(!data){
+        const data =
+            snapshot.val();
 
-      alert("データなし");
+        if (!data) {
 
-      return;
+            alert("データなし");
+
+            return;
+
+        }
+
+        // CELL MAP
+
+        const cellMap = {
+
+            "06:05_ラッキータクシー": "C5",
+            "06:05_ホテル": "D5",
+
+            "06:20_ラッキータクシー": "C15",
+            "06:20_ホテル": "D15",
+
+            "06:40_ラッキータクシー": "C25",
+            "06:40_ホテル": "D25",
+
+            "07:00_ラッキータクシー": "C35",
+            "07:00_ホテル": "D35",
+
+            "07:30_ホテル": "G3",
+            "08:00_ホテル": "G15",
+            "08:30_ホテル": "G25",
+
+            "09:00_ホテル": "I3",
+            "09:30_ホテル": "I15",
+            "10:00_ホテル": "I25"
+
+        };
+
+        // CLEAR
+
+        Object.values(cellMap)
+            .forEach(cell => {
+
+                sheet.getCell(cell).value = "";
+
+            });
+
+        // WRITE
+
+        Object.values(data)
+            .forEach(item => {
+
+                if (
+                    item.status === "canceled"
+                    ||
+                    item.status === "moved"
+                ) {
+                    return;
+                }
+
+                const key =
+                    item.time + "_" + item.car;
+
+                const cell =
+                    cellMap[key];
+
+                if (!cell) {
+                    return;
+                }
+
+                const target =
+                    sheet.getCell(cell);
+
+                target.numFmt = "@";
+
+                const oldText =
+                    target.value
+                        ? String(target.value)
+                        : "";
+
+                // luggage
+
+                let luggageText = "";
+
+                if (item.tokudai > 0) {
+
+                    luggageText += ` 特大${item.tokudai}`;
+
+                }
+
+                if (item.large > 0) {
+
+                    luggageText += ` 大${item.large}`;
+
+                }
+
+                if (item.medium > 0) {
+
+                    luggageText += ` 中${item.medium}`;
+
+                }
+
+                if (item.small > 0) {
+
+                    luggageText += ` 小${item.small}`;
+
+                }
+
+                // stay
+
+                let stayText = "";
+
+                if (item.stay) {
+
+                    stayText = " ステイ";
+
+                }
+
+                const text =
+                    `${item.room || ""}｜${item.name || ""}｜${item.adults || 0}名${luggageText}${stayText}`;
+
+                target.value =
+                    oldText
+                        ? oldText + "\n" + text
+                        : text;
+
+                target.alignment = {
+
+                    wrapText: true,
+                    vertical: "top",
+                    horizontal: "left"
+
+                };
+
+                const lineCount =
+                    String(target.value)
+                        .split("\n")
+                        .length;
+
+                sheet.getRow(target.row).height =
+                    Math.max(20, lineCount * 18);
+
+            });
+
+        // EXPORT
+
+        const buffer =
+            await workbook.xlsx.writeBuffer();
+
+        saveAs(
+            new Blob([buffer]),
+            `bus_${date}.xlsx`
+        );
 
     }
 
-    // CELL MAP
+    catch (error) {
 
-    const cellMap = {
+        console.error(error);
 
-      "06:05_8名車":"C5",
-      "06:05_7名車":"D5",
+        alert("Excel出力エラー");
 
-      "06:20_8名車":"C15",
-      "06:20_7名車":"D15",
+    }
 
-      "06:40_8名車":"C25",
-      "06:40_7名車":"D25",
+}
+// const roomSortResult =
+// document.getElementById("roomSortResult");
 
-      "07:00_8名車":"C35",
-      "07:00_7名車":"D35",
 
-      "07:30_Shuttle":"G5",
-      "08:00_Shuttle":"G15",
-      "08:30_Shuttle":"G25",
+async () => {
 
-      "09:00_Shuttle":"I5",
-      "09:30_Shuttle":"I15",
-      "10:00_Shuttle":"I25"
+    const date =
+        adminDate.value;
 
-    };
+    roomSortResult.innerHTML = "";
 
-    // CLEAR
+    const snapshot =
+        await db.ref(
+            "reservations/" + date
+        ).get();
 
-    Object.values(cellMap)
-    .forEach(cell=>{
+    const data =
+        snapshot.val();
 
-      sheet.getCell(cell).value = "";
+    if (!data) {
+
+        roomSortResult.innerHTML =
+            "データなし";
+
+        return;
+
+    }
+
+    // array
+    const list = [];
+
+    Object.entries(data)
+        .forEach(([id, item]) => {
+
+            // bỏ canceled
+            if (
+                item.status === "canceled"
+                ||
+                item.status === "moved"
+            ) {
+                return;
+            }
+
+            list.push(item);
+
+        });
+
+    // sort theo số phòng
+    list.sort((a, b) => {
+
+        const roomA =
+            parseInt(a.room) || 0;
+
+        const roomB =
+            parseInt(b.room) || 0;
+
+        return roomA - roomB;
 
     });
 
-    // WRITE
+    // render
+    list.forEach(item => {
 
-    Object.values(data)
-    .forEach(item=>{
+        const div =
+            document.createElement("div");
 
-      if(
-        item.cancelledAt ||
-        item.status === "moved"
-      ){
-        return;
-      }
+        div.className =
+            "room-sort-line";
 
-      const key =
-      item.time + "_" + item.car;
+        let luggage = "";
 
-      const cell =
-      cellMap[key];
+        if (item.tokudai > 0) {
 
-      if(!cell){
-        return;
-      }
+            luggage += ` 特大${item.tokudai}`;
 
-      const target =
-sheet.getCell(cell);
+        }
 
-target.numFmt = "@";
+        if (item.large > 0) {
 
-const oldText =
-target.value
-? String(target.value)
-: "";
+            luggage += ` 大${item.large}`;
 
-// LUGGAGE
+        }
 
-let luggageText = "";
+        if (item.medium > 0) {
 
-if(item.large > 0){
+            luggage += ` 中${item.medium}`;
 
-  luggageText += ` 大${item.large}`;
+        }
 
-}
+        if (item.small > 0) {
 
-if(item.medium > 0){
+            luggage += ` 小${item.small}`;
 
-  luggageText += ` 中${item.medium}`;
+        }
 
-}
+        div.innerHTML = `
 
-if(item.stroller > 0){
+                ${item.room || "-"}
 
-  luggageText += ` ベビ${item.stroller}`;
+                ｜
 
-}
+                ${item.name || "-"}
 
-// STAY
+                ｜
 
-let stayText = "";
+                ${item.time || "-"}
 
-if(item.stay){
+                ｜
 
-  stayText = " ステイ";
+                ${item.adults || 0}名
 
-}
+                ${luggage}
 
-// FULL TEXT
-const movedText =
-item.status === "moved-new"
-? "【変更】"
-: "";
-const text =
-`${item.room || ""}｜${item.name || ""}｜${item.adults || 0}名${luggageText}${stayText}`;
+            `;
 
-// ADD NEW LINE
+        roomSortResult.appendChild(div);
 
-target.value =
-oldText
-? oldText + "\n" + text
-: text;
-
-// STYLE
-
-target.alignment = {
-
-  wrapText:true,
-  vertical:"top",
-  horizontal:"left"
-
-};
-
-// AUTO HEIGHT
-
-const lineCount =
-String(target.value)
-.split("\n")
-.length;
-
-sheet.getRow(target.row).height =
-Math.max(20, lineCount * 18);
     });
 
-    // EXPORT
-
-    const buffer =
-    await workbook.xlsx.writeBuffer();
-
-    saveAs(
-      new Blob([buffer]),
-      `bus_${date}.xlsx`
-    );
-
-  }
-
-  catch(error){
-
-    console.error(error);
-
-    alert("Excel出力エラー");
-
-  }
-
 }
 
+showAllBookingsBtn.addEventListener(
+    "click",
+    async () => {
 
-// ========================================
-// START
-// ========================================
+        const date = adminDate.value;
+
+        const snapshot =
+            await db.ref(
+                "reservations/" + date
+            ).get();
+
+        const data = snapshot.val();
+
+        allBookingsList.innerHTML = "";
+
+        if (!data) {
+
+            allBookingsList.innerHTML =
+                "<div>データなし</div>";
+
+            allBookingsPopup.classList.remove(
+                "hidden"
+            );
+
+            return;
+
+        }
+
+        // ARRAY
+        const arr = Object.entries(data)
+            .map(([id, item]) => ({
+
+                id,
+                ...item
+
+            }));
+
+        // FILTER
+        const filtered =
+            arr.filter(item =>
+
+                !item.cancelledAt
+                && item.status !== "moved"
+
+            );
+
+        // SORT ROOM
+        filtered.sort((a, b) => {
+
+            const roomA =
+                parseInt(a.room) || 0;
+
+            const roomB =
+                parseInt(b.room) || 0;
+
+            return roomA - roomB;
+
+        });
+
+        // RENDER
+        filtered.forEach(item => {
+
+            const div =
+                document.createElement("div");
+
+            div.className =
+                "booking-list-line";
+
+            let luggage = "";
+
+            if (item.tokudai > 0) {
+
+                luggage += ` 特大${item.tokudai}`;
+
+            }
+
+            if (item.large > 0) {
+
+                luggage += ` 大${item.large}`;
+
+            }
+
+            if (item.medium > 0) {
+
+                luggage += ` 中${item.medium}`;
+
+            }
+
+            if (item.small > 0) {
+
+                luggage += ` 小${item.small}`;
+
+            }
+
+            div.innerHTML = `
+
+        <div class="booking-room">
+          R${item.room || "-"}
+        </div>
+
+        <div class="booking-time">
+          ${item.time}
+        </div>
+
+        <div class="booking-name">
+          ${item.name || ""}
+          ${luggage}
+        </div>
+
+        <div class="booking-pax">
+          ${item.adults || 0}名
+        </div>
+
+      `;
+
+            allBookingsList.appendChild(div);
+
+        });
+
+        allBookingsPopup.classList.remove(
+            "hidden"
+        );
+
+    }
+);
+
+// =====================================
+// ALL BOOKINGS POPUP
+// =====================================
+
+
+
+
+
+// ĐÓNG POPUP
+closeAllBookingsBtn.addEventListener("click", () => {
+
+    allBookingsPopup.classList.add("hidden");
+
+});
+
+
+// CLICK NGOÀI ĐỂ ĐÓNG
+allBookingsPopup.addEventListener("click", (e) => {
+
+    if (e.target === allBookingsPopup) {
+
+        allBookingsPopup.classList.add("hidden");
+
+    }
+
+});
+
+
+// =====================================
+// RENDER ALL BOOKINGS
+// =====================================
 
 loadReservations();
