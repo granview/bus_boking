@@ -382,21 +382,10 @@ async function executeSecureAction() {
         // =========================
 
         // ngày tương lai -> xóa luôn
-        if (dragBooking.date > todayStr) {
-
-            await oldRef.remove();
-
-        }
-
-        // hôm nay / quá khứ -> giữ lại
-        else {
-
-            await oldRef.update({
-                status: "moved",
-                movedTo: pendingTargetTime
-            });
-
-        }
+        await oldRef.update({
+            status: "moved",
+            movedTo: pendingTargetTime
+        });
 
         // =========================
         // BOOKING MỚI
@@ -904,83 +893,27 @@ function loadReservations() {
             // CLICK EDIT
             // =========================
 
+
+
+            // =========================
+            // DOUBLE CLICK
+            // =========================
+
+            let clickTimer = null;
+
             line.addEventListener("click", (e) => {
 
+                // bỏ qua nút delete
                 if (
                     e.target.classList.contains(
                         "quick-del-btn"
                     )
                 ) return;
 
-                popup.classList.remove("hidden");
+                // DOUBLE CLICK
+                if (e.detail >= 2) {
 
-                popup.dataset.editId = item.id;
-
-                popup.dataset.editDate =
-                    item.date;
-
-                popup.dataset.time =
-                    item.time;
-
-                popup.dataset.car =
-                    item.car;
-
-                inputRoom.value =
-                    item.room || "";
-
-                inputName.value =
-                    item.name || "";
-
-                inputNote.value =
-                    item.note || "";
-
-                selAdults.value =
-                    item.adults || 0;
-
-                selSoinet.value =
-                    item.soinet || 0;
-
-                soinetSeatStatus =
-                    item.soinetSeat || "";
-
-                updateSeatBtns();
-
-                stayActive =
-                    item.stay || false;
-
-                stayToggle.textContent =
-                    stayActive ? "ON" : "OFF";
-
-                stayToggle.classList.toggle(
-                    "active",
-                    stayActive
-                );
-
-                lugTokudai.value =
-                    item.tokudai || 0;
-
-                lugLarge.value =
-                    item.large || 0;
-
-                lugMedium.value =
-                    item.medium || 0;
-
-                lugSmall.value =
-                    item.small || 0;
-
-            });
-
-            // =========================
-            // DOUBLE CLICK
-            // =========================
-
-            line.addEventListener(
-                "dblclick",
-                async () => {
-
-                    if (
-                        !isTodayBooking(item.date)
-                    ) return;
+                    clearTimeout(clickTimer);
 
                     if (isMoved) return;
 
@@ -991,46 +924,101 @@ function loadReservations() {
                         item.id
                     );
 
-                    try {
+                    (async () => {
 
-                        // done -> normal
-                        if (isDone) {
+                        try {
 
-                            await ref.child(
-                                "status"
-                            ).remove();
+                            // done -> normal
+                            if (isDone) {
+
+                                await ref.child("status").remove();
+
+                            }
+
+                            // canceled -> normal
+                            else if (isCanceled) {
+
+                                await ref.child("status").remove();
+
+                            }
+
+                            // normal -> done
+                            else {
+
+                                await ref.update({
+                                    status: "done"
+                                });
+
+                            }
+
+                        }
+                        catch (error) {
+
+                            console.error(error);
+
+                            alert("更新失敗");
 
                         }
 
-                        // canceled -> normal
-                        else if (isCanceled) {
+                    })();
 
-                            await ref.child(
-                                "status"
-                            ).remove();
-
-                        }
-
-                        // normal -> done
-                        else {
-
-                            await ref.update({
-                                status: "done"
-                            });
-
-                        }
-
-                    }
-                    catch (error) {
-
-                        console.error(error);
-
-                        alert("更新失敗");
-
-                    }
-
+                    return;
                 }
-            );
+
+                // SINGLE CLICK → mở form edit
+                clickTimer = setTimeout(() => {
+
+                    popup.classList.remove("hidden");
+
+                    popup.dataset.editId = item.id;
+
+                    popup.dataset.editDate = item.date;
+
+                    popup.dataset.time = item.time;
+
+                    popup.dataset.car = item.car;
+
+                    inputRoom.value = item.room || "";
+
+                    inputName.value = item.name || "";
+
+                    inputNote.value = item.note || "";
+
+                    selAdults.value = item.adults || 0;
+
+                    selSoinet.value = item.soinet || 0;
+
+                    soinetSeatStatus =
+                        item.soinetSeat || "";
+
+                    updateSeatBtns();
+
+                    stayActive =
+                        item.stay || false;
+
+                    stayToggle.textContent =
+                        stayActive ? "ON" : "OFF";
+
+                    stayToggle.classList.toggle(
+                        "active",
+                        stayActive
+                    );
+
+                    lugTokudai.value =
+                        item.tokudai || 0;
+
+                    lugLarge.value =
+                        item.large || 0;
+
+                    lugMedium.value =
+                        item.medium || 0;
+
+                    lugSmall.value =
+                        item.small || 0;
+
+                }, 200);
+
+            });
 
             // =========================
             // APPEND
