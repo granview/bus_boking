@@ -231,12 +231,12 @@ reserveForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     // 1. Kiểm tra bắt buộc nhập Số phòng (Không được để trống)
-    const roomValue = inputRoom.value.trim();
-    if (!roomValue) {
-        alert("部屋番号を入力してください (Vui lòng nhập số phòng)");
-        inputRoom.focus();
-        return;
-    }
+    // const roomValue = inputRoom.value.trim();
+    // if (!roomValue) {
+    //     alert("部屋番号を入力してください");
+    //     inputRoom.focus();
+    //     return;
+    // }
 
     // 2. Kiểm tra bắt buộc nhập Số hành khách (Người lớn phải lớn hơn 0)
     const adults = Number(selAdults.value) || 0;
@@ -267,7 +267,8 @@ reserveForm.addEventListener("submit", async (e) => {
         time: popup.dataset.time,
         car: popup.dataset.car,
         stay: stayActive,
-        room: roomValue, // Sử dụng giá trị đã trim khoảng trắng
+        room: inputRoom.value.trim(),
+        // room: roomValue, // Sử dụng giá trị đã trim khoảng trắng
         name: nameValue,
         note: inputNote.value,
         adults: adults,
