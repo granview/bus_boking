@@ -205,33 +205,6 @@ inputName.addEventListener("blur", () => {
     normalizeGuestNameInput();
 });
 
-// function initReserveButtons() {
-//     document.querySelectorAll(".reserve-btn").forEach(btn => {
-//         document.addEventListener("click", (e) => {
-//     if (!e.target.classList.contains("reserve-btn")) return;
-
-//     popup.dataset.time = e.target.dataset.time;
-//     popup.dataset.car = e.target.dataset.car;
-
-//     popup.dataset.editId = "";
-//     popup.dataset.editDate = "";
-
-//     popup.classList.remove("hidden");
-//     resetForm();
-// });
-//     });
-
-//     document.querySelectorAll(".reserve-btn").forEach(btn => {
-//         btn.addEventListener("click", () => {
-//             popup.dataset.time = btn.dataset.time;
-//             popup.dataset.car = btn.dataset.car;
-//             popup.dataset.editId = "";
-//             popup.dataset.editDate = "";
-//             popup.classList.remove("hidden");
-//             resetForm();
-//         });
-//     });
-// 
 document.addEventListener("click", (e) => {
     const btn = e.target.closest(".reserve-btn");
     if (!btn) return;
