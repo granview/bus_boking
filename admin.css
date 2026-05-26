@@ -703,6 +703,7 @@ td.drag-over {
 }
 
 .popup-header {
+    padding: 24px 24px 12px !important;
     background: #ffffff !important;
     border-bottom: none !important;
 }
