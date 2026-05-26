@@ -19,23 +19,27 @@
             <button class="update-btn" id="updateBtn">更新</button>
         </div>
         <div class="search-box-wrap">
-            <div class="search-area">
+    <div class="search-area">
 
-                <div class="search-bar-wrap">
+    <div class="search-bar-wrap">
 
-                    <input type="text" id="searchInput" placeholder="部屋番号 / 名前">
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="部屋番号 / 名前"
+        >
 
-                    <button id="searchBtn">
-                        検索
-                    </button>
-                    <button id="clearSearchBtn">クリア</button>
+        <button id="searchBtn">
+            検索
+        </button>
+        <button id="clearSearchBtn">クリア</button>
 
-                </div>
+    </div>
 
-                <div id="searchResults"></div>
+    <div id="searchResults"></div>
 
-            </div>
-        </div>
+</div>
+</div>
 
         <div class="page-toggle-bar">
             <button class="toggle-page-btn active" id="btnPageEarly">06:05 ～ 07:00</button>
@@ -122,35 +126,39 @@
                 </div>
             </section>
             <div class="top-action-bar">
-                <button id="exportExcelBtn">EX出力</button>
-                <button id="showAllBookingsBtn">全予約</button>
-            </div>
+    <button id="exportExcelBtn">EX出力</button>
+    <button id="showAllBookingsBtn">全予約</button>
+</div>
             <!-- ===================================== -->
-            <!-- ALL BOOKINGS POPUP -->
-            <!-- ===================================== -->
+<!-- ALL BOOKINGS POPUP -->
+<!-- ===================================== -->
 
-            <div id="allBookingsPopup" class="popup hidden">
+<div id="allBookingsPopup" class="popup hidden">
 
-                <div class="popup-box booking-list-popup">
+  <div class="popup-box booking-list-popup">
 
-                    <div class="popup-title">
-                        当日の予約一覧
-                    </div>
+    <div class="popup-title">
+      当日の予約一覧
+    </div>
 
-                    <div id="allBookingsList" class="all-bookings-list">
-                    </div>
+    <div id="allBookingsList" class="all-bookings-list">
+    </div>
 
-                    <div class="popup-bottom-buttons">
+    <div class="popup-bottom-buttons">
 
-                        <button type="button" id="closeAllBookingsBtn" class="gray-btn">
-                            閉じる
-                        </button>
+      <button
+        type="button"
+        id="closeAllBookingsBtn"
+        class="gray-btn"
+      >
+        閉じる
+      </button>
 
-                    </div>
+    </div>
 
-                </div>
+  </div>
 
-            </div>
+</div>
 
             <div class="right-col hidden" id="pageLateView">
                 <section class="admin-section">
@@ -385,33 +393,32 @@
                 <button id="pwdConfirmBtn" class="pwd-btn confirm">確認</button>
             </div>
         </div>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/default.css">
+    <link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/default.css">
 
-        <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/index.min.js"></script>
 
-        <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/scroll-behaviour.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/scroll-behaviour.min.js"></script>
 
-        <script>
-            window.addEventListener("load", function () {
+<script>
+window.addEventListener("load", function () {
 
-                if (window.MobileDragDrop) {
+    if (window.MobileDragDrop) {
 
-                    MobileDragDrop.polyfill({
-                        dragImageTranslateOverride:
-                            MobileDragDrop.scrollBehaviourDragImageTranslateOverride
-                    });
+        MobileDragDrop.polyfill({
+            dragImageTranslateOverride:
+                MobileDragDrop.scrollBehaviourDragImageTranslateOverride
+        });
 
-                }
+    }
 
-            });
-        </script>
-        <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-
-        <script src="./admin.js"></script>
-    </div>
+});
+</script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  
+    <script src="./admin.js"></script>
 </body>
-
 </html>
