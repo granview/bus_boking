@@ -1230,7 +1230,6 @@ td.drag-over {
 .guest-line.is-moved {
     background: transparent;
     border-left: 5px solid transparent;
-    padding-top: 30px;
 }
 .guest-line.is-canceled {
     background: #ffd6d6;
