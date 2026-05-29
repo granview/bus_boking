@@ -1178,7 +1178,6 @@ td.drag-over {
     background: transparent !important;
     border-left: 6px solid #0f766e;
     box-shadow: none;
-    padding-top: 30px;
 }
 .guest-line.is-new-today .flat-room,
 .guest-line.is-new-today .guest-name-text {
