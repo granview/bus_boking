@@ -1175,9 +1175,10 @@ td.drag-over {
     display: none;
 }
 .guest-line.is-new-today {
-    background: #ccfbf1 !important;
+    background: transparent !important;
     border-left: 6px solid #0f766e;
-    box-shadow: inset 0 0 0 1px #5eead4;
+    box-shadow: none;
+    padding-top: 30px;
 }
 .guest-line.is-new-today .flat-room,
 .guest-line.is-new-today .guest-name-text {
@@ -1198,10 +1199,38 @@ td.drag-over {
     font-weight: 1000;
     letter-spacing: 0;
     line-height: 1;
+    position: absolute;
+    left: 12px;
+    top: 8px;
+}
+.guest-line.is-new-today .new-booking-label {
+    position: absolute;
+    left: 12px;
+    top: 8px;
+}
+.guest-line .moved-label {
+    position: absolute;
+    left: 12px;
+    top: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: auto;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 6px;
+    background: rgba(100, 116, 139, 0.12);
+    color: #334155;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1;
+    border: 1px solid rgba(148, 163, 184, 0.4);
 }
 .guest-line.is-moved {
-    background: #fff3c4;
-    border-left: 5px solid #ffb300;
+    background: transparent;
+    border-left: 5px solid transparent;
+    padding-top: 30px;
 }
 .guest-line.is-canceled {
     background: #ffd6d6;
@@ -1211,11 +1240,11 @@ td.drag-over {
 }
 .guest-line.is-moved .guest-main-content-block {
     text-decoration: line-through;
-    opacity: 0.6;
+    opacity: 0.65;
 }
 .is-moved .guest-main-content-block {
     text-decoration: line-through;
-    opacity: 0.6;
+    opacity: 0.65;
 }
 .search-box-wrap{
     display:flex;
