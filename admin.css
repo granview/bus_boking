@@ -1199,14 +1199,12 @@ td.drag-over {
     font-weight: 1000;
     letter-spacing: 0;
     line-height: 1;
-    position: absolute;
-    left: 12px;
-    top: 8px;
+    position: static;
+    margin-left: 8px;
 }
 .guest-line.is-new-today .new-booking-label {
-    position: absolute;
-    left: 12px;
-    top: 8px;
+    position: static;
+    margin-left: 8px;
 }
 .guest-line .moved-label {
     position: absolute;
