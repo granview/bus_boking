@@ -805,7 +805,7 @@
 
                 mainContentBlock.innerHTML = `
                     <span class="flat-room">
-                        ${isDuplicateBooking ? "<span class='duplicate-star'>★</span>" : ""}R${item.room || "-"}
+                        ${isDuplicateBooking ? "<span class='duplicate-star'>★</span>" : ""}${item.room ? `R${item.room}` : "-"}
                     </span>
 
                     <span class="guest-name-text">
