@@ -703,7 +703,7 @@ td.drag-over {
 }
 
 .popup-header {
-    padding: 24px 24px 12px !important;
+   
     background: #ffffff !important;
     border-bottom: none !important;
 }
@@ -717,7 +717,7 @@ td.drag-over {
 }
 
 .clear-body {
-    padding: 4px 24px 24px !important;
+    padding: 4px 24px 15px !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 20px !important;
@@ -737,7 +737,7 @@ td.drag-over {
 }
 
 .luggage-separated-segment {
-    margin-top: 16px !important;
+    margin-top: 5px !important;
     padding-top: 24px !important;
     border-top: 1px dashed #e5e7eb !important;
 }
@@ -986,7 +986,7 @@ td.drag-over {
     background: #ffffff !important;
     border: 1px solid #f3f4f6 !important;
     border-radius: 10px !important;
-    padding: 10px 16px !important;
+    padding: 5px 16px !important;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01) !important;
 }
 
