@@ -255,11 +255,7 @@
 
         // 1. Kiểm tra bắt buộc nhập Số phòng (Không được để trống)
         const roomValue = inputRoom.value.trim();
-        if (!roomValue) {
-            alert("部屋番号を入力してください (Vui lòng nhập số phòng)");
-            inputRoom.focus();
-            return;
-        }
+        
 
         // 2. Kiểm tra bắt buộc nhập Số hành khách (Người lớn phải lớn hơn 0)
         const adults = Number(selAdults.value) || 0;
