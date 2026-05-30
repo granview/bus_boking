@@ -1704,10 +1704,12 @@ td.drag-over {
     transform:scale(0.96);
 }
 .cxl-label{
-    color:#ff0000;
+    color:#ff0000 !important;
     font-weight:bold;
+    text-decoration:none !important;
+    background:none !important;
+    opacity:1 !important;
     margin-right:6px;
-    font-size:12px;
 }
 
 .car-cell-box.drag-over{
