@@ -915,18 +915,24 @@ function loadReservations() {
                 quickDelBtn.type = "button";
 
                 quickDelBtn.addEventListener(
-                    "click",
-                    (e) => {
+    "click",
+    (e) => {
 
-                        e.stopPropagation();
+        e.stopPropagation();
 
-                        executePendingAction(
-                            "delete_quick",
-                            item
-                        );
+        const ok = confirm(
+            `R${item.room || "-"} ${item.name || ""}様\n\nこの予約を完全削除しますか？\n削除後は元に戻せません。`
+        );
 
-                    }
-                );
+        if (!ok) return;
+
+        executePendingAction(
+            "delete_quick",
+            item
+        );
+
+    }
+);
 
                 rightActionsBlock.appendChild(
                     quickDelBtn
