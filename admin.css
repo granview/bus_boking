@@ -1228,12 +1228,12 @@ td.drag-over {
     background: transparent;
     border-left: 5px solid transparent;
 }
-.guest-line.is-canceled {
+/* .guest-line.is-canceled {
     background: #ffd6d6;
     color: #b00000;
     text-decoration: line-through;
     opacity: 0.8;
-}
+} */
 .guest-line.is-moved .guest-main-content-block {
     text-decoration: line-through;
     opacity: 0.65;
