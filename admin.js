@@ -841,11 +841,8 @@ function loadReservations() {
                     <span class="guest-name-text">
                         ${item.name || ""}
                     </span>様
-
-                    ${stayText}
-
                     ${paxDisplay}
-
+                    ${stayText}
                     <span class="lug-text-summary">
                         ${luggageText}
                     </span>
