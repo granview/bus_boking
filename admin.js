@@ -482,7 +482,17 @@ function applySearchFilter() {
         });
 
 }
-deleteBtn.addEventListener("click", () => { if (!popup.dataset.editId) return; executePendingAction("delete_form"); });
+deleteBtn.addEventListener("click", () => {
+    if (!popup.dataset.editId) return;
+
+    const ok = confirm(
+        `R${inputRoom.value || "-"} ${inputName.value || ""}様 の予約をキャンセルしますか？`
+    );
+
+    if (!ok) return;
+
+    executePendingAction("delete_form");
+});
 
 // ── LOAD RESERVATIONS ──
 function loadReservations() {
