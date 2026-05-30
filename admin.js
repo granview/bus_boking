@@ -200,6 +200,36 @@ inputName.addEventListener("input", () => {
 inputName.addEventListener("blur", () => {
     normalizeGuestNameInput();
 });
+// =========================
+// ENTER KEY FLOW
+// Room -> Name -> Adults -> Save
+// =========================
+
+inputRoom.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+
+    e.preventDefault();
+    inputName.focus();
+});
+
+inputName.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+
+    e.preventDefault();
+    selAdults.focus();
+
+    if (selAdults.select) {
+        selAdults.select();
+    }
+});
+
+selAdults.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+
+    e.preventDefault();
+
+    reserveForm.requestSubmit();
+});
 
 // function initReserveButtons() {
 //     document.querySelectorAll(".reserve-btn").forEach(btn => {
