@@ -1703,6 +1703,12 @@ td.drag-over {
     opacity:0.45;
     transform:scale(0.96);
 }
+.cxl-label{
+    color:#ff0000;
+    font-weight:bold;
+    margin-right:6px;
+    font-size:12px;
+}
 
 .car-cell-box.drag-over{
     outline:3px solid #3498db;
