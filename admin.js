@@ -42,6 +42,10 @@ const pageLateView = document.getElementById("pageLateView");
 // Form fields
 const inputRoom = document.getElementById("inputRoom");
 const inputName = document.getElementById("inputName");
+inputName.setAttribute("lang", "ja");
+inputName.setAttribute("inputmode", "kana");
+inputName.setAttribute("autocomplete", "off");
+inputName.setAttribute("autocapitalize", "off");
 const inputNote = document.getElementById("inputNote");
 const selAdults = document.getElementById("selAdults");
 const selSoinet = document.getElementById("selSoinet");
