@@ -854,13 +854,14 @@
 
                 // canceled delete button
                 if (isCanceled) {
-                    const cxlLabel = document.createElement("span");
+                     const cxlLabel = document.createElement("span");
 
-                cxlLabel.className = "cxl-label";
+    cxlLabel.className = "cxl-label";
 
-                cxlLabel.textContent = "CXL";
+    cxlLabel.textContent = "CXL";
 
-                rightActionsBlock.appendChild(cxlLabel);
+    rightActionsBlock.appendChild(cxlLabel);
+
 
                     const quickDelBtn =
                         document.createElement("button");
