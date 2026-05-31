@@ -141,8 +141,10 @@ const lugLarge = document.getElementById("lugLarge");
 const lugMedium = document.getElementById("lugMedium");
 const lugSmall = document.getElementById("lugSmall");
 const searchInput = document.getElementById("searchInput");
-const showAllBookingsBtn =
-    document.getElementById("showAllBookingsBtn");
+const showAllBookingsBtns =
+    document.querySelectorAll(
+        ".showAllBookingsBtn"
+    );
 
 const allBookingsPopup =
     document.getElementById("allBookingsPopup");
@@ -206,46 +208,35 @@ function isFutureDate(dateStr) {
     return dateStr > getTodayString();
 }
 // ── TRANG TOGGLE ──
-document.addEventListener("DOMContentLoaded", () => {
+// ── TRANG TOGGLE ──
 
-    const switchToEarly = () => {
+document.addEventListener("click", function (e) {
 
-        btnPageEarlys.forEach(btn =>
-            btn.classList.add("active")
-        );
-
-        btnPageLates.forEach(btn =>
-            btn.classList.remove("active")
-        );
+    if (e.target.closest(".btnPageEarly")) {
 
         pageEarlyView.classList.remove("hidden");
         pageLateView.classList.add("hidden");
-    };
 
-    const switchToLate = () => {
+        document.querySelectorAll(".btnPageEarly")
+            .forEach(btn => btn.classList.add("active"));
 
-        btnPageLates.forEach(btn =>
-            btn.classList.add("active")
-        );
+        document.querySelectorAll(".btnPageLate")
+            .forEach(btn => btn.classList.remove("active"));
+    }
 
-        btnPageEarlys.forEach(btn =>
-            btn.classList.remove("active")
-        );
+    if (e.target.closest(".btnPageLate")) {
 
         pageLateView.classList.remove("hidden");
         pageEarlyView.classList.add("hidden");
-    };
 
-    btnPageEarlys.forEach(btn => {
-        btn.addEventListener("click", switchToEarly);
-    });
+        document.querySelectorAll(".btnPageLate")
+            .forEach(btn => btn.classList.add("active"));
 
-    btnPageLates.forEach(btn => {
-        btn.addEventListener("click", switchToLate);
-    });
+        document.querySelectorAll(".btnPageEarly")
+            .forEach(btn => btn.classList.remove("active"));
+    }
 
 });
-
 function getDateString(d) {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -1653,13 +1644,16 @@ searchBtn.addEventListener(
 // EXPORT EXCEL
 // ========================================
 
-const exportExcelBtn =
-    document.getElementById("exportExcelBtn");
+document
+    .querySelectorAll(".exportExcelBtn")
+    .forEach(btn => {
 
-exportExcelBtn.addEventListener(
-    "click",
-    exportExcel
-);
+        btn.addEventListener(
+            "click",
+            exportExcel
+        );
+
+    });
 
 async function exportExcel() {
     try {
@@ -1808,9 +1802,11 @@ async function exportExcel() {
     }
 }
 
-showAllBookingsBtn.addEventListener(
-    "click",
-    async () => {
+showAllBookingsBtns.forEach(btn=>{
+
+    btn.addEventListener(
+        "click",
+        async ()=>{
 
         const date = adminDate.value;
 
@@ -1934,8 +1930,10 @@ showAllBookingsBtn.addEventListener(
             "hidden"
         );
 
-    }
-);
+     }
+    );
+
+});
 // =====================================
 // ALL BOOKINGS POPUP
 // =====================================

@@ -203,6 +203,9 @@ body {
 .right-col.hidden {
     display: none !important;
 }
+.hidden{
+    display:none !important;
+}
 
 /* ═══════════════════════════════
    FLEX GRID STRUCTURE
@@ -1349,27 +1352,7 @@ td.drag-over {
     transform: scale(0.97);
 
 }
-#exportExcelBtn{
 
-    padding: 8px 18px;
-
-    border: 1px solid #2f6fed;
-
-    border-radius: 8px;
-
-    background: #2f6fed;
-
-    color: white;
-
-    font-size: 14px;
-
-    font-weight: 600;
-
-    cursor: pointer;
-
-    transition: 0.2s;
-
-}
 
 #exportExcelBtn:hover{
 
@@ -1617,33 +1600,53 @@ td.drag-over {
 
 /* Style chung cho cả 2 nút */
 
-#exportExcelBtn,
-#showAllBookingsBtn{
+.exportExcelBtn,
+.showAllBookingsBtn{
 
-    min-width:140px;
+    min-width:180px;
+    height:50px;
 
-    height:44px;
+    padding:0 24px;
 
-    padding:0 22px;
+    border:1px solid #0f172a;
+    border-radius:10px;
 
-    border:none;
+    font-size:15px;
+    font-weight:1000;
 
-    border-radius:12px;
-
-    font-size:14px;
-
-    font-weight:700;
-
-    color:white;
+    color:#fff;
 
     cursor:pointer;
 
-    transition:all 0.18s ease;
+    transition:all .1s;
 
-    box-shadow:0 4px 10px rgba(0,0,0,0.12);
+    box-shadow:0 4px 0 #0f172a;
+}
+.exportExcelBtn{
+    background:#2563eb;
+}
 
-    letter-spacing:0.3px;
+.exportExcelBtn:hover{
+    transform:translateY(1px);
+    box-shadow:0 3px 0 #0f172a;
+}
 
+.exportExcelBtn:active{
+    transform:translateY(4px);
+    box-shadow:0 0 0 #0f172a;
+}
+.showAllBookingsBtn{
+    background:#429cc5;
+}
+
+.showAllBookingsBtn:hover{
+    transform:translateY(1px);
+    box-shadow:0 3px 0 #0f172a;
+}
+
+.showAllBookingsBtn:active{
+    transform:translateY(4px);
+    box-shadow:0 0 0 #0f172a;
 }
 
 
