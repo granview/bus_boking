@@ -258,7 +258,7 @@ body {
 .time-block-cell {
     width: 65px;
     flex-shrink: 0;
-    font-size: 15px;
+    font-size: 22px;
     font-weight: 700;
     color: var(--text);
     background: #cbd5e1;
