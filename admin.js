@@ -23,6 +23,87 @@ const db = firebase.database();
 
 // ── ELEMENTS ──
 const reserveBtns = document.querySelectorAll(".reserve-btn");
+document.querySelectorAll(".reserve-btn")
+    .forEach(btn => {
+
+        const fullBtn =
+            document.createElement("a");
+
+        fullBtn.className = "full-btn";
+        fullBtn.href = "#";
+
+        fullBtn.dataset.time =
+            btn.dataset.time;
+
+        fullBtn.dataset.car =
+            btn.dataset.car;
+
+        fullBtn.textContent = "満車";
+
+        btn.insertAdjacentElement(
+            "afterend",
+            fullBtn
+        );
+
+    });
+document.addEventListener("click", async (e) => {
+
+    const btn = e.target.closest(".full-btn");
+
+    if (!btn) return;
+
+    const time = btn.dataset.time;
+    const car = btn.dataset.car;
+
+    const ref = db.ref(
+        `fullCars/${adminDate.value}/${time}_${car}`
+    );
+
+    try {
+
+        const snap = await ref.get();
+
+        // Đang FULL -> TẮT FULL
+        if (snap.exists()) {
+
+            const ok = confirm(
+                `${time} ${car}\n\n満車を解除しますか？`
+            );
+
+            if (!ok) return;
+
+            await ref.remove();
+
+        }
+
+        // Chưa FULL -> BẬT FULL
+        else {
+
+            const ok = confirm(
+                `${time} ${car}\n\n満車にしますか？`
+            );
+
+            if (!ok) return;
+
+            await ref.set({
+                time,
+                car,
+                full: true,
+                updatedAt: Date.now()
+            });
+
+        }
+
+        loadReservations();
+
+    } catch (err) {
+
+        console.error(err);
+        alert("保存失敗");
+
+    }
+
+});
 const popup = document.getElementById("reservePopup");
 const closePopup = document.getElementById("closePopup");
 const deleteBtn = document.getElementById("deleteBtn");
@@ -235,33 +316,6 @@ selAdults.addEventListener("keydown", (e) => {
     reserveForm.requestSubmit();
 });
 
-// function initReserveButtons() {
-//     document.querySelectorAll(".reserve-btn").forEach(btn => {
-//         document.addEventListener("click", (e) => {
-//     if (!e.target.classList.contains("reserve-btn")) return;
-
-//     popup.dataset.time = e.target.dataset.time;
-//     popup.dataset.car = e.target.dataset.car;
-
-//     popup.dataset.editId = "";
-//     popup.dataset.editDate = "";
-
-//     popup.classList.remove("hidden");
-//     resetForm();
-// });
-//     });
-
-//     document.querySelectorAll(".reserve-btn").forEach(btn => {
-//         btn.addEventListener("click", () => {
-//             popup.dataset.time = btn.dataset.time;
-//             popup.dataset.car = btn.dataset.car;
-//             popup.dataset.editId = "";
-//             popup.dataset.editDate = "";
-//             popup.classList.remove("hidden");
-//             resetForm();
-//         });
-//     });
-// 
 document.addEventListener("click", (e) => {
     const btn = e.target.closest(".reserve-btn");
     if (!btn) return;
@@ -499,6 +553,38 @@ function loadReservations() {
 
     const selectedDate = adminDate.value;
 
+    db.ref("fullCars/" + selectedDate).once("value")
+        .then(fullSnap => {
+
+            const fullData = fullSnap.val() || {};
+
+            Object.keys(fullData).forEach(key => {
+
+                const [time, car] = key.split(/_(.+)/);
+
+                const btn = document.querySelector(
+                    `.reserve-btn[data-time="${time}"][data-car="${car}"]`
+                );
+
+                if (!btn) return;
+
+                const td = btn.closest(".car-cell-box");
+                if (!td) return;
+
+                const emptyText =
+                    td.querySelector(".empty-text");
+
+                if (!emptyText) return;
+
+                emptyText.innerHTML =
+                    `予約済 <span class="seat-count-num">満車</span>`;
+
+                emptyText.classList.add("full-seat");
+            });
+
+        });
+
+
     if (currentReservationRef) {
         currentReservationRef.off();
     }
@@ -577,6 +663,37 @@ function loadReservations() {
         // =========================
 
         Object.keys(seatMap).forEach(key => {
+            db.ref("fullCars/" + selectedDate)
+                .once("value")
+                .then(fullSnap => {
+
+                    const fullCars = fullSnap.val() || {};
+
+                    Object.keys(fullCars).forEach(key => {
+
+                        const [time, car] = key.split(/_(.+)/);
+
+                        const btn = document.querySelector(
+                            `.reserve-btn[data-time="${time}"][data-car="${car}"]`
+                        );
+
+                        if (!btn) return;
+
+                        const td = btn.closest(".car-cell-box");
+                        if (!td) return;
+
+                        const emptyText =
+                            td.querySelector(".empty-text");
+
+                        if (!emptyText) return;
+
+                        emptyText.innerHTML =
+                            `予約済 <span class="seat-count-num">0</span>名 <span class="seat-full-label">満車</span>`;
+
+                        emptyText.classList.add("full-seat");
+                    });
+
+                });
 
             const [time, car] =
                 key.split(/_(.+)/);
@@ -915,24 +1032,24 @@ function loadReservations() {
                 quickDelBtn.type = "button";
 
                 quickDelBtn.addEventListener(
-    "click",
-    (e) => {
+                    "click",
+                    (e) => {
 
-        e.stopPropagation();
+                        e.stopPropagation();
 
-        const ok = confirm(
-            `R${item.room || "-"} ${item.name || ""}様\n\nこの予約を完全削除しますか？\n削除後は元に戻せません。`
-        );
+                        const ok = confirm(
+                            `R${item.room || "-"} ${item.name || ""}様\n\nこの予約を完全削除しますか？\n削除後は元に戻せません。`
+                        );
 
-        if (!ok) return;
+                        if (!ok) return;
 
-        executePendingAction(
-            "delete_quick",
-            item
-        );
+                        executePendingAction(
+                            "delete_quick",
+                            item
+                        );
 
-    }
-);
+                    }
+                );
 
                 rightActionsBlock.appendChild(
                     quickDelBtn
@@ -1346,6 +1463,7 @@ clearSearchBtn.addEventListener(
         searchInput.blur();
 
     }
+
 );
 
 
@@ -1562,8 +1680,8 @@ async function exportExcel() {
         const [year, month, day] = date.split("-");
 
         const headerText = `${Number(month)}月 ${Number(day)}日（${week}）`;
-sheetEarly.getCell("D1").value = headerText;
-sheetLate.getCell("D1").value = headerText;
+        sheetEarly.getCell("D1").value = headerText;
+        sheetLate.getCell("D1").value = headerText;
 
         // =========================
         // LOAD DATA
@@ -1579,36 +1697,36 @@ sheetLate.getCell("D1").value = headerText;
         // =========================
         // CLEAN TARGET CELLS (IMPORTANT)
         // =========================
-       const earlyMap = {
-    "06:05_ラッキータクシー":"C5",
-    "06:05_ホテル":"D5",
+        const earlyMap = {
+            "06:05_ラッキータクシー": "C5",
+            "06:05_ホテル": "D5",
 
-    "06:20_ラッキータクシー":"C15",
-    "06:20_ホテル":"D15",
+            "06:20_ラッキータクシー": "C15",
+            "06:20_ホテル": "D15",
 
-    "06:40_ラッキータクシー":"C25",
-    "06:40_ホテル":"D25",
+            "06:40_ラッキータクシー": "C25",
+            "06:40_ホテル": "D25",
 
-    "07:00_ラッキータクシー":"C35",
-    "07:00_ホテル":"D35"
-};
-const lateMap = {
-    "07:30_ホテル":"B3",
-    "08:00_ホテル":"B14",
-    "08:30_ホテル":"B25",
+            "07:00_ラッキータクシー": "C35",
+            "07:00_ホテル": "D35"
+        };
+        const lateMap = {
+            "07:30_ホテル": "B3",
+            "08:00_ホテル": "B14",
+            "08:30_ホテル": "B25",
 
-    "09:00_ホテル":"D3",
-    "09:30_ホテル":"D14",
-    "10:00_ホテル":"D25"
-};
+            "09:00_ホテル": "D3",
+            "09:30_ホテル": "D14",
+            "10:00_ホテル": "D25"
+        };
 
-       Object.values(earlyMap).forEach(addr => {
-    sheetEarly.getCell(addr).value = "";
-});
+        Object.values(earlyMap).forEach(addr => {
+            sheetEarly.getCell(addr).value = "";
+        });
 
-Object.values(lateMap).forEach(addr => {
-    sheetLate.getCell(addr).value = "";
-});
+        Object.values(lateMap).forEach(addr => {
+            sheetLate.getCell(addr).value = "";
+        });
 
         // =========================
         // GROUP BOOKINGS BY SLOT
@@ -1641,34 +1759,34 @@ Object.values(lateMap).forEach(addr => {
         // =========================
         // WRITE TO EXCEL (1 booking = 1 row)
         // =========================
-       Object.entries(grouped).forEach(([key, list]) => {
+        Object.entries(grouped).forEach(([key, list]) => {
 
-    let sheet = null;
-    let baseCell = null;
+            let sheet = null;
+            let baseCell = null;
 
-    if (earlyMap[key]) {
-        sheet = sheetEarly;
-        baseCell = earlyMap[key];
-    }
-    else if (lateMap[key]) {
-        sheet = sheetLate;
-        baseCell = lateMap[key];
-    }
+            if (earlyMap[key]) {
+                sheet = sheetEarly;
+                baseCell = earlyMap[key];
+            }
+            else if (lateMap[key]) {
+                sheet = sheetLate;
+                baseCell = lateMap[key];
+            }
 
-    if (!sheet || !baseCell) return;
+            if (!sheet || !baseCell) return;
 
-    const col = baseCell.replace(/[0-9]/g, "");
-    const baseRow = parseInt(baseCell.replace(/\D/g, ""));
+            const col = baseCell.replace(/[0-9]/g, "");
+            const baseRow = parseInt(baseCell.replace(/\D/g, ""));
 
-    list.forEach((text, i) => {
+            list.forEach((text, i) => {
 
-        const row = baseRow + i;
+                const row = baseRow + i;
 
-        sheet.getCell(`${col}${row}`).value = text;
+                sheet.getCell(`${col}${row}`).value = text;
 
-    });
+            });
 
-});
+        });
 
         // =========================
         // EXPORT FILE
