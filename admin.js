@@ -141,6 +141,9 @@ const lugLarge = document.getElementById("lugLarge");
 const lugMedium = document.getElementById("lugMedium");
 const lugSmall = document.getElementById("lugSmall");
 const searchInput = document.getElementById("searchInput");
+const showAllBookingsBtn =
+    document.getElementById("showAllBookingsBtn");
+
 const allBookingsPopup =
     document.getElementById("allBookingsPopup");
 
@@ -1650,16 +1653,13 @@ searchBtn.addEventListener(
 // EXPORT EXCEL
 // ========================================
 
-document
-    .querySelectorAll(".exportExcelBtn")
-    .forEach(btn => {
+const exportExcelBtn =
+    document.getElementById("exportExcelBtn");
 
-        btn.addEventListener(
-            "click",
-            exportExcel
-        );
-
-    });
+exportExcelBtn.addEventListener(
+    "click",
+    exportExcel
+);
 
 async function exportExcel() {
     try {
@@ -1808,13 +1808,9 @@ async function exportExcel() {
     }
 }
 
-document
-    .querySelectorAll(".showAllBookingsBtn")
-    .forEach(btn => {
-
-        btn.addEventListener(
-            "click",
-            async () => {
+showAllBookingsBtn.addEventListener(
+    "click",
+    async () => {
 
         const date = adminDate.value;
 
@@ -1938,10 +1934,8 @@ document
             "hidden"
         );
 
-     }
-        );
-
-    });
+    }
+);
 // =====================================
 // ALL BOOKINGS POPUP
 // =====================================
