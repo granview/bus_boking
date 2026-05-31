@@ -113,8 +113,11 @@ const prevDayBtn = document.getElementById("prevDay");
 const nextDayBtn = document.getElementById("nextDay");
 const updateBtn = document.getElementById("updateBtn");
 
-const btnPageEarly = document.getElementById("btnPageEarly");
-const btnPageLate = document.getElementById("btnPageLate");
+const btnPageEarlys =
+    document.querySelectorAll(".btnPageEarly");
+
+const btnPageLates =
+    document.querySelectorAll(".btnPageLate");
 const pageEarlyView = document.getElementById("pageEarlyView");
 const pageLateView = document.getElementById("pageLateView");
 
@@ -204,42 +207,43 @@ function isFutureDate(dateStr) {
 }
 // ── TRANG TOGGLE ──
 document.addEventListener("DOMContentLoaded", () => {
-    // Hàm xử lý chuyển sang ca sớm (06:05 ～ 07:00)
+
     const switchToEarly = () => {
-        btnPageEarly.classList.add("active");
-        btnPageLate.classList.remove("active");
+
+        btnPageEarlys.forEach(btn =>
+            btn.classList.add("active")
+        );
+
+        btnPageLates.forEach(btn =>
+            btn.classList.remove("active")
+        );
+
         pageEarlyView.classList.remove("hidden");
         pageLateView.classList.add("hidden");
     };
 
-    // Hàm xử lý chuyển sang ca muộn (07:30 ～ 10:00)
     const switchToLate = () => {
-        btnPageLate.classList.add("active");
-        btnPageEarly.classList.remove("active");
+
+        btnPageLates.forEach(btn =>
+            btn.classList.add("active")
+        );
+
+        btnPageEarlys.forEach(btn =>
+            btn.classList.remove("active")
+        );
+
         pageLateView.classList.remove("hidden");
         pageEarlyView.classList.add("hidden");
     };
 
-    // Xử lý sự kiện click chuột bình thường
-    btnPageEarly.addEventListener("click", switchToEarly);
-    btnPageLate.addEventListener("click", switchToLate);
-
-    // 🌟 TỰ ĐỘNG CHUYỂN TRANG KHI KÉO THẢ (Hỗ trợ PC & iPad)
-    // Khi đang kéo khách và rê chuột/ngón tay đè lên nút Ca sớm
-    btnPageEarly.addEventListener("dragover", (e) => {
-        e.preventDefault(); // Bắt buộc phải có để cho phép thả dữ liệu
-        if (dragBooking) {
-            switchToEarly();
-        }
+    btnPageEarlys.forEach(btn => {
+        btn.addEventListener("click", switchToEarly);
     });
 
-    // Khi đang kéo khách và rê chuột/ngón tay đè lên nút Ca muộn
-    btnPageLate.addEventListener("dragover", (e) => {
-        e.preventDefault(); // Bắt buộc phải có để cho phép thả dữ liệu
-        if (dragBooking) {
-            switchToLate();
-        }
+    btnPageLates.forEach(btn => {
+        btn.addEventListener("click", switchToLate);
     });
+
 });
 
 function getDateString(d) {
@@ -491,10 +495,10 @@ async function executeAction() {
             const lateHours = ["07:30", "08:00", "08:30", "09:00", "09:30", "10:00"];
 
             if (lateHours.includes(pendingTargetTime)) {
-                btnPageLate.click();
+                btnPageLates[0].click();
             }
             else if (earlyHours.includes(pendingTargetTime)) {
-                btnPageEarly.click();
+                btnPageEarlys[0].click();
             }
 
             dragBooking = null;
