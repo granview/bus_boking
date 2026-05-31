@@ -19,27 +19,23 @@
             <button class="update-btn" id="updateBtn">更新</button>
         </div>
         <div class="search-box-wrap">
-    <div class="search-area">
+            <div class="search-area">
 
-    <div class="search-bar-wrap">
+                <div class="search-bar-wrap">
 
-        <input
-            type="text"
-            id="searchInput"
-            placeholder="部屋番号 / 名前"
-        >
+                    <input type="text" id="searchInput" placeholder="部屋番号 / 名前">
 
-        <button id="searchBtn">
-            検索
-        </button>
-        <button id="clearSearchBtn">クリア</button>
+                    <button id="searchBtn">
+                        検索
+                    </button>
+                    <button id="clearSearchBtn">クリア</button>
 
-    </div>
+                </div>
 
-    <div id="searchResults"></div>
+                <div id="searchResults"></div>
 
-</div>
-</div>
+            </div>
+        </div>
 
         <div class="page-toggle-bar">
             <button class="toggle-page-btn active" id="btnPageEarly">06:05 ～ 07:00</button>
@@ -124,165 +120,174 @@
                     </div>
 
                 </div>
+                <div class="admin-header">
+                    <div class="page-toggle-bar">
+                        <button class="toggle-page-btn active" id="btnPageEarly">06:05 ～ 07:00</button>
+                        <button class="toggle-page-btn" id="btnPageLate">07:30 ～ 10:00</button>
+                    </div>
+                    <div class="top-action-bar">
+                        <button id="exportExcelBtn">EX出力</button>
+                        <button id="showAllBookingsBtn">全予約</button>
+
+                    </div>
                 
             </section>
-            <div class="admin-header">
-                <div class="page-toggle-bar">
-            <button class="toggle-page-btn active" id="btnPageEarly">06:05 ～ 07:00</button>
-            <button class="toggle-page-btn" id="btnPageLate">07:30 ～ 10:00</button>
+
         </div>
-            </div>
-            <div class="top-action-bar">
-    <button id="exportExcelBtn">EX出力</button>
-    <button id="showAllBookingsBtn">全予約</button>
-    
-</div>
-            <!-- ===================================== -->
-<!-- ALL BOOKINGS POPUP -->
-<!-- ===================================== -->
 
-<div id="allBookingsPopup" class="popup hidden">
+        <!-- ===================================== -->
+        <!-- ALL BOOKINGS POPUP -->
+        <!-- ===================================== -->
 
-  <div class="popup-box booking-list-popup">
+        <div id="allBookingsPopup" class="popup hidden">
 
-    <div class="popup-title">
-      当日の予約一覧
-    </div>
+            <div class="popup-box booking-list-popup">
 
-    <div id="allBookingsList" class="all-bookings-list">
-    </div>
+                <div class="popup-title">
+                    当日の予約一覧
+                </div>
 
-    <div class="popup-bottom-buttons">
+                <div id="allBookingsList" class="all-bookings-list">
+                </div>
 
-      <button
-        type="button"
-        id="closeAllBookingsBtn"
-        class="gray-btn"
-      >
-        閉じる
-      </button>
+                <div class="popup-bottom-buttons">
 
-    </div>
+                    <button type="button" id="closeAllBookingsBtn" class="gray-btn">
+                        閉じる
+                    </button>
 
-  </div>
-
-</div>
-
-            <div class="right-col hidden" id="pageLateView">
-                <section class="admin-section">
-                    <div class="regular-wrapper">
-
-                        <div class="admin-table-flex single-car-layout" style="flex:1;">
-
-                            <div class="table-flex-header">
-                                <div class="th-cell time-col">時間</div>
-                                <div class="th-cell car-col">ホテル車</div>
-                                <div class="th-cell time-col mid-time-col">時間</div>
-                                <div class="th-cell car-col">ホテル車</div>
-                            </div>
-
-                            <div class="table-flex-row">
-                                <div class="time-block-cell">07:30</div>
-                                <div class="car-data-containers" style="flex: 1;">
-                                    <div class="car-cell-box" data-time="07:30" data-car="ホテル">
-                                        <div class="guest-row"></div>
-                                        <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
-                                        <button class="reserve-btn" data-time="07:30" data-car="ホテル">＋ 予約</button>
-                                    </div>
-                                </div>
-
-                                <div class="time-block-cell mid-time-col">09:00</div>
-                                <div class="car-data-containers" style="flex: 1;">
-                                    <div class="car-cell-box" data-time="09:00" data-car="ホテル">
-                                        <div class="guest-row"></div>
-                                        <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
-                                        <button class="reserve-btn" data-time="09:00" data-car="ホテル">＋ 予約</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="table-flex-row">
-                                <div class="time-block-cell">08:00</div>
-                                <div class="car-data-containers" style="flex: 1;">
-                                    <div class="car-cell-box" data-time="08:00" data-car="ホテル">
-                                        <div class="guest-row"></div>
-                                        <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
-                                        <button class="reserve-btn" data-time="08:00" data-car="ホテル">＋ 予約</button>
-                                    </div>
-                                </div>
-
-                                <div class="time-block-cell mid-time-col">09:30</div>
-                                <div class="car-data-containers" style="flex: 1;">
-                                    <div class="car-cell-box" data-time="09:30" data-car="ホテル">
-                                        <div class="guest-row"></div>
-                                        <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
-                                        <button class="reserve-btn" data-time="09:30" data-car="ホテル">＋ 予約</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="table-flex-row">
-                                <div class="time-block-cell">08:30</div>
-                                <div class="car-data-containers" style="flex: 1;">
-                                    <div class="car-cell-box" data-time="08:30" data-car="ホテル">
-                                        <div class="guest-row"></div>
-                                        <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
-                                        <button class="reserve-btn" data-time="08:30" data-car="ホテル">＋ 予約</button>
-                                    </div>
-                                </div>
-
-                                <div class="time-block-cell mid-time-col">10:00</div>
-                                <div class="car-data-containers" style="flex: 1;">
-                                    <div class="car-cell-box" data-time="10:00" data-car="ホテル">
-                                        <div class="guest-row"></div>
-                                        <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
-                                        <button class="reserve-btn" data-time="10:00" data-car="ホテル">＋ 予約</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-
-                    </div>
-                </section>
-
-                <div class="info-panel">
-                    <div class="info-panel-header">連絡・管理</div>
-                    <div class="info-panel-body">
-                        <div class="info-half">
-                            <div class="info-sub-title">配車センター</div>
-                            <div class="taxi-name">ラッキータクシー</div>
-                            <div class="taxi-tel">092-541-7755</div>
-                            <div class="taxi-note">※不要時は22:00までに要連絡</div>
-                        </div>
-                        <div class="info-half">
-                            <div class="info-sub-title">送客車カギ管理</div>
-                            <table class="key-table">
-                                <tr>
-                                    <td>貸出</td>
-                                    <td>
-                                        <div style="display:flex; gap:4px;">
-                                            <input type="time" id="keyLendTime">
-                                            <input type="text" placeholder="名前" id="keyLendName" style="width:70px;">
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>返却</td>
-                                    <td>
-                                        <div style="display:flex; gap:4px;">
-                                            <input type="time" id="keyReturnTime">
-                                            <input type="text" placeholder="名前" id="keyReturnName" style="width:70px;">
-                                        </div>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
                 </div>
 
             </div>
+
         </div>
+
+        <div class="right-col hidden" id="pageLateView">
+            <section class="admin-section">
+                <div class="regular-wrapper">
+
+                    <div class="admin-table-flex single-car-layout" style="flex:1;">
+
+                        <div class="table-flex-header">
+                            <div class="th-cell time-col">時間</div>
+                            <div class="th-cell car-col">ホテル車</div>
+                            <div class="th-cell time-col mid-time-col">時間</div>
+                            <div class="th-cell car-col">ホテル車</div>
+                        </div>
+
+                        <div class="table-flex-row">
+                            <div class="time-block-cell">07:30</div>
+                            <div class="car-data-containers" style="flex: 1;">
+                                <div class="car-cell-box" data-time="07:30" data-car="ホテル">
+                                    <div class="guest-row"></div>
+                                    <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                    <button class="reserve-btn" data-time="07:30" data-car="ホテル">＋ 予約</button>
+                                </div>
+                            </div>
+
+                            <div class="time-block-cell mid-time-col">09:00</div>
+                            <div class="car-data-containers" style="flex: 1;">
+                                <div class="car-cell-box" data-time="09:00" data-car="ホテル">
+                                    <div class="guest-row"></div>
+                                    <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                    <button class="reserve-btn" data-time="09:00" data-car="ホテル">＋ 予約</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-flex-row">
+                            <div class="time-block-cell">08:00</div>
+                            <div class="car-data-containers" style="flex: 1;">
+                                <div class="car-cell-box" data-time="08:00" data-car="ホテル">
+                                    <div class="guest-row"></div>
+                                    <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                    <button class="reserve-btn" data-time="08:00" data-car="ホテル">＋ 予約</button>
+                                </div>
+                            </div>
+
+                            <div class="time-block-cell mid-time-col">09:30</div>
+                            <div class="car-data-containers" style="flex: 1;">
+                                <div class="car-cell-box" data-time="09:30" data-car="ホテル">
+                                    <div class="guest-row"></div>
+                                    <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                    <button class="reserve-btn" data-time="09:30" data-car="ホテル">＋ 予約</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-flex-row">
+                            <div class="time-block-cell">08:30</div>
+                            <div class="car-data-containers" style="flex: 1;">
+                                <div class="car-cell-box" data-time="08:30" data-car="ホテル">
+                                    <div class="guest-row"></div>
+                                    <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                    <button class="reserve-btn" data-time="08:30" data-car="ホテル">＋ 予約</button>
+                                </div>
+                            </div>
+
+                            <div class="time-block-cell mid-time-col">10:00</div>
+                            <div class="car-data-containers" style="flex: 1;">
+                                <div class="car-cell-box" data-time="10:00" data-car="ホテル">
+                                    <div class="guest-row"></div>
+                                    <div class="empty-text">予約済 <span class="seat-count-num">0</span>名</div>
+                                    <button class="reserve-btn" data-time="10:00" data-car="ホテル">＋ 予約</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="admin-header">
+                    <div class="page-toggle-bar">
+                        <button class="toggle-page-btn active" id="btnPageEarly">06:05 ～ 07:00</button>
+                        <button class="toggle-page-btn" id="btnPageLate">07:30 ～ 10:00</button>
+                    </div>
+                    <div class="top-action-bar">
+                        <button id="exportExcelBtn">EX出力</button>
+                        <button id="showAllBookingsBtn">全予約</button>
+
+                    </div>
+                
+            </section>
+
+            <div class="info-panel">
+                <div class="info-panel-header">連絡・管理</div>
+                <div class="info-panel-body">
+                    <div class="info-half">
+                        <div class="info-sub-title">配車センター</div>
+                        <div class="taxi-name">ラッキータクシー</div>
+                        <div class="taxi-tel">092-541-7755</div>
+                        <div class="taxi-note">※不要時は22:00までに要連絡</div>
+                    </div>
+                    <div class="info-half">
+                        <div class="info-sub-title">送客車カギ管理</div>
+                        <table class="key-table">
+                            <tr>
+                                <td>貸出</td>
+                                <td>
+                                    <div style="display:flex; gap:4px;">
+                                        <input type="time" id="keyLendTime">
+                                        <input type="text" placeholder="名前" id="keyLendName" style="width:70px;">
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>返却</td>
+                                <td>
+                                    <div style="display:flex; gap:4px;">
+                                        <input type="time" id="keyReturnTime">
+                                        <input type="text" placeholder="名前" id="keyReturnName" style="width:70px;">
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
     </div>
 
     <div id="reservePopup" class="popup hidden">
@@ -297,23 +302,13 @@
                         <div class="form-inline-row">
                             <div class="form-group size-room">
                                 <label class="field-label">部屋番号</label>
-                              <input
-                                id="inputRoom"
-                                type="text"
-                                lang="ja"
-                                inputmode="kana"
-                                autocomplete="off"
-                                autocapitalize="off">
+                                <input id="inputRoom" type="text" lang="ja" inputmode="kana" autocomplete="off"
+                                    autocapitalize="off">
                             </div>
                             <div class="form-group size-name">
                                 <label class="field-label">お名前</label>
-                                <input
-                                id="inputName"
-                                type="text"
-                                lang="ja"
-                                inputmode="kana"
-                                autocomplete="off"
-                                autocapitalize="off">
+                                <input id="inputName" type="text" lang="ja" inputmode="kana" autocomplete="off"
+                                    autocapitalize="off">
                             </div>
                             <div class="form-group size-stay">
                                 <label class="field-label">ステイ</label>
@@ -401,32 +396,32 @@
         </div>
     </div>
 
-    <link rel="stylesheet"
-href="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/default.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/default.css">
 
-<script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/index.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/scroll-behaviour.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/scroll-behaviour.min.js"></script>
 
-<script>
-window.addEventListener("load", function () {
+    <script>
+        window.addEventListener("load", function () {
 
-    if (window.MobileDragDrop) {
+            if (window.MobileDragDrop) {
 
-        MobileDragDrop.polyfill({
-            dragImageTranslateOverride:
-                MobileDragDrop.scrollBehaviourDragImageTranslateOverride
+                MobileDragDrop.polyfill({
+                    dragImageTranslateOverride:
+                        MobileDragDrop.scrollBehaviourDragImageTranslateOverride
+                });
+
+            }
+
         });
-
-    }
-
-});
-</script>
+    </script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  
+
     <script src="./admin.js"></script>
 </body>
+
 </html>
