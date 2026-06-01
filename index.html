@@ -299,6 +299,27 @@
             <div class="popup-header">
                 <div class="popup-title-centered">予約登録</div>
             </div>
+            <div class="popup-time-row">
+                <label class="time-label">予約時間</label>
+
+                <select id="bookingTime" class="time-select">
+                    <!-- Early -->
+                    <option value="06:05">06:05</option>
+                    <option value="06:20">06:20</option>
+                    <option value="06:40">06:40</option>
+                    <option value="07:00">07:00</option>
+
+                    <!-- Late -->
+                    <option value="07:30">07:30</option>
+                    <option value="08:00">08:00</option>
+                    <option value="08:30">08:30</option>
+                    <option value="09:00">09:00</option>
+                    <option value="09:30">09:30</option>
+                    <option value="10:00">10:00</option>
+                </select>
+                <div id="timePreview" class="time-change-wrap"></div>
+            </div>
+
             <form id="reserveForm">
                 <div class="popup-body clear-body">
 

@@ -1,4 +1,20 @@
 // ── FIREBASE CONFIG ──
+window.addEventListener("touchcancel", () => {
+
+    touchDragBooking = null;
+    dragBooking = null;
+
+    if (touchDraggingEl) {
+        touchDraggingEl.classList.remove("dragging");
+        touchDraggingEl = null;
+    }
+
+    document.querySelectorAll(".car-cell-box")
+        .forEach(td => td.classList.remove("drag-over"));
+
+});
+let fullCarMap = {};
+let originalTime = "";
 let dragBooking = null;
 let touchDragBooking = null;
 let touchDraggingEl = null;
@@ -7,6 +23,7 @@ let pendingTargetTime = null;
 let pendingTargetCar = null;
 let pendingActionType = null; // 'delete_form', 'delete_quick', 'move'
 let pendingItemData = null;
+let originalCar = "";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDppkqjWkRyL_JYFrHF7MWvTFAACwgxU-c",
@@ -112,6 +129,8 @@ const adminDate = document.getElementById("adminDate");
 const prevDayBtn = document.getElementById("prevDay");
 const nextDayBtn = document.getElementById("nextDay");
 const updateBtn = document.getElementById("updateBtn");
+const bookingTime = document.getElementById("bookingTime");
+
 
 const btnPageEarlys =
     document.querySelectorAll(".btnPageEarly");
@@ -154,6 +173,7 @@ const allBookingsList =
 
 const closeAllBookingsBtn =
     document.getElementById("closeAllBookingsBtn");
+
 
 let currentReservationRef = null;
 let soinetSeatStatus = "";
@@ -242,6 +262,17 @@ function getDateString(d) {
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     return `${y}-${m}-${day}`;
+}
+function switchPageByTime(time) {
+    const earlyHours = ["06:05", "06:20", "06:40", "07:00"];
+    const lateHours = ["07:30", "08:00", "08:30", "09:00", "09:30", "10:00"];
+
+    if (lateHours.includes(time)) {
+        btnPageLates[0].click();
+    }
+    else if (earlyHours.includes(time)) {
+        btnPageEarlys[0].click();
+    }
 }
 const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
 adminDate.value = getDateString(tomorrow);
@@ -332,6 +363,20 @@ function resetForm() {
 }
 
 closePopup.addEventListener("click", () => { popup.classList.add("hidden"); });
+popup.addEventListener("click", (e) => {
+
+    // chỉ khi click vào nền popup
+    if (e.target === popup) {
+
+        popup.classList.add("hidden");
+
+        resetForm();
+
+        popup.dataset.editId = "";
+
+    }
+
+});
 
 reserveForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -363,11 +408,60 @@ reserveForm.addEventListener("submit", async (e) => {
 
     // Nếu thỏa mãn cả 2 điều kiện trên thì tiến hành lưu dữ liệu lên Firebase
     const now = Date.now();
+    const earlyHours = [
+        "06:05",
+        "06:20",
+        "06:40",
+        "07:00"
+    ];
+
+    const lateHours = [
+        "07:30",
+        "08:00",
+        "08:30",
+        "09:00",
+        "09:30",
+        "10:00"
+    ];
+
+    const oldTime = editId ? originalTime : bookingTime.value;
+    const newTime = bookingTime.value;
+
+    let targetCar = popup.dataset.car;
+
+    // sớm -> muộn
+    if (
+        earlyHours.includes(oldTime) &&
+        lateHours.includes(newTime)
+    ) {
+        targetCar = "ホテル";
+    }
+
+    // muộn -> sớm
+    else if (
+        lateHours.includes(oldTime) &&
+        earlyHours.includes(newTime)
+    ) {
+
+        const carChoice = prompt(
+            "車を選択してください\n\n2 = ホテル\n1 = ラッキータクシー",
+            "1"
+        );
+
+        if (carChoice === null) {
+            return;
+        }
+
+        targetCar =
+            carChoice === "2"
+                ? "ホテル"
+                : "ラッキータクシー";
+    }
     const data = {
         bookingSource: "staff",
         date: saveDate,
-        time: popup.dataset.time,
-        car: popup.dataset.car,
+        time: bookingTime.value,
+        car: targetCar,
         stay: stayActive,
         room: roomValue, // Sử dụng giá trị đã trim khoảng trắng
         name: nameValue,
@@ -383,18 +477,81 @@ reserveForm.addEventListener("submit", async (e) => {
         golf: 0,
         updatedAt: now
     };
+    const allowSave =
+        await checkCrowdedWarning(
+            saveDate,
+            data.time,
+            data.car,
+            data,
+            editId || null
+        );
 
+    if (!allowSave) {
+        return;
+    }
     try {
         if (editId) {
-            await db.ref("reservations/" + saveDate + "/" + editId).update({
-                ...data,
-                updatedAt: now
-            });
+
+            const oldTime = originalTime;
+            const oldCar = popup.dataset.car;
+
+            const isMove =
+                oldTime !== data.time ||
+                oldCar !== data.car;
+
+            // =====================
+            // Chỉ sửa thông tin
+            // =====================
+            if (!isMove) {
+
+                await db.ref(
+                    "reservations/" +
+                    saveDate +
+                    "/" +
+                    editId
+                ).update({
+                    ...data,
+                    updatedAt: now
+                });
+
+            }
+
+            // =====================
+            // Đổi giờ / đổi xe
+            // =====================
+            else {
+
+                await db.ref(
+                    "reservations/" +
+                    saveDate +
+                    "/" +
+                    editId
+                ).update({
+                    status: "moved",
+                    movedTo: data.time,
+                    updatedAt: now
+                });
+
+                await db.ref(
+                    "reservations/" +
+                    data.date
+                ).push({
+                    ...data,
+                    createdAt: now
+                });
+
+            }
+
         } else {
-            await db.ref("reservations/" + data.date).push({
+
+            await db.ref(
+                "reservations/" +
+                data.date
+            ).push({
                 ...data,
                 createdAt: now
             });
+
         }
     } catch (error) {
         console.error(error);
@@ -405,8 +562,80 @@ reserveForm.addEventListener("submit", async (e) => {
     popup.classList.add("hidden");
     resetForm();
     popup.dataset.editId = "";
+    switchPageByTime(data.time);
+    loadReservations();
 });
+function getBookingSeatCount(item) {
 
+
+    let seats = Number(item.adults || 0);
+
+    if (item.soinetSeat === "ari") {
+        seats += Number(item.soinet || 0);
+    }
+
+    return seats;
+}
+
+async function checkCrowdedWarning(
+    date,
+    targetTime,
+    targetCar,
+    bookingData,
+    excludeId = null
+) {
+
+    const snap =
+        await db.ref("reservations/" + date).get();
+
+    const allData = snap.val() || {};
+
+    let usedSeats = 0;
+
+    Object.entries(allData).forEach(([id, item]) => {
+
+        if (
+            item.archived ||
+            item.status === "canceled" ||
+            item.status === "moved"
+        ) {
+            return;
+        }
+
+        if (excludeId && id === excludeId) {
+            return;
+        }
+
+        if (
+            item.time === targetTime &&
+            item.car === targetCar
+        ) {
+
+            usedSeats += getBookingSeatCount(item);
+
+        }
+
+    });
+
+    const newSeats =
+        getBookingSeatCount(bookingData);
+
+    const totalSeats =
+        usedSeats + newSeats;
+
+    if (totalSeats >= 7) {
+
+        return confirm(
+            `${targetTime} ${targetCar}\n\n` +
+            `現在 ${usedSeats}名\n` +
+            `追加後 ${totalSeats}名になります。\n\n` +
+            `このまま登録しますか？`
+        );
+
+    }
+
+    return true;
+}
 // ── ACTION HANDLING (password disabled) ──
 function executePendingAction(actionType, extraData = null) {
     pendingActionType = actionType;
@@ -452,7 +681,77 @@ async function executeAction() {
         }
         else if (pendingActionType === "move") {
             if (!dragBooking) return;
+            const snapshot = await db.ref(
+                "reservations/" + dragBooking.date
+            ).get();
 
+            const allData = snapshot.val() || {};
+
+            let usedSeats = 0;
+
+            Object.values(allData).forEach(item => {
+
+                if (
+                    item.archived ||
+                    item.status === "canceled" ||
+                    item.status === "moved"
+                ) {
+                    return;
+                }
+
+                if (
+                    item.time === pendingTargetTime &&
+                    item.car === pendingTargetCar
+                ) {
+
+                    usedSeats += getBookingSeatCount(item);
+
+                }
+
+            });
+
+            const moveSeats =
+                getBookingSeatCount(dragBooking);
+            const crowdedTotal =
+                usedSeats + moveSeats;
+
+            if (crowdedTotal >= 7) {
+
+                const ok = confirm(
+                    `${pendingTargetTime} ${pendingTargetCar}\n\n` +
+                    `移動後 ${crowdedTotal}名になります。\n\n` +
+                    `移動しますか？`
+                );
+
+                if (!ok) {
+
+                    dragBooking = null;
+                    return;
+
+                }
+
+            }
+
+            const maxSeats =
+                seatMap[
+                pendingTargetTime +
+                "_" +
+                pendingTargetCar
+                ];
+
+            if (
+                usedSeats + moveSeats >
+                maxSeats
+            ) {
+
+                alert(
+                    `満席です。\n\n残り ${maxSeats - usedSeats
+                    }席`
+                );
+
+                dragBooking = null;
+                return;
+            }
             const parentRef = db.ref(
                 "reservations/" +
                 dragBooking.date
@@ -547,35 +846,13 @@ deleteBtn.addEventListener("click", () => {
 function loadReservations() {
 
     const selectedDate = adminDate.value;
+    fullCarMap = {};
 
-    db.ref("fullCars/" + selectedDate).once("value")
+    db.ref("fullCars/" + selectedDate)
+        .once("value")
         .then(fullSnap => {
 
-            const fullData = fullSnap.val() || {};
-
-            Object.keys(fullData).forEach(key => {
-
-                const [time, car] = key.split(/_(.+)/);
-
-                const btn = document.querySelector(
-                    `.reserve-btn[data-time="${time}"][data-car="${car}"]`
-                );
-
-                if (!btn) return;
-
-                const td = btn.closest(".car-cell-box");
-                if (!td) return;
-
-                const emptyText =
-                    td.querySelector(".empty-text");
-
-                if (!emptyText) return;
-
-                emptyText.innerHTML =
-                    `予約済 <span class="seat-count-num">満車</span>`;
-
-                emptyText.classList.add("full-seat");
-            });
+            fullCarMap = fullSnap.val() || {};
 
         });
 
@@ -657,45 +934,64 @@ function loadReservations() {
         // UPDATE SEAT LABEL
         // =========================
 
+        // =========================
+        // UPDATE SEAT LABEL
+        // =========================
+
         Object.keys(seatMap).forEach(key => {
-            db.ref("fullCars/" + selectedDate)
-                .once("value")
-                .then(fullSnap => {
 
-                    const fullCars = fullSnap.val() || {};
-
-                    Object.keys(fullCars).forEach(key => {
-
-                        const [time, car] = key.split(/_(.+)/);
-
-                        const btn = document.querySelector(
-                            `.reserve-btn[data-time="${time}"][data-car="${car}"]`
-                        );
-
-                        if (!btn) return;
-
-                        const td = btn.closest(".car-cell-box");
-                        if (!td) return;
-
-                        const emptyText =
-                            td.querySelector(".empty-text");
-
-                        if (!emptyText) return;
-
-                        emptyText.innerHTML =
-                            `予約済 <span class="seat-count-num">0</span>名 <span class="seat-full-label">満車</span>`;
-
-                        emptyText.classList.add("full-seat");
-                    });
-
-                });
-
-            const [time, car] =
-                key.split(/_(.+)/);
+            const [time, car] = key.split(/_(.+)/);
 
             const btn = document.querySelector(
                 `.reserve-btn[data-time="${time}"][data-car="${car}"]`
             );
+
+            if (!btn) return;
+
+            const td = btn.closest(".car-cell-box");
+            if (!td) return;
+
+            const emptyText = td.querySelector(".empty-text");
+            if (!emptyText) return;
+
+            const used = usedMap[key] || 0;
+            const max = seatMap[key];
+            const remain = max - used;
+
+            // Nếu FULL theo số ghế
+            if (remain <= 0) {
+                emptyText.innerHTML =
+                    `予約済 <span class="seat-count-num">${used}</span>名 <span class="seat-full-label">満車</span>`;
+                emptyText.classList.add("full-seat");
+                return;
+            }
+
+            // Nếu FULL do admin bật
+            if (fullCarMap[key]) {
+                emptyText.innerHTML =
+                    `予約済 <span class="seat-count-num">${used}</span>名 <span class="seat-full-label">満車</span>`;
+                emptyText.classList.add("full-seat");
+                return;
+            }
+
+            // Bình thường
+            emptyText.innerHTML =
+                `予約済 <span class="seat-count-num">${used}</span>名`;
+
+            if (remain === 1) {
+                emptyText.classList.add("few-seat");
+            }
+        });
+
+        Object.keys(fullCarMap).forEach(key => {
+
+            const [time, car] =
+                key.split(/_(.+)/);
+
+            const btn =
+                document.querySelector(
+                    `.reserve-btn[data-time="${time}"][data-car="${car}"]`
+                );
 
             if (!btn) return;
 
@@ -709,42 +1005,12 @@ function loadReservations() {
 
             if (!emptyText) return;
 
-            const max = seatMap[key];
+            emptyText.innerHTML =
+                `予約済 <span class="seat-count-num">満車</span>`;
 
-            const used = usedMap[key] || 0;
-
-            const remain = max - used;
-
-            if (remain <= 0) {
-
-                emptyText.innerHTML =
-                    `予約済 <span class='seat-count-num'>${used}</span>名 <span class='seat-full-label'>満車</span>`;
-
-                emptyText.classList.add(
-                    "full-seat"
-                );
-
-            }
-            else if (remain === 1) {
-
-                emptyText.innerHTML =
-                    `予約済 <span class='seat-count-num'>${used}</span>名`;
-
-                emptyText.classList.add(
-                    "few-seat"
-                );
-
-            }
-            else {
-
-                emptyText.innerHTML =
-                    `予約済 <span class='seat-count-num'>${used}</span>名`;
-
-            }
+            emptyText.classList.add("full-seat");
 
         });
-
-
 
         if (!data) return;
 
@@ -778,7 +1044,11 @@ function loadReservations() {
 
         Object.entries(data).forEach(([id, item]) => {
 
-            if (item.archived) return;
+            if (
+                item.archived
+            ) {
+                return;
+            }
 
             item.id = id;
             item.date = selectedDate;
@@ -1005,16 +1275,19 @@ function loadReservations() {
 
             }
 
-            // canceled delete button
-            if (isCanceled) {
-                const cxlLabel = document.createElement("span");
+            // canceled hoặc moved
+            if (isCanceled || isMoved) {
 
-                cxlLabel.className = "cxl-label";
+                const statusLabel = document.createElement("span");
 
-                cxlLabel.textContent = "CXL";
+                statusLabel.className = "cxl-label";
 
-                rightActionsBlock.appendChild(cxlLabel);
+                statusLabel.textContent =
+                    isCanceled ? "CXL" : " ";
 
+                rightActionsBlock.appendChild(
+                    statusLabel
+                );
 
                 const quickDelBtn =
                     document.createElement("button");
@@ -1033,7 +1306,7 @@ function loadReservations() {
                         e.stopPropagation();
 
                         const ok = confirm(
-                            `R${item.room || "-"} ${item.name || ""}様\n\nこの予約を完全削除しますか？\n削除後は元に戻せません。`
+                            `R${item.room || "-"} ${item.name || ""}様\n\n完全削除しますか？`
                         );
 
                         if (!ok) return;
@@ -1133,18 +1406,22 @@ function loadReservations() {
                     }
 
                 }, { passive: false });
-                window.addEventListener("touchcancel", () => {
-                    touchDragBooking = null;
-                });
+                // window.addEventListener("touchcancel", () => {
+                //     touchDragBooking = null;
+                // });
 
                 line.addEventListener("touchend", async (e) => {
 
                     if (!touchDragBooking) return;
 
                     line.classList.remove("dragging");
-
+                    if (!e.changedTouches || !e.changedTouches.length) {
+                        touchDragBooking = null;
+                        return;
+                    }
                     const touch =
                         e.changedTouches[0];
+
 
                     const target =
                         document.elementFromPoint(
@@ -1252,6 +1529,13 @@ function loadReservations() {
 
             function openEditPopup(item) {
 
+                const isMove =
+                    originalTime !== item.time ||
+                    originalCar !== item.car;
+                // clear preview khi mở
+                document.getElementById("timePreview").innerHTML = "";
+                
+
                 popup.classList.remove("hidden");
 
                 popup.dataset.editId = item.id;
@@ -1261,6 +1545,10 @@ function loadReservations() {
 
                 popup.dataset.time =
                     item.time;
+                originalTime = item.time;
+                bookingTime.value = item.time;
+
+                document.getElementById("timePreview").innerHTML = "";
 
                 popup.dataset.car =
                     item.car;
@@ -1386,7 +1674,22 @@ function loadReservations() {
     });
     applySearchFilter();
 }
+bookingTime.addEventListener("change", () => {
 
+    const newTime = bookingTime.value;
+    const wrap = document.getElementById("timePreview");
+
+    if (!originalTime || originalTime === newTime) {
+        wrap.innerHTML = "";
+        return;
+    }
+
+    wrap.innerHTML = `
+        <span class="old-time">${originalTime}</span>
+        <span class="time-arrow">→</span>
+        <span class="new-time">${newTime}</span>
+    `;
+});
 // ── DRAG & DROP LIÊN TRANG ──
 document.querySelectorAll(".car-cell-box").forEach(td => {
     td.addEventListener("dragover", (e) => { e.preventDefault(); td.classList.add("drag-over"); });
@@ -1491,8 +1794,13 @@ searchBtn.addEventListener(
                 Object.entries(bookings).forEach(
                     ([id, item]) => {
 
-                        if (item.archived) return;
-
+                        if (
+                            item.archived ||
+                            item.status === "moved" ||
+                            item.status === "canceled"
+                        ) {
+                            return;
+                        }
                         const room =
                             String(item.room || "")
                                 .toLowerCase();
@@ -1565,7 +1873,13 @@ searchBtn.addEventListener(
                         div.addEventListener(
                             "click",
                             () => {
+                                originalTime = item.time;
 
+                                bookingTime.value = item.time;
+
+                                document.getElementById(
+                                    "timePreview"
+                                ).innerHTML = "";
                                 popup.classList.remove(
                                     "hidden"
                                 );
@@ -1686,6 +2000,8 @@ async function exportExcel() {
         // =========================
         const snapshot = await db.ref("reservations/" + date).get();
         const data = snapshot.val();
+        const fullSnap = await db.ref("fullCars/" + date).once("value");
+        const fullCars = fullSnap.val() || {};
 
         if (!data) {
             alert("データなし");
@@ -1749,7 +2065,7 @@ async function exportExcel() {
             const stay = item.stay ? "ステイ" : "";
 
             const text =
-                `${item.room || ""}｜${item.name || ""}様｜${item.adults || 0}名 ${luggage}${stay}`.trim();
+                `${item.room || ""}｜${item.name || ""}｜${item.adults || 0}名 ${luggage}${stay}`.trim();
 
             grouped[key].push(text);
         });
@@ -1802,106 +2118,106 @@ async function exportExcel() {
     }
 }
 
-showAllBookingsBtns.forEach(btn=>{
+showAllBookingsBtns.forEach(btn => {
 
     btn.addEventListener(
         "click",
-        async ()=>{
+        async () => {
 
-        const date = adminDate.value;
+            const date = adminDate.value;
 
-        const snapshot =
-            await db.ref(
-                "reservations/" + date
-            ).get();
+            const snapshot =
+                await db.ref(
+                    "reservations/" + date
+                ).get();
 
-        const data = snapshot.val();
+            const data = snapshot.val();
 
-        allBookingsList.innerHTML = "";
+            allBookingsList.innerHTML = "";
 
-        if (!data) {
+            if (!data) {
 
-            allBookingsList.innerHTML =
-                "<div>データなし</div>";
+                allBookingsList.innerHTML =
+                    "<div>データなし</div>";
 
-            allBookingsPopup.classList.remove(
-                "hidden"
-            );
+                allBookingsPopup.classList.remove(
+                    "hidden"
+                );
 
-            return;
-
-        }
-
-        // ARRAY
-        const arr = Object.entries(data)
-            .map(([id, item]) => ({
-
-                id,
-                ...item
-
-            }));
-
-        // FILTER
-        const filtered =
-            arr.filter(item =>
-
-                !item.archived
-                &&
-                item.status !== "canceled"
-                && item.status !== "moved"
-
-
-            );
-
-        // SORT ROOM
-        filtered.sort((a, b) => {
-
-            const roomA =
-                parseInt(a.room) || 0;
-
-            const roomB =
-                parseInt(b.room) || 0;
-
-            return roomA - roomB;
-
-        });
-
-        // RENDER
-        filtered.forEach(item => {
-
-            const div =
-                document.createElement("div");
-
-            div.className =
-                "booking-list-line";
-
-            let luggage = "";
-
-            if (item.tokudai > 0) {
-
-                luggage += ` 特大${item.tokudai}`;
+                return;
 
             }
 
-            if (item.large > 0) {
+            // ARRAY
+            const arr = Object.entries(data)
+                .map(([id, item]) => ({
 
-                luggage += ` 大${item.large}`;
+                    id,
+                    ...item
 
-            }
+                }));
 
-            if (item.medium > 0) {
+            // FILTER
+            const filtered =
+                arr.filter(item =>
 
-                luggage += ` 中${item.medium}`;
+                    !item.archived
+                    &&
+                    item.status !== "canceled"
+                    && item.status !== "moved"
 
-            }
 
-            if (item.small > 0) {
+                );
 
-                luggage += ` 小${item.small}`;
+            // SORT ROOM
+            filtered.sort((a, b) => {
 
-            }
+                const roomA =
+                    parseInt(a.room) || 0;
 
-            div.innerHTML = `
+                const roomB =
+                    parseInt(b.room) || 0;
+
+                return roomA - roomB;
+
+            });
+
+            // RENDER
+            filtered.forEach(item => {
+
+                const div =
+                    document.createElement("div");
+
+                div.className =
+                    "booking-list-line";
+
+                let luggage = "";
+
+                if (item.tokudai > 0) {
+
+                    luggage += ` 特大${item.tokudai}`;
+
+                }
+
+                if (item.large > 0) {
+
+                    luggage += ` 大${item.large}`;
+
+                }
+
+                if (item.medium > 0) {
+
+                    luggage += ` 中${item.medium}`;
+
+                }
+
+                if (item.small > 0) {
+
+                    luggage += ` 小${item.small}`;
+
+                }
+
+                div.innerHTML = `
 
             <div class="booking-room">
             R${item.room || "-"}
@@ -1922,15 +2238,15 @@ showAllBookingsBtns.forEach(btn=>{
 
         `;
 
-            allBookingsList.appendChild(div);
+                allBookingsList.appendChild(div);
 
-        });
+            });
 
-        allBookingsPopup.classList.remove(
-            "hidden"
-        );
+            allBookingsPopup.classList.remove(
+                "hidden"
+            );
 
-     }
+        }
     );
 
 });
