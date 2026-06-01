@@ -1749,7 +1749,7 @@ async function exportExcel() {
             const stay = item.stay ? "ステイ" : "";
 
             const text =
-                `${item.room || ""}｜${item.name || ""}様｜${item.adults || 0}名 (${luggage}${stay}`).trim();
+                `${item.room || ""}｜${item.name || ""}様｜${item.adults || 0}名 ${luggage}${stay}`.trim();
 
             grouped[key].push(text);
         });
