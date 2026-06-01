@@ -17,10 +17,12 @@ let fullCarMap = {};
 let originalTime = "";
 let dragBooking = null;
 let touchDragBooking = null;
-let touchDraggingEl = null;
-
 let pendingTargetTime = null;
 let pendingTargetCar = null;
+let touchDraggingEl = null;
+
+
+
 let pendingActionType = null; // 'delete_form', 'delete_quick', 'move'
 let pendingItemData = null;
 let originalCar = "";
@@ -680,9 +682,12 @@ async function executeAction() {
             });
         }
         else if (pendingActionType === "move") {
-            if (!dragBooking) return;
+            const movingBooking = dragBooking;
+
+            if (!movingBooking) return;
+
             const snapshot = await db.ref(
-                "reservations/" + dragBooking.date
+                "reservations/" + movingBooking.date
             ).get();
 
             const allData = snapshot.val() || {};
@@ -711,7 +716,7 @@ async function executeAction() {
             });
 
             const moveSeats =
-                getBookingSeatCount(dragBooking);
+                getBookingSeatCount(movingBooking);
             const crowdedTotal =
                 usedSeats + moveSeats;
 
@@ -754,16 +759,16 @@ async function executeAction() {
             }
             const parentRef = db.ref(
                 "reservations/" +
-                dragBooking.date
+                movingBooking.date
             );
 
             const newRef = parentRef.push();
 
             const newData = {
-                ...dragBooking,
+                ...movingBooking,
                 time: pendingTargetTime,
                 car: pendingTargetCar,
-                movedFrom: dragBooking.time,
+                movedFrom: movingBooking.time,
                 createdAt: Date.now(),
                 updatedAt: Date.now()
             };
@@ -775,9 +780,9 @@ async function executeAction() {
             const updates = {};
             updates[newRef.key] = newData;
 
-            updates[dragBooking.id + "/status"] = "moved";
-            updates[dragBooking.id + "/movedTo"] = pendingTargetTime;
-            updates[dragBooking.id + "/updatedAt"] = Date.now();
+            updates[movingBooking.id + "/status"] = "moved";
+            updates[movingBooking.id + "/movedTo"] = pendingTargetTime;
+            updates[movingBooking.id + "/updatedAt"] = Date.now();
 
             await parentRef.update(updates);
 
@@ -1005,8 +1010,10 @@ function loadReservations() {
 
             if (!emptyText) return;
 
+            const used = usedMap[key] || 0;
+
             emptyText.innerHTML =
-                `予約済 <span class="seat-count-num">満車</span>`;
+                `予約済 <span class="seat-count-num">${used}</span>名 <span class="seat-full-label">満車</span>`;
 
             emptyText.classList.add("full-seat");
 
@@ -1329,123 +1336,145 @@ function loadReservations() {
             // DRAG DESKTOP + IPAD
             // =========================
 
+            let suppressNextClick = false;
+
             if (!isCanceled && !isMoved) {
 
-                line.draggable = true;
+                line.draggable = false;
+                line.style.touchAction = "none";
 
-                // DESKTOP
-                line.addEventListener("dragstart", (e) => {
+                let pointerDragState = null;
+                let lastPageSwitchAt = 0;
 
-                    dragBooking = item;
-
-                    line.classList.add("dragging");
-
-                    e.dataTransfer.effectAllowed = "move";
-
-                });
-
-                line.addEventListener("dragend", () => {
-
+                const clearPointerDragUi = () => {
                     line.classList.remove("dragging");
-
                     document.querySelectorAll(".car-cell-box")
                         .forEach(td => {
-
                             td.classList.remove("drag-over");
-
                         });
+                };
 
-                });
-
-                // =========================
-                // TOUCH IPAD / MOBILE
-                // =========================
-
-                line.addEventListener("touchstart", (e) => {
-
-                    touchDragBooking = item;
-
-                    touchDraggingEl = line;
-
-                    line.classList.add("dragging");
-
-                }, { passive: false });
-
-                line.addEventListener("touchmove", (e) => {
-
-                    if (!touchDragBooking) return;
-
-                    if (e.cancelable) {
-                        e.preventDefault();
-                    }
-
-                    const touch = e.touches[0];
-
+                const getDropBoxAt = (clientX, clientY) => {
                     const target =
-                        document.elementFromPoint(
-                            touch.clientX,
-                            touch.clientY
-                        );
+                        document.elementFromPoint(clientX, clientY);
 
-                    const dropBox =
-                        target
-                            ? target.closest(".car-cell-box")
-                            : null;
+                    return target
+                        ? target.closest(".car-cell-box")
+                        : null;
+                };
 
+                const highlightDropBox = (dropBox) => {
                     document.querySelectorAll(".car-cell-box")
                         .forEach(td => {
-
                             td.classList.remove("drag-over");
-
                         });
 
                     if (dropBox) {
-
                         dropBox.classList.add("drag-over");
-
                     }
+                };
 
-                }, { passive: false });
-                // window.addEventListener("touchcancel", () => {
-                //     touchDragBooking = null;
-                // });
-
-                line.addEventListener("touchend", async (e) => {
-
-                    if (!touchDragBooking) return;
-
-                    line.classList.remove("dragging");
-                    if (!e.changedTouches || !e.changedTouches.length) {
-                        touchDragBooking = null;
-                        return;
-                    }
-                    const touch =
-                        e.changedTouches[0];
-
-
+                const switchPageWhileDragging = (clientX, clientY) => {
                     const target =
-                        document.elementFromPoint(
-                            touch.clientX,
-                            touch.clientY
-                        );
+                        document.elementFromPoint(clientX, clientY);
 
-                    const dropBox =
+                    const pageButton =
                         target
-                            ? target.closest(".car-cell-box")
+                            ? target.closest(".btnPageEarly, .btnPageLate")
                             : null;
 
-                    document.querySelectorAll(".car-cell-box")
-                        .forEach(td => {
+                    if (!pageButton) return;
 
-                            td.classList.remove("drag-over");
+                    const now = Date.now();
+                    if (now - lastPageSwitchAt < 500) return;
 
-                        });
+                    lastPageSwitchAt = now;
+                    pageButton.click();
+                };
+
+                const stopDocumentPointerDrag = () => {
+                    document.removeEventListener(
+                        "pointermove",
+                        handlePointerMove
+                    );
+                    document.removeEventListener(
+                        "pointerup",
+                        handlePointerUp
+                    );
+                    document.removeEventListener(
+                        "pointercancel",
+                        handlePointerCancel
+                    );
+                };
+
+                const handlePointerMove = (e) => {
+                    if (
+                        !pointerDragState ||
+                        pointerDragState.pointerId !== e.pointerId
+                    ) {
+                        return;
+                    }
+
+                    const moveX =
+                        Math.abs(e.clientX - pointerDragState.startX);
+                    const moveY =
+                        Math.abs(e.clientY - pointerDragState.startY);
+
+                    if (
+                        !pointerDragState.dragging &&
+                        Math.max(moveX, moveY) < 8
+                    ) {
+                        return;
+                    }
+
+                    if (!pointerDragState.dragging) {
+                        pointerDragState.dragging = true;
+                        suppressNextClick = true;
+                        dragBooking = item;
+                        touchDragBooking = item;
+                        touchDraggingEl = line;
+                        line.classList.add("dragging");
+                    }
+
+                    e.preventDefault();
+
+                    switchPageWhileDragging(e.clientX, e.clientY);
+
+                    highlightDropBox(
+                        getDropBoxAt(e.clientX, e.clientY)
+                    );
+                };
+
+                const handlePointerUp = (e) => {
+                    if (
+                        !pointerDragState ||
+                        pointerDragState.pointerId !== e.pointerId
+                    ) {
+                        return;
+                    }
+
+                    const wasDragging =
+                        pointerDragState.dragging;
+
+                    pointerDragState = null;
+                    stopDocumentPointerDrag();
+
+                    if (!wasDragging) {
+                        return;
+                    }
+
+                    e.preventDefault();
+
+                    const dropBox =
+                        getDropBoxAt(e.clientX, e.clientY);
+
+                    clearPointerDragUi();
 
                     if (!dropBox) {
-
+                        dragBooking = null;
                         touchDragBooking = null;
+                        touchDraggingEl = null;
                         return;
-
                     }
 
                     pendingTargetTime =
@@ -1454,33 +1483,66 @@ function loadReservations() {
                     pendingTargetCar =
                         dropBox.dataset.car;
 
-                    // SAME SLOT
                     if (
-                        touchDragBooking.time === pendingTargetTime
-                        &&
-                        touchDragBooking.car === pendingTargetCar
+                        item.time === pendingTargetTime &&
+                        item.car === pendingTargetCar
                     ) {
-
+                        dragBooking = null;
                         touchDragBooking = null;
+                        touchDraggingEl = null;
                         return;
-
                     }
 
-                    dragBooking = touchDragBooking;
+                    dragBooking = item;
 
                     const ok = confirm(
-                        `${dragBooking.room}を${pendingTargetTime}へ移動しますか？`
+                        `${item.room}を${pendingTargetTime}へ移動しますか？`
                     );
 
                     if (ok) {
-
                         executePendingAction("move");
-
+                    }
+                    else {
+                        dragBooking = null;
                     }
 
                     touchDragBooking = null;
+                    touchDraggingEl = null;
+                };
 
-                }, { passive: false });
+                const handlePointerCancel = () => {
+                    pointerDragState = null;
+                    stopDocumentPointerDrag();
+                    dragBooking = null;
+                    touchDragBooking = null;
+                    touchDraggingEl = null;
+                    clearPointerDragUi();
+                };
+
+                line.addEventListener("pointerdown", (e) => {
+                    if (e.target.closest(".quick-del-btn")) return;
+                    if (e.pointerType === "mouse" && e.button !== 0) return;
+
+                    pointerDragState = {
+                        pointerId: e.pointerId,
+                        startX: e.clientX,
+                        startY: e.clientY,
+                        dragging: false
+                    };
+
+                    document.addEventListener(
+                        "pointermove",
+                        handlePointerMove
+                    );
+                    document.addEventListener(
+                        "pointerup",
+                        handlePointerUp
+                    );
+                    document.addEventListener(
+                        "pointercancel",
+                        handlePointerCancel
+                    );
+                });
 
             }
             // =========================
@@ -1490,6 +1552,11 @@ function loadReservations() {
             let clickTimer = null;
 
             line.addEventListener("click", (e) => {
+
+                if (suppressNextClick) {
+                    suppressNextClick = false;
+                    return;
+                }
 
                 if (
                     e.target.classList.contains(
@@ -1692,7 +1759,12 @@ bookingTime.addEventListener("change", () => {
 });
 // ── DRAG & DROP LIÊN TRANG ──
 document.querySelectorAll(".car-cell-box").forEach(td => {
-    td.addEventListener("dragover", (e) => { e.preventDefault(); td.classList.add("drag-over"); });
+    td.addEventListener("dragover", (e) => {
+        if (!dragBooking) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        td.classList.add("drag-over");
+    });
     td.addEventListener("dragleave", () => td.classList.remove("drag-over"));
     td.addEventListener("drop", (e) => {
         e.preventDefault();
