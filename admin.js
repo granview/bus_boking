@@ -9,8 +9,7 @@ window.addEventListener("touchcancel", () => {
         touchDraggingEl = null;
     }
 
-    document.querySelectorAll(".car-cell-box")
-        .forEach(td => td.classList.remove("drag-over"));
+    clearDragOverCells();
 
 });
 let fullCarMap = {};
@@ -20,12 +19,26 @@ let touchDragBooking = null;
 let pendingTargetTime = null;
 let pendingTargetCar = null;
 let touchDraggingEl = null;
+let loadReservationsRequestId = 0;
 
 
 
 let pendingActionType = null; // 'delete_form', 'delete_quick', 'move'
 let pendingItemData = null;
 let originalCar = "";
+
+function clearDragOverCells() {
+    document.querySelectorAll(".car-cell-box")
+        .forEach(td => td.classList.remove("drag-over"));
+}
+
+function isInactiveBooking(item) {
+    return (
+        item.archived ||
+        item.status === "canceled" ||
+        item.status === "moved"
+    );
+}
 
 const firebaseConfig = {
     apiKey: "AIzaSyDppkqjWkRyL_JYFrHF7MWvTFAACwgxU-c",
@@ -350,6 +363,8 @@ document.addEventListener("click", (e) => {
 
     popup.dataset.time = btn.dataset.time;
     popup.dataset.car = btn.dataset.car;
+
+    bookingTime.value = btn.dataset.time;
 
     popup.dataset.editId = "";
     popup.dataset.editDate = "";
@@ -851,25 +866,39 @@ deleteBtn.addEventListener("click", () => {
 function loadReservations() {
 
     const selectedDate = adminDate.value;
+    const requestId = ++loadReservationsRequestId;
+
     fullCarMap = {};
+
+    if (currentReservationRef) {
+        currentReservationRef.off();
+        currentReservationRef = null;
+    }
 
     db.ref("fullCars/" + selectedDate)
         .once("value")
         .then(fullSnap => {
 
+            if (
+                requestId !== loadReservationsRequestId ||
+                selectedDate !== adminDate.value
+            ) {
+                return;
+            }
+
             fullCarMap = fullSnap.val() || {};
 
-        });
+            currentReservationRef =
+                db.ref("reservations/" + selectedDate);
 
+            currentReservationRef.on("value", (snapshot) => {
 
-    if (currentReservationRef) {
-        currentReservationRef.off();
-    }
-
-    currentReservationRef =
-        db.ref("reservations/" + selectedDate);
-
-    currentReservationRef.on("value", (snapshot) => {
+                if (
+                    requestId !== loadReservationsRequestId ||
+                    selectedDate !== adminDate.value
+                ) {
+                    return;
+                }
 
         const data = snapshot.val();
 
@@ -1348,10 +1377,7 @@ function loadReservations() {
 
                 const clearPointerDragUi = () => {
                     line.classList.remove("dragging");
-                    document.querySelectorAll(".car-cell-box")
-                        .forEach(td => {
-                            td.classList.remove("drag-over");
-                        });
+                    clearDragOverCells();
                 };
 
                 const getDropBoxAt = (clientX, clientY) => {
@@ -1364,10 +1390,7 @@ function loadReservations() {
                 };
 
                 const highlightDropBox = (dropBox) => {
-                    document.querySelectorAll(".car-cell-box")
-                        .forEach(td => {
-                            td.classList.remove("drag-over");
-                        });
+                    clearDragOverCells();
 
                     if (dropBox) {
                         dropBox.classList.add("drag-over");
@@ -1596,9 +1619,6 @@ function loadReservations() {
 
             function openEditPopup(item) {
 
-                const isMove =
-                    originalTime !== item.time ||
-                    originalCar !== item.car;
                 // clear preview khi mở
                 document.getElementById("timePreview").innerHTML = "";
                 
@@ -1613,6 +1633,7 @@ function loadReservations() {
                 popup.dataset.time =
                     item.time;
                 originalTime = item.time;
+                originalCar = item.car;
                 bookingTime.value = item.time;
 
                 document.getElementById("timePreview").innerHTML = "";
@@ -1738,8 +1759,15 @@ function loadReservations() {
 
         });
 
+        applySearchFilter();
+
     });
-    applySearchFilter();
+
+        })
+        .catch(error => {
+            console.error(error);
+            alert("予約データの読み込みに失敗しました");
+        });
 }
 bookingTime.addEventListener("change", () => {
 
@@ -1757,37 +1785,6 @@ bookingTime.addEventListener("change", () => {
         <span class="new-time">${newTime}</span>
     `;
 });
-// ── DRAG & DROP LIÊN TRANG ──
-document.querySelectorAll(".car-cell-box").forEach(td => {
-    td.addEventListener("dragover", (e) => {
-        if (!dragBooking) return;
-        e.preventDefault();
-        e.dataTransfer.dropEffect = "move";
-        td.classList.add("drag-over");
-    });
-    td.addEventListener("dragleave", () => td.classList.remove("drag-over"));
-    td.addEventListener("drop", (e) => {
-        e.preventDefault();
-        td.classList.remove("drag-over"); if (!dragBooking) return;
-
-        // Lấy thông tin khung giờ và loại xe của ô vừa thả chuột
-        pendingTargetTime = td.dataset.time;
-        pendingTargetCar = td.dataset.car;
-
-        if (dragBooking.time === pendingTargetTime && dragBooking.car === pendingTargetCar) { dragBooking = null; return; }
-        const ok = confirm(
-            `${dragBooking.room}を${pendingTargetTime}へ移動しますか？`
-        );
-
-        if (!ok) {
-            dragBooking = null;
-            return;
-        }
-
-        executePendingAction("move");
-    });
-});
-
 document.querySelectorAll('.stepper-input').forEach(stepper => {
     const minusBtn = stepper.querySelector('.minus'); const plusBtn = stepper.querySelector('.plus'); const input = stepper.querySelector('input[type="number"]');
     minusBtn.addEventListener('click', () => { let val = parseInt(input.value) || 0; let min = parseInt(input.min) || 0; if (val > min) input.value = val - 1; });
