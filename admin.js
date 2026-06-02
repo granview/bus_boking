@@ -27,6 +27,7 @@ let pendingActionType = null; // 'delete_form', 'delete_quick', 'move'
 let pendingItemData = null;
 let originalCar = "";
 
+
 function clearDragOverCells() {
     document.querySelectorAll(".car-cell-box")
         .forEach(td => td.classList.remove("drag-over"));
@@ -53,7 +54,87 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+function showToast(message, type = "info") {
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <span>${message}</span>
+        <button class="toast-close">&times;</button>
+    `;
+    let container = document.getElementById("toastContainer");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toastContainer";
+        document.body.appendChild(container);
+    }
+    container.appendChild(toast);
+    // ensure a layout/repaint before triggering animation
+    requestAnimationFrame(() => toast.classList.add("show"));
+    const closeToast = () => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 300);
+    };
+    const closeBtn = toast.querySelector(".toast-close");
+    if (closeBtn) closeBtn.addEventListener("click", closeToast);
+    setTimeout(closeToast, 3000);
+}
+
+// Custom confirm modal that returns a Promise<boolean>
+function showConfirm(message) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = `
+      <div class="confirm-modal">
+        <p class="confirm-message">${message}</p>
+        <div class="confirm-actions">
+          <button class="confirm-ok">OK</button>
+          <button class="confirm-cancel">キャンセル</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    const clean = (val) => {
+      overlay.remove();
+      resolve(val);
+    };
+    overlay.querySelector('.confirm-ok').addEventListener('click', () => clean(true));
+    overlay.querySelector('.confirm-cancel').addEventListener('click', () => clean(false));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) clean(false); });
+  });
+}
+
+// Custom select modal that returns selected value (or null if cancelled)
+function showSelect(message, options = []) {
+    return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'confirm-overlay';
+        const buttonsHtml = options.map(opt => `<button class="select-option" data-value="${opt.value}">${opt.label}</button>`).join('');
+        overlay.innerHTML = `
+            <div class="confirm-modal">
+                <p class="confirm-message">${message}</p>
+                <div class="select-options">${buttonsHtml}</div>
+                <div style="margin-top:12px"><button class="confirm-cancel">キャンセル</button></div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const clean = (val) => {
+            overlay.remove();
+            resolve(val);
+        };
+
+        overlay.querySelectorAll('.select-option').forEach(btn => {
+            btn.addEventListener('click', () => clean(btn.dataset.value));
+        });
+
+        overlay.querySelector('.confirm-cancel').addEventListener('click', () => clean(null));
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) clean(null); });
+    });
+}
+
 // ── ELEMENTS ──
+
 const reserveBtns = document.querySelectorAll(".reserve-btn");
 document.querySelectorAll(".reserve-btn")
     .forEach(btn => {
@@ -98,7 +179,7 @@ document.addEventListener("click", async (e) => {
         // Đang FULL -> TẮT FULL
         if (snap.exists()) {
 
-            const ok = confirm(
+            const ok = await showConfirm(
                 `${time} ${car}\n\n満車を解除しますか？`
             );
 
@@ -111,7 +192,7 @@ document.addEventListener("click", async (e) => {
         // Chưa FULL -> BẬT FULL
         else {
 
-            const ok = confirm(
+            const ok = await showConfirm(
                 `${time} ${car}\n\n満車にしますか？`
             );
 
@@ -131,7 +212,7 @@ document.addEventListener("click", async (e) => {
     } catch (err) {
 
         console.error(err);
-        alert("保存失敗");
+        showToast("保存失敗");
 
     }
 
@@ -175,10 +256,6 @@ const lugLarge = document.getElementById("lugLarge");
 const lugMedium = document.getElementById("lugMedium");
 const lugSmall = document.getElementById("lugSmall");
 const searchInput = document.getElementById("searchInput");
-const showAllBookingsBtns =
-    document.querySelectorAll(
-        ".showAllBookingsBtn"
-    );
 
 const allBookingsPopup =
     document.getElementById("allBookingsPopup");
@@ -188,7 +265,6 @@ const allBookingsList =
 
 const closeAllBookingsBtn =
     document.getElementById("closeAllBookingsBtn");
-
 
 let currentReservationRef = null;
 let soinetSeatStatus = "";
@@ -399,20 +475,20 @@ reserveForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     // 1. Kiểm tra bắt buộc nhập Số phòng (Không được để trống)
-    const roomValue = inputRoom.value.trim();
+    // const roomValue = inputRoom.value.trim();
 
 
     // 2. Kiểm tra bắt buộc nhập Số hành khách (Người lớn phải lớn hơn 0)
     const adults = Number(selAdults.value) || 0;
     if (adults <= 0) {
-        alert("大人 の人数を入力してください (Vui lòng nhập số lượng người lớn)");
+        showToast("大人 の人数を入力してください (Vui lòng nhập số lượng người lớn)");
         selAdults.focus();
         return;
     }
 
     const nameValue = sanitizeGuestName(inputName.value).trim();
     if (!isValidGuestName(nameValue)) {
-        alert("お名前は英字とカタカナだけ入力できます。");
+        showToast("お名前は英字とカタカナだけ入力できます。");
         inputName.focus();
         return;
     }
@@ -460,9 +536,12 @@ reserveForm.addEventListener("submit", async (e) => {
         earlyHours.includes(newTime)
     ) {
 
-        const carChoice = prompt(
-            "車を選択してください\n\n2 = ホテル\n1 = ラッキータクシー",
-            "1"
+        const carChoice = await showSelect(
+            "車を選択してください",
+            [
+                { value: "2", label: "ホテル" },
+                { value: "1", label: "ラッキータクシー" }
+            ]
         );
 
         if (carChoice === null) {
@@ -480,7 +559,7 @@ reserveForm.addEventListener("submit", async (e) => {
         time: bookingTime.value,
         car: targetCar,
         stay: stayActive,
-        room: roomValue, // Sử dụng giá trị đã trim khoảng trắng
+        room: inputRoom.value.trim(),
         name: nameValue,
         note: inputNote.value,
         adults: adults,
@@ -572,7 +651,7 @@ reserveForm.addEventListener("submit", async (e) => {
         }
     } catch (error) {
         console.error(error);
-        alert("保存失敗");
+        showToast("保存失敗");
         return;
     }
 
@@ -642,7 +721,7 @@ async function checkCrowdedWarning(
 
     if (totalSeats >= 7) {
 
-        return confirm(
+        return await showConfirm(
             `${targetTime} ${targetCar}\n\n` +
             `現在 ${usedSeats}名\n` +
             `追加後 ${totalSeats}名になります。\n\n` +
@@ -737,7 +816,7 @@ async function executeAction() {
 
             if (crowdedTotal >= 7) {
 
-                const ok = confirm(
+                const ok = await showConfirm(
                     `${pendingTargetTime} ${pendingTargetCar}\n\n` +
                     `移動後 ${crowdedTotal}名になります。\n\n` +
                     `移動しますか？`
@@ -764,7 +843,7 @@ async function executeAction() {
                 maxSeats
             ) {
 
-                alert(
+                showToast(
                     `満席です。\n\n残り ${maxSeats - usedSeats
                     }席`
                 );
@@ -816,7 +895,7 @@ async function executeAction() {
     }
     catch (error) {
         console.error(error);
-        alert("更新失敗");
+        showToast("更新失敗");
     }
     finally {
         pendingItemData = null;
@@ -850,10 +929,10 @@ function applySearchFilter() {
         });
 
 }
-deleteBtn.addEventListener("click", () => {
+deleteBtn.addEventListener("click", async () => {
     if (!popup.dataset.editId) return;
 
-    const ok = confirm(
+    const ok = await showConfirm(
         `R${inputRoom.value || "-"} ${inputName.value || ""}様 の予約をキャンセルしますか？`
     );
 
@@ -1337,11 +1416,11 @@ function loadReservations() {
 
                 quickDelBtn.addEventListener(
                     "click",
-                    (e) => {
+                    async (e) => {
 
                         e.stopPropagation();
 
-                        const ok = confirm(
+                        const ok = await showConfirm(
                             `R${item.room || "-"} ${item.name || ""}様\n\n完全削除しますか？`
                         );
 
@@ -1468,7 +1547,7 @@ function loadReservations() {
                     );
                 };
 
-                const handlePointerUp = (e) => {
+                const handlePointerUp = async (e) => {
                     if (
                         !pointerDragState ||
                         pointerDragState.pointerId !== e.pointerId
@@ -1518,7 +1597,7 @@ function loadReservations() {
 
                     dragBooking = item;
 
-                    const ok = confirm(
+                    const ok = await showConfirm(
                         `${item.room}を${pendingTargetTime}へ移動しますか？`
                     );
 
@@ -1622,7 +1701,6 @@ function loadReservations() {
                 // clear preview khi mở
                 document.getElementById("timePreview").innerHTML = "";
                 
-
                 popup.classList.remove("hidden");
 
                 popup.dataset.editId = item.id;
@@ -1633,7 +1711,7 @@ function loadReservations() {
                 popup.dataset.time =
                     item.time;
                 originalTime = item.time;
-                originalCar = item.car;
+                // originalCar = item.car;
                 bookingTime.value = item.time;
 
                 document.getElementById("timePreview").innerHTML = "";
@@ -1741,7 +1819,7 @@ function loadReservations() {
 
                     console.error(error);
 
-                    alert("更新失敗");
+                    showToast("更新失敗");
 
                 }
 
@@ -1766,7 +1844,7 @@ function loadReservations() {
         })
         .catch(error => {
             console.error(error);
-            alert("予約データの読み込みに失敗しました");
+            showToast("予約データの読み込みに失敗しました");
         });
 }
 bookingTime.addEventListener("change", () => {
@@ -1833,196 +1911,6 @@ clearSearchBtn.addEventListener(
 
 );
 
-
-
-
-searchBtn.addEventListener(
-    "click",
-    async () => {
-
-        const keyword =
-            searchInput.value
-                .trim()
-                .toLowerCase();
-
-        if (!keyword) return;
-
-        searchResults.innerHTML = "";
-
-        const snapshot =
-            await db.ref("reservations").once("value");
-
-        const allData =
-            snapshot.val();
-
-        if (!allData) return;
-
-        Object.entries(allData).forEach(
-            ([date, bookings]) => {
-
-                Object.entries(bookings).forEach(
-                    ([id, item]) => {
-
-                        if (
-                            item.archived ||
-                            item.status === "moved" ||
-                            item.status === "canceled"
-                        ) {
-                            return;
-                        }
-                        const room =
-                            String(item.room || "")
-                                .toLowerCase();
-
-                        const name =
-                            String(item.name || "")
-                                .toLowerCase();
-
-                        if (
-                            !room.includes(keyword) &&
-                            !name.includes(keyword)
-                        ) {
-                            return;
-                        }
-
-                        // hành lý
-                        let luggage = "";
-
-                        if (item.tokudai > 0) {
-                            luggage += `特大${item.tokudai} `;
-                        }
-
-                        if (item.large > 0) {
-                            luggage += `大${item.large} `;
-                        }
-
-                        if (item.medium > 0) {
-                            luggage += `中${item.medium} `;
-                        }
-
-                        if (item.small > 0) {
-                            luggage += `小${item.small} `;
-                        }
-
-                        const div =
-                            document.createElement("div");
-
-                        div.className =
-                            "search-result-item";
-
-                        div.innerHTML = `
-
-                                <div class="search-result-top">
-                                    ${date}
-                                    ${item.time}
-                                    (${item.car})
-                                </div>
-
-                                <div class="search-result-sub">
-
-                                    部屋:
-                                    ${item.room || "-"}
-
-                                    ／ 名前:
-                                    ${item.name || "-"}
-
-                                    ／ 人数:
-                                    ${item.adults || 0}名
-
-                                    <br>
-
-                                    荷物:
-                                    ${luggage || "なし"}
-
-                                </div>
-
-                            `;
-
-                        // click để mở form edit
-                        div.addEventListener(
-                            "click",
-                            () => {
-                                originalTime = item.time;
-
-                                bookingTime.value = item.time;
-
-                                document.getElementById(
-                                    "timePreview"
-                                ).innerHTML = "";
-                                popup.classList.remove(
-                                    "hidden"
-                                );
-
-                                popup.dataset.editId =
-                                    id;
-
-                                popup.dataset.editDate =
-                                    date;
-
-                                popup.dataset.time =
-                                    item.time;
-
-                                popup.dataset.car =
-                                    item.car;
-
-                                inputRoom.value =
-                                    item.room || "";
-
-                                inputName.value =
-                                    item.name || "";
-
-                                inputNote.value =
-                                    item.note || "";
-
-                                selAdults.value =
-                                    item.adults || 0;
-
-                                selSoinet.value =
-                                    item.soinet || 0;
-
-                                soinetSeatStatus =
-                                    item.soinetSeat || "";
-
-                                updateSeatBtns();
-
-                                stayActive =
-                                    item.stay || false;
-
-                                stayToggle.textContent =
-                                    stayActive
-                                        ? "ON"
-                                        : "OFF";
-
-                                stayToggle.classList.toggle(
-                                    "active",
-                                    stayActive
-                                );
-
-                                lugTokudai.value =
-                                    item.tokudai || 0;
-
-                                lugLarge.value =
-                                    item.large || 0;
-
-                                lugMedium.value =
-                                    item.medium || 0;
-
-                                lugSmall.value =
-                                    item.small || 0;
-
-                            }
-                        );
-
-                        searchResults.appendChild(div);
-
-                    }
-                );
-
-            }
-        );
-
-    }
-);
 // ========================================
 // EXPORT EXCEL
 // ========================================
@@ -2131,6 +2019,11 @@ async function exportExcel() {
             if (item.medium > 0) luggage += `中${item.medium} `;
             if (item.small > 0) luggage += `小${item.small} `;
 
+            // Add note in parentheses
+            if (item.note && item.note.trim()) {
+                luggage += `(${item.note.trim()}) `;
+            }
+
             const stay = item.stay ? "ステイ" : "";
 
             const text =
@@ -2187,7 +2080,10 @@ async function exportExcel() {
     }
 }
 
-showAllBookingsBtns.forEach(btn => {
+// =====================================
+// ALL BOOKINGS POPUP
+// =====================================
+document.querySelectorAll(".showAllBookingsBtn").forEach(btn => {
 
     btn.addEventListener(
         "click",
@@ -2319,15 +2215,14 @@ showAllBookingsBtns.forEach(btn => {
     );
 
 });
-// =====================================
-// ALL BOOKINGS POPUP
-// =====================================
+
 // ĐÓNG POPUP
 closeAllBookingsBtn.addEventListener("click", () => {
 
     allBookingsPopup.classList.add("hidden");
 
 });
+
 // CLICK NGOÀI ĐỂ ĐÓNG
 allBookingsPopup.addEventListener("click", (e) => {
 
@@ -2338,4 +2233,5 @@ allBookingsPopup.addEventListener("click", (e) => {
     }
 
 });
+
 loadReservations();
