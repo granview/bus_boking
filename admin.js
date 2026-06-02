@@ -2018,13 +2018,13 @@ async function exportExcel() {
             if (item.large > 0) luggage += `大${item.large} `;
             if (item.medium > 0) luggage += `中${item.medium} `;
             if (item.small > 0) luggage += `小${item.small} `;
-
+            const stay = item.stay ? "ステイ" : "";
             // Add note in parentheses
             if (item.note && item.note.trim()) {
                 luggage += `(${item.note.trim()}) `;
             }
 
-            const stay = item.stay ? "ステイ" : "";
+            
 
             const text =
                 `${item.room || ""}｜${item.name || ""}｜${item.adults || 0}名 ${luggage}${stay}`.trim();
