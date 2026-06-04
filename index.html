@@ -13,7 +13,7 @@
 
 <body>
 
-     <!-- PHẦN 1: TIÊU ĐỀ -->
+    <!-- PHẦN 1: TIÊU ĐỀ -->
     <div class="admin-header-title">
         <div class="header-title">送迎バス運行管理</div>
     </div>
@@ -404,7 +404,35 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="group-section">
 
+                            <label>グループ</label>
+
+                            <select id="groupIcon">
+                                <option value="">なし</option>
+
+                                <option value="●">● </option>
+                                <option value="○">○ </option>
+
+                                <option value="■">■ </option>
+                                <option value="□">□</option>
+
+                                <option value="▲">▲ </option>
+                                <option value="△">△ </option>
+
+                                <option value="◆">◆ </option>
+                                <option value="◇">◇ </option>
+
+                                <option value="★">★</option>
+                                <option value="☆">☆</option>
+                            </select>
+
+                            <label>グループ済</label>
+                            <select id="existingGroupsSelect">
+                                <option value="">選択...</option>
+                            </select>
+
+                        </div>
                         <div class="form-group" style="margin-top: 14px;">
                             <label class="field-label">備考・その他の荷物</label>
                             <input type="text" id="inputNote">

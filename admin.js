@@ -81,10 +81,10 @@ function showToast(message, type = "info") {
 
 // Custom confirm modal that returns a Promise<boolean>
 function showConfirm(message) {
-  return new Promise(resolve => {
-    const overlay = document.createElement('div');
-    overlay.className = 'confirm-overlay';
-    overlay.innerHTML = `
+    return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'confirm-overlay';
+        overlay.innerHTML = `
       <div class="confirm-modal">
         <p class="confirm-message">${message}</p>
         <div class="confirm-actions">
@@ -93,15 +93,15 @@ function showConfirm(message) {
         </div>
       </div>
     `;
-    document.body.appendChild(overlay);
-    const clean = (val) => {
-      overlay.remove();
-      resolve(val);
-    };
-    overlay.querySelector('.confirm-ok').addEventListener('click', () => clean(true));
-    overlay.querySelector('.confirm-cancel').addEventListener('click', () => clean(false));
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) clean(false); });
-  });
+        document.body.appendChild(overlay);
+        const clean = (val) => {
+            overlay.remove();
+            resolve(val);
+        };
+        overlay.querySelector('.confirm-ok').addEventListener('click', () => clean(true));
+        overlay.querySelector('.confirm-cancel').addEventListener('click', () => clean(false));
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) clean(false); });
+    });
 }
 
 // Custom select modal that returns selected value (or null if cancelled)
@@ -226,8 +226,10 @@ const prevDayBtn = document.getElementById("prevDay");
 const nextDayBtn = document.getElementById("nextDay");
 const updateBtn = document.getElementById("updateBtn");
 const bookingTime = document.getElementById("bookingTime");
-
-
+const groupIcon =
+    document.getElementById("groupIcon");
+const existingGroupsSelect = document.getElementById("existingGroupsSelect");
+let globalCurrentData = {};
 const btnPageEarlys =
     document.querySelectorAll(".btnPageEarly");
 
@@ -447,12 +449,15 @@ document.addEventListener("click", (e) => {
 
     popup.classList.remove("hidden");
     resetForm();
+    populateExistingGroups();
 });
 
 function resetForm() {
     reserveForm.reset(); soinetSeatStatus = ""; updateSeatBtns(); stayActive = false;
     stayToggle.textContent = "OFF"; stayToggle.classList.remove("active");
     document.querySelectorAll('.stepper-input input').forEach(input => input.value = 0);
+    groupIcon.value = "";
+    if (existingGroupsSelect) existingGroupsSelect.value = "";
 }
 
 closePopup.addEventListener("click", () => { popup.classList.add("hidden"); });
@@ -558,6 +563,7 @@ reserveForm.addEventListener("submit", async (e) => {
         date: saveDate,
         time: bookingTime.value,
         car: targetCar,
+        groupIcon: groupIcon.value,
         stay: stayActive,
         room: inputRoom.value.trim(),
         name: nameValue,
@@ -785,6 +791,7 @@ async function executeAction() {
             ).get();
 
             const allData = snapshot.val() || {};
+            globalCurrentData = allData;
 
             let usedSeats = 0;
 
@@ -902,8 +909,8 @@ async function executeAction() {
     }
 }
 function applySearchFilter() {
-	  console.log("SEARCH RUNNING");
-console.log(
+    console.log("SEARCH RUNNING");
+    console.log(
         document.querySelectorAll(".guest-line").length
     );
 
@@ -983,310 +990,335 @@ function loadReservations() {
                     return;
                 }
 
-        const data = snapshot.val();
+                const data = snapshot.val();
+                globalCurrentData = data || {};
 
-        // =========================
-        // RESET UI
-        // =========================
+                // =========================
+                // RESET UI
+                // =========================
 
-        document.querySelectorAll(".guest-row")
-            .forEach(row => row.innerHTML = "");
+                document.querySelectorAll(".guest-row")
+                    .forEach(row => row.innerHTML = "");
 
-        document.querySelectorAll(".empty-text")
-            .forEach(el => {
+                document.querySelectorAll(".empty-text")
+                    .forEach(el => {
 
-                el.classList.remove(
-                    "few-seat",
-                    "full-seat"
-                );
+                        el.classList.remove(
+                            "few-seat",
+                            "full-seat"
+                        );
 
-                el.innerHTML =
-                    "予約済 <span class='seat-count-num'>0</span>名";
+                        el.innerHTML =
+                            "予約済 <span class='seat-count-num'>0</span>名";
 
-            });
+                    });
 
-        // =========================
-        // SEAT COUNT
-        // =========================
+                // =========================
+                // SEAT COUNT
+                // =========================
 
-        const usedMap = {};
+                const usedMap = {};
 
-        if (data) {
+                if (data) {
 
-            Object.entries(data).forEach(([id, item]) => {
+                    Object.entries(data).forEach(([id, item]) => {
+                        item.id = id;
 
-                // canceled + moved cũ KHÔNG tính ghế
-                if (
-                    item.archived ||
-                    item.status === "canceled" ||
-                    item.status === "moved"
-                ) {
-                    return;
+                        // canceled + moved cũ KHÔNG tính ghế
+                        if (
+                            item.archived ||
+                            item.status === "canceled" ||
+                            item.status === "moved"
+                        ) {
+                            return;
+                        }
+
+                        const key =
+                            item.time + "_" + item.car;
+
+                        if (!usedMap[key]) {
+                            usedMap[key] = 0;
+                        }
+
+                        let totalSeats =
+                            Number(item.adults || 0);
+
+                        if (item.soinetSeat === "ari") {
+
+                            totalSeats +=
+                                Number(item.soinet || 0);
+
+                        }
+
+                        usedMap[key] += totalSeats;
+
+                    });
+
                 }
 
-                const key =
-                    item.time + "_" + item.car;
+                // =========================
+                // UPDATE SEAT LABEL
+                // =========================
 
-                if (!usedMap[key]) {
-                    usedMap[key] = 0;
-                }
+                // =========================
+                // UPDATE SEAT LABEL
+                // =========================
 
-                let totalSeats =
-                    Number(item.adults || 0);
+                Object.keys(seatMap).forEach(key => {
 
-                if (item.soinetSeat === "ari") {
+                    const [time, car] = key.split(/_(.+)/);
 
-                    totalSeats +=
+                    const btn = document.querySelector(
+                        `.reserve-btn[data-time="${time}"][data-car="${car}"]`
+                    );
+
+                    if (!btn) return;
+
+                    const td = btn.closest(".car-cell-box");
+                    if (!td) return;
+
+                    const emptyText = td.querySelector(".empty-text");
+                    if (!emptyText) return;
+
+                    const used = usedMap[key] || 0;
+                    const max = seatMap[key];
+                    const remain = max - used;
+
+                    // Nếu FULL theo số ghế
+                    if (remain <= 0) {
+                        emptyText.innerHTML =
+                            `予約済 <span class="seat-count-num">${used}</span>名 <span class="seat-full-label">満車</span>`;
+                        emptyText.classList.add("full-seat");
+                        return;
+                    }
+
+                    // Nếu FULL do admin bật
+                    if (fullCarMap[key]) {
+                        emptyText.innerHTML =
+                            `予約済 <span class="seat-count-num">${used}</span>名 <span class="seat-full-label">満車</span>`;
+                        emptyText.classList.add("full-seat");
+                        return;
+                    }
+
+                    // Bình thường
+                    emptyText.innerHTML =
+                        `予約済 <span class="seat-count-num">${used}</span>名`;
+
+                    if (remain === 1) {
+                        emptyText.classList.add("few-seat");
+                    }
+                });
+
+                Object.keys(fullCarMap).forEach(key => {
+
+                    const [time, car] =
+                        key.split(/_(.+)/);
+
+                    const btn =
+                        document.querySelector(
+                            `.reserve-btn[data-time="${time}"][data-car="${car}"]`
+                        );
+
+                    if (!btn) return;
+
+                    const td =
+                        btn.closest(".car-cell-box");
+
+                    if (!td) return;
+
+                    const emptyText =
+                        td.querySelector(".empty-text");
+
+                    if (!emptyText) return;
+
+                    const used = usedMap[key] || 0;
+
+                    emptyText.innerHTML =
+                        `予約済 <span class="seat-count-num">${used}</span>名 <span class="seat-full-label">満車</span>`;
+
+                    emptyText.classList.add("full-seat");
+
+                });
+
+                if (!data) return;
+                const bookingList =
+                    Object.entries(data)
+                        .map(([id, item]) => ({
+                            id,
+                            ...item
+                        }));
+                bookingList.sort((a, b) => {
+
+                    const aGroup =
+                        a.groupIcon ? 1 : 0;
+
+                    const bGroup =
+                        b.groupIcon ? 1 : 0;
+
+                    if (aGroup !== bGroup) {
+                        return bGroup - aGroup;
+                    }
+
+                    return (
+                        Number(a.createdAt || 0)
+                        -
+                        Number(b.createdAt || 0)
+                    );
+
+                });
+                // =========================
+                // RENDER BOOKINGS
+                // =========================
+
+                const roomCountMap = {};
+                const nameCountMap = {};
+
+                Object.values(data).forEach(item => {
+                    if (
+                        item.archived ||
+                        item.status === "canceled" ||
+                        item.status === "moved"
+                    ) {
+                        return;
+                    }
+
+                    const roomKey = String(item.room || "").trim().toLowerCase();
+                    const nameKey = String(item.name || "").trim().toLowerCase();
+
+                    if (roomKey) {
+                        roomCountMap[roomKey] = (roomCountMap[roomKey] || 0) + 1;
+                    }
+
+                    if (nameKey) {
+                        nameCountMap[nameKey] = (nameCountMap[nameKey] || 0) + 1;
+                    }
+                });
+
+               bookingList.forEach(item => {
+
+                    if (
+                        item.archived
+                    ) {
+                        return;
+                    }
+
+                    item.date = selectedDate;
+
+                    const btn = document.querySelector(
+                        `.reserve-btn[data-time="${item.time}"][data-car="${item.car}"]`
+                    );
+
+                    if (!btn) return;
+
+                    const td =
+                        btn.closest(".car-cell-box");
+
+                    if (!td) return;
+
+                    let guestRow =
+                        td.querySelector(".guest-row");
+
+                    if (!guestRow) {
+
+                        guestRow =
+                            document.createElement("div");
+
+                        guestRow.className = "guest-row";
+
+                        td.prepend(guestRow);
+
+                    }
+
+                    // =========================
+                    // STATUS
+                    // =========================
+
+                    const isCanceled =
+                        item.status === "canceled";
+
+                    const isMoved =
+                        item.status === "moved";
+
+                    const isDone =
+                        item.status === "done";
+
+                    const isNewToday =
+                        !isCanceled &&
+                        !isMoved &&
+                        !isDone &&
+                        isTodayBooking(item.date) &&
+                        isTodayTimestamp(item.createdAt);
+
+                    const roomKey =
+                        String(item.room || "").trim().toLowerCase();
+
+                    const nameKey =
+                        String(item.name || "").trim().toLowerCase();
+
+                    const isDuplicateBooking =
+                        !isCanceled &&
+                        !isMoved &&
+                        (
+                            (roomKey && roomCountMap[roomKey] > 1) ||
+                            (nameKey && nameCountMap[nameKey] > 1)
+                        );
+
+                    // =========================
+                    // CREATE LINE
+                    // =========================
+
+                    const line =
+                        document.createElement("div");
+
+                    line.className = "guest-line";
+
+                    line.dataset.room = item.room || "";
+                    line.dataset.name = item.name || "";
+
+                    if (isDone) {
+                        line.classList.add("is-done");
+                    }
+
+                    if (isMoved) {
+                        line.classList.add("is-moved");
+                    }
+
+                    if (isCanceled) {
+                        line.classList.add("is-canceled");
+                    }
+
+                    if (isNewToday) {
+                        line.classList.add("is-new-today");
+                    }
+
+                    if (isDuplicateBooking) {
+                        line.classList.add("is-duplicate-booking");
+                    }
+
+                    // =========================
+                    // PAX
+                    // =========================
+
+                    const adultsCount =
+                        Number(item.adults || 0);
+
+                    const soinetCount =
                         Number(item.soinet || 0);
 
-                }
-
-                usedMap[key] += totalSeats;
-
-            });
-
-        }
-
-        // =========================
-        // UPDATE SEAT LABEL
-        // =========================
-
-        // =========================
-        // UPDATE SEAT LABEL
-        // =========================
-
-        Object.keys(seatMap).forEach(key => {
-
-            const [time, car] = key.split(/_(.+)/);
-
-            const btn = document.querySelector(
-                `.reserve-btn[data-time="${time}"][data-car="${car}"]`
-            );
-
-            if (!btn) return;
-
-            const td = btn.closest(".car-cell-box");
-            if (!td) return;
-
-            const emptyText = td.querySelector(".empty-text");
-            if (!emptyText) return;
-
-            const used = usedMap[key] || 0;
-            const max = seatMap[key];
-            const remain = max - used;
-
-            // Nếu FULL theo số ghế
-            if (remain <= 0) {
-                emptyText.innerHTML =
-                    `予約済 <span class="seat-count-num">${used}</span>名 <span class="seat-full-label">満車</span>`;
-                emptyText.classList.add("full-seat");
-                return;
-            }
-
-            // Nếu FULL do admin bật
-            if (fullCarMap[key]) {
-                emptyText.innerHTML =
-                    `予約済 <span class="seat-count-num">${used}</span>名 <span class="seat-full-label">満車</span>`;
-                emptyText.classList.add("full-seat");
-                return;
-            }
-
-            // Bình thường
-            emptyText.innerHTML =
-                `予約済 <span class="seat-count-num">${used}</span>名`;
-
-            if (remain === 1) {
-                emptyText.classList.add("few-seat");
-            }
-        });
-
-        Object.keys(fullCarMap).forEach(key => {
-
-            const [time, car] =
-                key.split(/_(.+)/);
-
-            const btn =
-                document.querySelector(
-                    `.reserve-btn[data-time="${time}"][data-car="${car}"]`
-                );
-
-            if (!btn) return;
-
-            const td =
-                btn.closest(".car-cell-box");
-
-            if (!td) return;
-
-            const emptyText =
-                td.querySelector(".empty-text");
-
-            if (!emptyText) return;
-
-            const used = usedMap[key] || 0;
-
-            emptyText.innerHTML =
-                `予約済 <span class="seat-count-num">${used}</span>名 <span class="seat-full-label">満車</span>`;
-
-            emptyText.classList.add("full-seat");
-
-        });
-
-        if (!data) return;
-
-        // =========================
-        // RENDER BOOKINGS
-        // =========================
-
-        const roomCountMap = {};
-        const nameCountMap = {};
-
-        Object.values(data).forEach(item => {
-            if (
-                item.archived ||
-                item.status === "canceled" ||
-                item.status === "moved"
-            ) {
-                return;
-            }
-
-            const roomKey = String(item.room || "").trim().toLowerCase();
-            const nameKey = String(item.name || "").trim().toLowerCase();
-
-            if (roomKey) {
-                roomCountMap[roomKey] = (roomCountMap[roomKey] || 0) + 1;
-            }
-
-            if (nameKey) {
-                nameCountMap[nameKey] = (nameCountMap[nameKey] || 0) + 1;
-            }
-        });
-
-        Object.entries(data).forEach(([id, item]) => {
-
-            if (
-                item.archived
-            ) {
-                return;
-            }
-
-            item.id = id;
-            item.date = selectedDate;
-
-            const btn = document.querySelector(
-                `.reserve-btn[data-time="${item.time}"][data-car="${item.car}"]`
-            );
-
-            if (!btn) return;
-
-            const td =
-                btn.closest(".car-cell-box");
-
-            if (!td) return;
-
-            let guestRow =
-                td.querySelector(".guest-row");
-
-            if (!guestRow) {
-
-                guestRow =
-                    document.createElement("div");
-
-                guestRow.className = "guest-row";
-
-                td.prepend(guestRow);
-
-            }
-
-            // =========================
-            // STATUS
-            // =========================
-
-            const isCanceled =
-                item.status === "canceled";
-
-            const isMoved =
-                item.status === "moved";
-
-            const isDone =
-                item.status === "done";
-
-            const isNewToday =
-                !isCanceled &&
-                !isMoved &&
-                !isDone &&
-                isTodayBooking(item.date) &&
-                isTodayTimestamp(item.createdAt);
-
-            const roomKey =
-                String(item.room || "").trim().toLowerCase();
-
-            const nameKey =
-                String(item.name || "").trim().toLowerCase();
-
-            const isDuplicateBooking =
-                !isCanceled &&
-                !isMoved &&
-                (
-                    (roomKey && roomCountMap[roomKey] > 1) ||
-                    (nameKey && nameCountMap[nameKey] > 1)
-                );
-
-            // =========================
-            // CREATE LINE
-            // =========================
-
-            const line =
-                document.createElement("div");
-
-            line.className = "guest-line";
-
-            line.dataset.room = item.room || "";
-            line.dataset.name = item.name || "";
-
-            if (isDone) {
-                line.classList.add("is-done");
-            }
-
-            if (isMoved) {
-                line.classList.add("is-moved");
-            }
-
-            if (isCanceled) {
-                line.classList.add("is-canceled");
-            }
-
-            if (isNewToday) {
-                line.classList.add("is-new-today");
-            }
-
-            if (isDuplicateBooking) {
-                line.classList.add("is-duplicate-booking");
-            }
-
-            // =========================
-            // PAX
-            // =========================
-
-            const adultsCount =
-                Number(item.adults || 0);
-
-            const soinetCount =
-                Number(item.soinet || 0);
-
-            let paxDisplay = `
+                    let paxDisplay = `
                     <span class="flat-pax">
                         ${adultsCount}名
                     </span>
                 `;
 
-            if (soinetCount > 0) {
+                    if (soinetCount > 0) {
 
-                const seatLabel =
-                    item.soinetSeat === "ari"
-                        ? "席あり"
-                        : "席なし";
+                        const seatLabel =
+                            item.soinetSeat === "ari"
+                                ? "席あり"
+                                : "席なし";
 
-                paxDisplay += `
+                        paxDisplay += `
                         <span class="flat-inf-label">
                             + ${soinetCount}INF
                         </span>
@@ -1296,554 +1328,571 @@ function loadReservations() {
                         </span>
                     `;
 
-            }
+                    }
 
-            // =========================
-            // LUGGAGE
-            // =========================
+                    // =========================
+                    // LUGGAGE
+                    // =========================
 
-            let luggageText = "";
+                    let luggageText = "";
 
-            if (Number(item.tokudai || 0) > 0) {
-                luggageText += ` (特大${item.tokudai})`;
-            }
+                    if (Number(item.tokudai || 0) > 0) {
+                        luggageText += ` (特大${item.tokudai})`;
+                    }
 
-            if (Number(item.large || 0) > 0) {
-                luggageText += ` (大${item.large})`;
-            }
+                    if (Number(item.large || 0) > 0) {
+                        luggageText += ` (大${item.large})`;
+                    }
 
-            if (Number(item.medium || 0) > 0) {
-                luggageText += ` (中${item.medium})`;
-            }
+                    if (Number(item.medium || 0) > 0) {
+                        luggageText += ` (中${item.medium})`;
+                    }
 
-            if (Number(item.small || 0) > 0) {
-                luggageText += ` (小${item.small})`;
-            }
+                    if (Number(item.small || 0) > 0) {
+                        luggageText += ` (小${item.small})`;
+                    }
 
-            if (
-                item.note &&
-                item.note.trim() !== ""
-            ) {
+                    if (
+                        item.note &&
+                        item.note.trim() !== ""
+                    ) {
 
-                luggageText +=
-                    ` (${item.note.trim()})`;
+                        luggageText +=
+                            ` (${item.note.trim()})`;
 
-            }
+                    }
 
-            // =========================
-            // STAY
-            // =========================
+                    // =========================
+                    // STAY
+                    // =========================
 
-            const stayText = item.stay
-                ? `<span class="stay-label">[ステイ]</span>`
-                : "";
+                    const stayText = item.stay
+                        ? `<span class="stay-label">[ステイ]</span>`
+                        : "";
+                    const groupIconText =
+                        item.groupIcon
+                            ? `<span class="group-icon">${item.groupIcon}</span>`
+                            : "";
+                    // =========================
+                    // MAIN CONTENT
+                    // =========================
 
-            // =========================
-            // MAIN CONTENT
-            // =========================
+                    const mainContentBlock =
+                        document.createElement("div");
 
-            const mainContentBlock =
-                document.createElement("div");
+                    mainContentBlock.className =
+                        "guest-main-content-block";
 
-            mainContentBlock.className =
-                "guest-main-content-block";
+                    mainContentBlock.innerHTML = `
 
-            mainContentBlock.innerHTML = `
-                    <span class="flat-room">
-                        ${isDuplicateBooking ? "<span class='duplicate-star'>★</span>" : ""}${item.room ? `R${item.room}` : "-"}
-                    </span>
+    
 
-                    <span class="guest-name-text">
-                        ${item.name || ""}
-                    </span>
-                    ${paxDisplay}
-                    ${stayText}
-                    <span class="lug-text-summary">
-                        ${luggageText}
-                    </span>
-                `;
+    <span class="flat-room">
+        ${isDuplicateBooking
+                            ? "<span class='duplicate-star'>★</span>"
+                            : ""
+                        }
+        ${item.room ? `R${item.room}` : "-"}
+    </span>
 
-            // =========================
-            // RIGHT SIDE
-            // =========================
+    <span class="guest-name-text">
+        ${item.name || ""}
+    </span>
 
-            const rightActionsBlock =
-                document.createElement("div");
+    ${paxDisplay}
+    ${stayText}
 
-            rightActionsBlock.className =
-                "guest-right-actions-block";
+    <span class="lug-text-summary">
+        ${luggageText}
+    </span>
+    ${groupIconText}
 
-            // moved old booking
-            if (isMoved && item.movedTo) {
+`;
+                    // =========================
+                    // RIGHT SIDE
+                    // =========================
 
-                rightActionsBlock.innerHTML += `
+                    const rightActionsBlock =
+                        document.createElement("div");
+
+                    rightActionsBlock.className =
+                        "guest-right-actions-block";
+
+                    // moved old booking
+                    if (isMoved && item.movedTo) {
+
+                        rightActionsBlock.innerHTML += `
                         <span class="dest-label">
                             → ${item.movedTo} 変
                         </span>
                     `;
 
-            }
+                    }
 
-            if (isNewToday) {
+                    if (isNewToday) {
 
-                rightActionsBlock.innerHTML += `
+                        rightActionsBlock.innerHTML += `
                         <span class="new-booking-label">
                             新
                         </span>
                     `;
 
-            }
+                    }
 
-            // canceled hoặc moved
-            if (isCanceled || isMoved) {
+                    // canceled hoặc moved
+                    if (isCanceled || isMoved) {
 
-                const statusLabel = document.createElement("span");
+                        const statusLabel = document.createElement("span");
 
-                statusLabel.className = "cxl-label";
+                        statusLabel.className = "cxl-label";
 
-                statusLabel.textContent =
-                    isCanceled ? "CXL" : " ";
+                        statusLabel.textContent =
+                            isCanceled ? "CXL" : " ";
 
-                rightActionsBlock.appendChild(
-                    statusLabel
-                );
-
-                const quickDelBtn =
-                    document.createElement("button");
-
-                quickDelBtn.className =
-                    "quick-del-btn";
-
-                quickDelBtn.innerHTML = "&times;";
-
-                quickDelBtn.type = "button";
-
-                quickDelBtn.addEventListener(
-                    "click",
-                    async (e) => {
-
-                        e.stopPropagation();
-
-                        const ok = await showConfirm(
-                            `R${item.room || "-"} ${item.name || ""}様\n\n完全削除しますか？`
+                        rightActionsBlock.appendChild(
+                            statusLabel
                         );
 
-                        if (!ok) return;
+                        const quickDelBtn =
+                            document.createElement("button");
 
-                        executePendingAction(
-                            "delete_quick",
-                            item
+                        quickDelBtn.className =
+                            "quick-del-btn";
+
+                        quickDelBtn.innerHTML = "&times;";
+
+                        quickDelBtn.type = "button";
+
+                        quickDelBtn.addEventListener(
+                            "click",
+                            async (e) => {
+
+                                e.stopPropagation();
+
+                                const ok = await showConfirm(
+                                    `R${item.room || "-"} ${item.name || ""}様\n\n完全削除しますか？`
+                                );
+
+                                if (!ok) return;
+
+                                executePendingAction(
+                                    "delete_quick",
+                                    item
+                                );
+
+                            }
+                        );
+
+                        rightActionsBlock.appendChild(
+                            quickDelBtn
                         );
 
                     }
-                );
-
-                rightActionsBlock.appendChild(
-                    quickDelBtn
-                );
-
-            }
-
-            // =========================
-            // DRAG DESKTOP + IPAD
-            // =========================
-
-            let suppressNextClick = false;
-
-            if (!isCanceled && !isMoved) {
-
-                line.draggable = false;
-                line.style.touchAction = "none";
-
-                let pointerDragState = null;
-                let lastPageSwitchAt = 0;
-
-                const clearPointerDragUi = () => {
-                    line.classList.remove("dragging");
-                    clearDragOverCells();
-                };
-
-                const getDropBoxAt = (clientX, clientY) => {
-                    const target =
-                        document.elementFromPoint(clientX, clientY);
-
-                    return target
-                        ? target.closest(".car-cell-box")
-                        : null;
-                };
-
-                const highlightDropBox = (dropBox) => {
-                    clearDragOverCells();
-
-                    if (dropBox) {
-                        dropBox.classList.add("drag-over");
-                    }
-                };
-
-                const switchPageWhileDragging = (clientX, clientY) => {
-                    const target =
-                        document.elementFromPoint(clientX, clientY);
-
-                    const pageButton =
-                        target
-                            ? target.closest(".btnPageEarly, .btnPageLate")
-                            : null;
-
-                    if (!pageButton) return;
-
-                    const now = Date.now();
-                    if (now - lastPageSwitchAt < 500) return;
-
-                    lastPageSwitchAt = now;
-                    pageButton.click();
-                };
-
-                const stopDocumentPointerDrag = () => {
-                    document.removeEventListener(
-                        "pointermove",
-                        handlePointerMove
-                    );
-                    document.removeEventListener(
-                        "pointerup",
-                        handlePointerUp
-                    );
-                    document.removeEventListener(
-                        "pointercancel",
-                        handlePointerCancel
-                    );
-                };
-
-                const handlePointerMove = (e) => {
-                    if (
-                        !pointerDragState ||
-                        pointerDragState.pointerId !== e.pointerId
-                    ) {
-                        return;
-                    }
-
-                    const moveX =
-                        Math.abs(e.clientX - pointerDragState.startX);
-                    const moveY =
-                        Math.abs(e.clientY - pointerDragState.startY);
-
-                    if (
-                        !pointerDragState.dragging &&
-                        Math.max(moveX, moveY) < 8
-                    ) {
-                        return;
-                    }
-
-                    if (!pointerDragState.dragging) {
-                        pointerDragState.dragging = true;
-                        suppressNextClick = true;
-                        dragBooking = item;
-                        touchDragBooking = item;
-                        touchDraggingEl = line;
-                        line.classList.add("dragging");
-                    }
-
-                    e.preventDefault();
-
-                    switchPageWhileDragging(e.clientX, e.clientY);
-
-                    highlightDropBox(
-                        getDropBoxAt(e.clientX, e.clientY)
-                    );
-                };
-
-                const handlePointerUp = async (e) => {
-                    if (
-                        !pointerDragState ||
-                        pointerDragState.pointerId !== e.pointerId
-                    ) {
-                        return;
-                    }
-
-                    const wasDragging =
-                        pointerDragState.dragging;
-
-                    pointerDragState = null;
-                    stopDocumentPointerDrag();
-
-                    if (!wasDragging) {
-                        return;
-                    }
-
-                    e.preventDefault();
-
-                    const dropBox =
-                        getDropBoxAt(e.clientX, e.clientY);
-
-                    clearPointerDragUi();
-
-                    if (!dropBox) {
-                        dragBooking = null;
-                        touchDragBooking = null;
-                        touchDraggingEl = null;
-                        return;
-                    }
-
-                    pendingTargetTime =
-                        dropBox.dataset.time;
-
-                    pendingTargetCar =
-                        dropBox.dataset.car;
-
-                    if (
-                        item.time === pendingTargetTime &&
-                        item.car === pendingTargetCar
-                    ) {
-                        dragBooking = null;
-                        touchDragBooking = null;
-                        touchDraggingEl = null;
-                        return;
-                    }
-
-                    dragBooking = item;
 
-                    const ok = await showConfirm(
-                        `${item.room}を${pendingTargetTime}へ移動しますか？`
-                    );
-
-                    if (ok) {
-                        executePendingAction("move");
-                    }
-                    else {
-                        dragBooking = null;
-                    }
-
-                    touchDragBooking = null;
-                    touchDraggingEl = null;
-                };
-
-                const handlePointerCancel = () => {
-                    pointerDragState = null;
-                    stopDocumentPointerDrag();
-                    dragBooking = null;
-                    touchDragBooking = null;
-                    touchDraggingEl = null;
-                    clearPointerDragUi();
-                };
-
-                line.addEventListener("pointerdown", (e) => {
-                    if (e.target.closest(".quick-del-btn")) return;
-                    if (e.pointerType === "mouse" && e.button !== 0) return;
-
-                    pointerDragState = {
-                        pointerId: e.pointerId,
-                        startX: e.clientX,
-                        startY: e.clientY,
-                        dragging: false
-                    };
-
-                    document.addEventListener(
-                        "pointermove",
-                        handlePointerMove
-                    );
-                    document.addEventListener(
-                        "pointerup",
-                        handlePointerUp
-                    );
-                    document.addEventListener(
-                        "pointercancel",
-                        handlePointerCancel
-                    );
-                });
-
-            }
-            // =========================
-            // SINGLE / DOUBLE CLICK
-            // =========================
-
-            let clickTimer = null;
-
-            line.addEventListener("click", (e) => {
-
-                if (suppressNextClick) {
-                    suppressNextClick = false;
-                    return;
-                }
-
-                if (
-                    e.target.classList.contains(
-                        "quick-del-btn"
-                    )
-                ) return;
-
-                // DOUBLE CLICK
-                if (clickTimer) {
-
-                    clearTimeout(clickTimer);
-
-                    clickTimer = null;
-
-                    toggleDoneStatus(item);
-
-                }
-
-                // SINGLE CLICK
-                else {
-
-                    clickTimer = setTimeout(() => {
-
-                        openEditPopup(item);
-
-                        clickTimer = null;
-
-                    }, 250);
-
-                }
-
-            });
-
-            // =========================
-            // OPEN EDIT
-            // =========================
-
-            function openEditPopup(item) {
-
-                // clear preview khi mở
-                document.getElementById("timePreview").innerHTML = "";
-                
-                popup.classList.remove("hidden");
-
-                popup.dataset.editId = item.id;
-
-                popup.dataset.editDate =
-                    item.date;
-
-                popup.dataset.time =
-                    item.time;
-                originalTime = item.time;
-                // originalCar = item.car;
-                bookingTime.value = item.time;
-
-                document.getElementById("timePreview").innerHTML = "";
-
-                popup.dataset.car =
-                    item.car;
-
-                inputRoom.value =
-                    item.room || "";
-
-                inputName.value =
-                    item.name || "";
-
-                inputNote.value =
-                    item.note || "";
-
-                selAdults.value =
-                    item.adults || 0;
-
-                selSoinet.value =
-                    item.soinet || 0;
-
-                soinetSeatStatus =
-                    item.soinetSeat || "";
-
-                updateSeatBtns();
-
-                stayActive =
-                    item.stay || false;
-
-                stayToggle.textContent =
-                    stayActive ? "ON" : "OFF";
-
-                stayToggle.classList.toggle(
-                    "active",
-                    stayActive
-                );
-
-                lugTokudai.value =
-                    item.tokudai || 0;
-
-                lugLarge.value =
-                    item.large || 0;
-
-                lugMedium.value =
-                    item.medium || 0;
-
-                lugSmall.value =
-                    item.small || 0;
-
-            }
-
-            // =========================
-            // DONE TOGGLE
-            // =========================
-
-            async function toggleDoneStatus(item) {
-                const isCanceled = item.status === "canceled";
-                const isMoved = item.status === "moved";
-                const isDone = item.status === "done";
-                if (
-                    !isTodayBooking(item.date)
-                ) return;
-
-                if (isMoved) return;
-
-                const ref = db.ref(
-                    "reservations/" +
-                    item.date +
-                    "/" +
-                    item.id
-                );
-
-                try {
-
-                    // done -> normal
-                    if (isDone) {
-
-                        await ref.child(
-                            "status"
-                        ).remove();
-
-                    }
-
-                    // canceled -> normal
-                    else if (isCanceled) {
-
-                        await ref.child(
-                            "status"
-                        ).remove();
-
-                    }
-
-                    // normal -> done
-                    else {
-
-                        await ref.update({
-                            status: "done"
+                    // =========================
+                    // DRAG DESKTOP + IPAD
+                    // =========================
+
+                    let suppressNextClick = false;
+
+                    if (!isCanceled && !isMoved) {
+
+                        line.draggable = false;
+                        line.style.touchAction = "none";
+
+                        let pointerDragState = null;
+                        let lastPageSwitchAt = 0;
+
+                        const clearPointerDragUi = () => {
+                            line.classList.remove("dragging");
+                            clearDragOverCells();
+                        };
+
+                        const getDropBoxAt = (clientX, clientY) => {
+                            const target =
+                                document.elementFromPoint(clientX, clientY);
+
+                            return target
+                                ? target.closest(".car-cell-box")
+                                : null;
+                        };
+
+                        const highlightDropBox = (dropBox) => {
+                            clearDragOverCells();
+
+                            if (dropBox) {
+                                dropBox.classList.add("drag-over");
+                            }
+                        };
+
+                        const switchPageWhileDragging = (clientX, clientY) => {
+                            const target =
+                                document.elementFromPoint(clientX, clientY);
+
+                            const pageButton =
+                                target
+                                    ? target.closest(".btnPageEarly, .btnPageLate")
+                                    : null;
+
+                            if (!pageButton) return;
+
+                            const now = Date.now();
+                            if (now - lastPageSwitchAt < 500) return;
+
+                            lastPageSwitchAt = now;
+                            pageButton.click();
+                        };
+
+                        const stopDocumentPointerDrag = () => {
+                            document.removeEventListener(
+                                "pointermove",
+                                handlePointerMove
+                            );
+                            document.removeEventListener(
+                                "pointerup",
+                                handlePointerUp
+                            );
+                            document.removeEventListener(
+                                "pointercancel",
+                                handlePointerCancel
+                            );
+                        };
+
+                        const handlePointerMove = (e) => {
+                            if (
+                                !pointerDragState ||
+                                pointerDragState.pointerId !== e.pointerId
+                            ) {
+                                return;
+                            }
+
+                            const moveX =
+                                Math.abs(e.clientX - pointerDragState.startX);
+                            const moveY =
+                                Math.abs(e.clientY - pointerDragState.startY);
+
+                            if (
+                                !pointerDragState.dragging &&
+                                Math.max(moveX, moveY) < 8
+                            ) {
+                                return;
+                            }
+
+                            if (!pointerDragState.dragging) {
+                                pointerDragState.dragging = true;
+                                suppressNextClick = true;
+                                dragBooking = item;
+                                touchDragBooking = item;
+                                touchDraggingEl = line;
+                                line.classList.add("dragging");
+                            }
+
+                            e.preventDefault();
+
+                            switchPageWhileDragging(e.clientX, e.clientY);
+
+                            highlightDropBox(
+                                getDropBoxAt(e.clientX, e.clientY)
+                            );
+                        };
+
+                        const handlePointerUp = async (e) => {
+                            if (
+                                !pointerDragState ||
+                                pointerDragState.pointerId !== e.pointerId
+                            ) {
+                                return;
+                            }
+
+                            const wasDragging =
+                                pointerDragState.dragging;
+
+                            pointerDragState = null;
+                            stopDocumentPointerDrag();
+
+                            if (!wasDragging) {
+                                return;
+                            }
+
+                            e.preventDefault();
+
+                            const dropBox =
+                                getDropBoxAt(e.clientX, e.clientY);
+
+                            clearPointerDragUi();
+
+                            if (!dropBox) {
+                                dragBooking = null;
+                                touchDragBooking = null;
+                                touchDraggingEl = null;
+                                return;
+                            }
+
+                            pendingTargetTime =
+                                dropBox.dataset.time;
+
+                            pendingTargetCar =
+                                dropBox.dataset.car;
+
+                            if (
+                                item.time === pendingTargetTime &&
+                                item.car === pendingTargetCar
+                            ) {
+                                dragBooking = null;
+                                touchDragBooking = null;
+                                touchDraggingEl = null;
+                                return;
+                            }
+
+                            dragBooking = item;
+
+                            const ok = await showConfirm(
+                                `${item.room}を${pendingTargetTime}へ移動しますか？`
+                            );
+
+                            if (ok) {
+                                executePendingAction("move");
+                            }
+                            else {
+                                dragBooking = null;
+                            }
+
+                            touchDragBooking = null;
+                            touchDraggingEl = null;
+                        };
+
+                        const handlePointerCancel = () => {
+                            pointerDragState = null;
+                            stopDocumentPointerDrag();
+                            dragBooking = null;
+                            touchDragBooking = null;
+                            touchDraggingEl = null;
+                            clearPointerDragUi();
+                        };
+
+                        line.addEventListener("pointerdown", (e) => {
+                            if (e.target.closest(".quick-del-btn")) return;
+                            if (e.pointerType === "mouse" && e.button !== 0) return;
+
+                            pointerDragState = {
+                                pointerId: e.pointerId,
+                                startX: e.clientX,
+                                startY: e.clientY,
+                                dragging: false
+                            };
+
+                            document.addEventListener(
+                                "pointermove",
+                                handlePointerMove
+                            );
+                            document.addEventListener(
+                                "pointerup",
+                                handlePointerUp
+                            );
+                            document.addEventListener(
+                                "pointercancel",
+                                handlePointerCancel
+                            );
                         });
 
                     }
+                    // =========================
+                    // SINGLE / DOUBLE CLICK
+                    // =========================
 
-                }
-                catch (error) {
+                    let clickTimer = null;
 
-                    console.error(error);
+                    line.addEventListener("click", (e) => {
 
-                    showToast("更新失敗");
+                        if (suppressNextClick) {
+                            suppressNextClick = false;
+                            return;
+                        }
 
-                }
+                        if (
+                            e.target.classList.contains(
+                                "quick-del-btn"
+                            )
+                        ) return;
 
-            }
-            // =========================
-            // APPEND
-            // =========================
+                        // DOUBLE CLICK
+                        if (clickTimer) {
 
-            line.appendChild(mainContentBlock);
+                            clearTimeout(clickTimer);
 
-            line.appendChild(rightActionsBlock);
+                            clickTimer = null;
 
-            guestRow.appendChild(line);
+                            toggleDoneStatus(item);
+
+                        }
+
+                        // SINGLE CLICK
+                        else {
+
+                            clickTimer = setTimeout(() => {
+
+                                openEditPopup(item);
+
+                                clickTimer = null;
+
+                            }, 250);
+
+                        }
+
+                    });
+
+                    // =========================
+                    // OPEN EDIT
+                    // =========================
+
+                    function openEditPopup(item) {
+
+                        // clear preview khi mở
+                        document.getElementById("timePreview").innerHTML = "";
+
+                        popup.classList.remove("hidden");
+
+                        popup.dataset.editId = item.id;
+
+                        popup.dataset.editDate =
+                            item.date;
+
+                        popup.dataset.time =
+                            item.time;
+                        originalTime = item.time;
+                        // originalCar = item.car;
+                        bookingTime.value = item.time;
+
+                        document.getElementById("timePreview").innerHTML = "";
+                        groupIcon.value =
+                            item.groupIcon || "";
+
+                       　populateExistingGroups(); // Cập nhật danh sách icon đang dùng
+existingGroupsSelect.value = item.groupIcon || ""; // Chọn sẵn icon của phòng này nếu có
+                        popup.dataset.car =
+                            item.car;
+
+                        inputRoom.value =
+                            item.room || "";
+
+                        inputName.value =
+                            item.name || "";
+
+                        inputNote.value =
+                            item.note || "";
+
+                        selAdults.value =
+                            item.adults || 0;
+
+                        selSoinet.value =
+                            item.soinet || 0;
+
+                        soinetSeatStatus =
+                            item.soinetSeat || "";
+
+                        updateSeatBtns();
+
+                        stayActive =
+                            item.stay || false;
+
+                        stayToggle.textContent =
+                            stayActive ? "ON" : "OFF";
+
+                        stayToggle.classList.toggle(
+                            "active",
+                            stayActive
+                        );
+
+                        lugTokudai.value =
+                            item.tokudai || 0;
+
+                        lugLarge.value =
+                            item.large || 0;
+
+                        lugMedium.value =
+                            item.medium || 0;
+
+                        lugSmall.value =
+                            item.small || 0;
+
+                    }
+
+                    // =========================
+                    // DONE TOGGLE
+                    // =========================
+
+                    async function toggleDoneStatus(item) {
+                        const isCanceled = item.status === "canceled";
+                        const isMoved = item.status === "moved";
+                        const isDone = item.status === "done";
+                        if (
+                            !isTodayBooking(item.date)
+                        ) return;
+
+                        if (isMoved) return;
+
+                        const ref = db.ref(
+                            "reservations/" +
+                            item.date +
+                            "/" +
+                            item.id
+                        );
+
+                        try {
+
+                            // done -> normal
+                            if (isDone) {
+
+                                await ref.child(
+                                    "status"
+                                ).remove();
+
+                            }
+
+                            // canceled -> normal
+                            else if (isCanceled) {
+
+                                await ref.child(
+                                    "status"
+                                ).remove();
+
+                            }
+
+                            // normal -> done
+                            else {
+
+                                await ref.update({
+                                    status: "done"
+                                });
+
+                            }
+
+                        }
+                        catch (error) {
+
+                            console.error(error);
+
+                            showToast("更新失敗");
+
+                        }
+
+                    }
+                    // =========================
+                    // APPEND
+                    // =========================
+
+                    line.appendChild(mainContentBlock);
+
+                    line.appendChild(rightActionsBlock);
+
+                    guestRow.appendChild(line);
 
 
-        });
+                });
 
-        applySearchFilter();
+                applySearchFilter();
 
-    });
+            });
 
         })
         .catch(error => {
@@ -2056,24 +2105,24 @@ async function exportExcel() {
                 luggage += `(${item.note.trim()}) `;
             }
 
-            
 
-           const adults = Number(item.adults || 0);
-const inf = Number(item.soinet || 0);
 
-let paxText = `${adults}名`;
+            const adults = Number(item.adults || 0);
+            const inf = Number(item.soinet || 0);
 
-if (inf > 0) {
-    const seatLabel =
-        item.soinetSeat === "ari"
-            ? "席あり"
-            : "席なし";
+            let paxText = `${adults}名`;
 
-    paxText += ` + ${inf}INF(${seatLabel})`;
-}
+            if (inf > 0) {
+                const seatLabel =
+                    item.soinetSeat === "ari"
+                        ? "席あり"
+                        : "席なし";
 
-const text =
-    `${item.room || ""}｜${item.name || ""}様｜${paxText} ${luggage}${stay}`.trim();
+                paxText += ` + ${inf}INF(${seatLabel})`;
+            }
+
+            const text =
+                `${item.room || ""}｜${item.name || ""}様｜${paxText} ${luggage}${stay}`.trim();
 
             grouped[key].push(text);
         });
@@ -2143,6 +2192,25 @@ document.querySelectorAll(".showAllBookingsBtn").forEach(btn => {
                 ).get();
 
             const data = snapshot.val();
+            let list = [];
+
+            if (data) {
+                list = Object.entries(data).map(([id, item]) => ({
+                    id,
+                    ...item
+                }));
+            }
+
+            // Sắp xếp: booking có groupIcon lên đầu
+            list.sort((a, b) => {
+                const ag = a.groupIcon ? 1 : 0;
+                const bg = b.groupIcon ? 1 : 0;
+
+                if (ag !== bg) return bg - ag;
+
+                return (a.createdAt || 0) - (b.createdAt || 0);
+            });
+
 
             allBookingsList.innerHTML = "";
 
@@ -2261,6 +2329,44 @@ document.querySelectorAll(".showAllBookingsBtn").forEach(btn => {
     );
 
 });
+// ==========================================
+// TỰ ĐỘNG LỌC CÁC ICON GROUP ĐANG ĐƯỢC DÙNG
+// ==========================================
+function populateExistingGroups() {
+    if (!existingGroupsSelect) return;
+    
+    // Xóa danh sách cũ đi để cập nhật mới
+    existingGroupsSelect.innerHTML = '<option value="">選択...</option>';
+    
+    const usedIcons = new Set();
+    
+    // Quét qua toàn bộ dữ liệu xe chạy trong ngày
+    Object.values(globalCurrentData).forEach(item => {
+        if (item.archived || item.status === "canceled" || item.status === "moved") return;
+        
+        // Nếu có phòng nào đã chọn Icon, thì giữ icon đó lại
+        if (item.groupIcon && item.groupIcon.trim() !== "") {
+            usedIcons.add(item.groupIcon);
+        }
+    });
+    
+    // Nạp các icon tìm được vào ô lựa chọn グループ済
+    usedIcons.forEach(icon => {
+        const option = document.createElement("option");
+        option.value = icon;
+        option.textContent = icon;
+        existingGroupsSelect.appendChild(option);
+    });
+}
+
+// Khi chọn một nhóm đã có trong danh sách, tự động điền vào ô GROUP chính
+if (existingGroupsSelect) {
+    existingGroupsSelect.addEventListener("change", function() {
+        if (this.value !== "") {
+            document.getElementById("groupIcon").value = this.value;
+        }
+    });
+}
 
 // ĐÓNG POPUP
 closeAllBookingsBtn.addEventListener("click", () => {
@@ -2279,5 +2385,6 @@ allBookingsPopup.addEventListener("click", (e) => {
     }
 
 });
+
 
 loadReservations();

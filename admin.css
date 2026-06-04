@@ -3603,4 +3603,63 @@ td.drag-over {
   transform-origin: top left;
   pointer-events: none;
 }
+/* ═══════════════════════════════
+   GIAO DIỆN KHU VỰC CHỌN GROUP
+═══════════════════════════════ */
+.group-section {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important; /* Chia làm 2 cột bằng nhau */
+    grid-template-rows: auto auto !important;
+    gap: 6px 16px !important; /* Khoảng cách hàng là 6px, khoảng cách 2 cột là 16px */
+    margin-top: 14px !important;
+    width: 100% !important;
+}
+
+/* Sắp xếp vị trí các thẻ phẳng thành 2 cột dọc xếp cạnh nhau */
+.group-section > label:nth-of-type(1) { grid-column: 1; grid-row: 1; }
+.group-section > select:nth-of-type(1) { grid-column: 1; grid-row: 2; }
+.group-section > label:nth-of-type(2) { grid-column: 2; grid-row: 1; }
+.group-section > select:nth-of-type(2) { grid-column: 2; grid-row: 2; }
+
+/* Style cho tiêu đề chữ (Label) */
+.group-section label {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: #6b7280 !important;
+    margin-bottom: 2px !important;
+}
+
+/* Style cho các ô chọn (Select Box) đồng bộ màu xanh nhạt của hệ thống */
+.group-section select {
+    width: 100% !important;
+    padding: 12px 14px !important;
+    border: 1px solid #bfdbfe !important;
+    border-radius: 10px !important; /* Bo góc mượt mà */
+    font-size: 15px !important;
+    color: #3b82f6 !important; /* Chữ màu xanh dương */
+    font-family: inherit;
+    background: #eff6ff !important; /* Nền xanh nhạt giống ô nhập phòng/tên */
+    box-shadow: none !important;
+    transition: all 0.2s ease;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    
+    /* Thiết kế mũi tên dropdown tùy biến tinh tế hơn mũi tên mặc định */
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 14px center !important;
+    background-size: 14px !important;
+    padding-right: 36px !important;
+}
+
+/* Hiệu ứng khi click chọn vào ô Select (đổi nền trắng, viền đậm, đổ bóng nhẹ) */
+.group-section select:focus {
+    border-color: #3b82f6 !important;
+    background-color: #ffffff !important;
+    outline: none !important;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important;
+}
 
