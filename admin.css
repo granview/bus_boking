@@ -3530,8 +3530,6 @@ td.drag-over {
     align-items: center;
     justify-content: center;
     gap: 12px;
-    margin-top: 10px;
-    margin-bottom: 15px;
 }
 
 .time-label {
