@@ -1194,7 +1194,7 @@ function loadReservations() {
                     }
                 });
 
-               bookingList.forEach(item => {
+                bookingList.forEach(item => {
 
                     if (
                         item.archived
@@ -1767,8 +1767,8 @@ function loadReservations() {
                         groupIcon.value =
                             item.groupIcon || "";
 
-                       　populateExistingGroups(); // Cập nhật danh sách icon đang dùng
-existingGroupsSelect.value = item.groupIcon || ""; // Chọn sẵn icon của phòng này nếu có
+                        populateExistingGroups(); // Cập nhật danh sách icon đang dùng
+                        existingGroupsSelect.value = item.groupIcon || ""; // Chọn sẵn icon của phòng này nếu có
                         popup.dataset.car =
                             item.car;
 
@@ -2121,8 +2121,9 @@ async function exportExcel() {
                 paxText += ` + ${inf}INF(${seatLabel})`;
             }
 
+            const iconText = item.groupIcon ? ` ${item.groupIcon}` : "";
             const text =
-                `${item.room || ""}｜${item.name || ""}様｜${paxText} ${luggage}${stay}`.trim();
+                `${item.room || ""}｜${item.name || ""}様｜${paxText} ${luggage}${iconText}${stay}`.trim();
 
             grouped[key].push(text);
         });
@@ -2334,22 +2335,22 @@ document.querySelectorAll(".showAllBookingsBtn").forEach(btn => {
 // ==========================================
 function populateExistingGroups() {
     if (!existingGroupsSelect) return;
-    
+
     // Xóa danh sách cũ đi để cập nhật mới
     existingGroupsSelect.innerHTML = '<option value="">選択...</option>';
-    
+
     const usedIcons = new Set();
-    
+
     // Quét qua toàn bộ dữ liệu xe chạy trong ngày
     Object.values(globalCurrentData).forEach(item => {
         if (item.archived || item.status === "canceled" || item.status === "moved") return;
-        
+
         // Nếu có phòng nào đã chọn Icon, thì giữ icon đó lại
         if (item.groupIcon && item.groupIcon.trim() !== "") {
             usedIcons.add(item.groupIcon);
         }
     });
-    
+
     // Nạp các icon tìm được vào ô lựa chọn グループ済
     usedIcons.forEach(icon => {
         const option = document.createElement("option");
@@ -2361,7 +2362,7 @@ function populateExistingGroups() {
 
 // Khi chọn một nhóm đã có trong danh sách, tự động điền vào ô GROUP chính
 if (existingGroupsSelect) {
-    existingGroupsSelect.addEventListener("change", function() {
+    existingGroupsSelect.addEventListener("change", function () {
         if (this.value !== "") {
             document.getElementById("groupIcon").value = this.value;
         }
