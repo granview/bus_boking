@@ -902,6 +902,10 @@ async function executeAction() {
     }
 }
 function applySearchFilter() {
+	  console.log("SEARCH RUNNING");
+console.log(
+        document.querySelectorAll(".guest-line").length
+    );
 
     const keyword =
         searchInput.value
@@ -1895,22 +1899,36 @@ const searchBtn =
 
 const clearSearchBtn =
     document.getElementById("clearSearchBtn");
-const searchResults =
-    document.getElementById("searchResults");
-clearSearchBtn.addEventListener(
-    "click",
-    () => {
+searchBtn.addEventListener("click", () => {
 
-        searchInput.value = "";
+    const keyword =
+        searchInput.value.trim().toLowerCase();
 
-        searchResults.innerHTML = "";
+    searchResults.innerHTML = "";
 
-        searchInput.blur();
+    document.querySelectorAll(".guest-line")
+        .forEach(line => {
 
-    }
+            const room =
+                (line.dataset.room || "").toLowerCase();
 
-);
+            const name =
+                (line.dataset.name || "").toLowerCase();
 
+            if (
+                room.includes(keyword) ||
+                name.includes(keyword)
+            ) {
+
+                searchResults.innerHTML += `
+                    <div class="searchResults">
+                        ${line.innerText}
+                    </div>
+                `;
+            }
+        });
+
+});
 // ========================================
 // EXPORT EXCEL
 // ========================================
