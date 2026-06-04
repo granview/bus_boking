@@ -13,36 +13,36 @@
 
 <body>
 
-    <div class="admin-header">
+     <!-- PHẦN 1: TIÊU ĐỀ -->
+    <div class="admin-header-title">
         <div class="header-title">送迎バス運行管理</div>
+    </div>
+
+    <!-- PHẦN 2: NGÀY THÁNG GIỜ (STICKY - LUÔN HIỂN THỊ) -->
+    <div class="admin-header-datetime">
         <div class="header-controls">
             <button class="nav-btn" id="prevDay">&#8592;</button>
             <input type="date" id="adminDate">
             <button class="nav-btn" id="nextDay">&#8594;</button>
             <button class="update-btn" id="updateBtn">更新</button>
         </div>
-        <div class="search-box-wrap">
-            <div class="search-area">
-
-                <div class="search-bar-wrap">
-
-                    <input type="text" id="searchInput" placeholder="部屋番号 / 名前">
-
-                    <button id="searchBtn">
-                        検索
-                    </button>
-                    <button id="clearSearchBtn">クリア</button>
-
-                </div>
-
-                <div id="searchResults"></div>
-
-            </div>
-        </div>
-
         <div class="page-toggle-bar">
             <button class="toggle-page-btn btnPageEarly active">06:05 ～ 07:00</button>
             <button class="toggle-page-btn btnPageLate">07:30 ～ 10:00</button>
+        </div>
+    </div>
+
+    <!-- PHẦN 3: TÌM KIẾM -->
+    <div class="admin-header-search">
+        <div class="search-box-wrap">
+            <div class="search-area">
+                <div class="search-bar-wrap">
+                    <input type="text" id="searchInput" placeholder="部屋番号 / 名前">
+                    <button id="searchBtn">検索</button>
+                    <button id="clearSearchBtn">クリア</button>
+                </div>
+                <div id="searchResults"></div>
+            </div>
         </div>
     </div>
 

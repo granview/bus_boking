@@ -39,36 +39,79 @@ body {
 /* ═══════════════════════════════
    HEADER & BANNER CONTROLS
 ═══════════════════════════════ */
-.admin-header {
-    background: var(--white);
-    border-bottom: 1px solid var(--border-strong);
-    padding: 16px 24px 12px;
-    margin-bottom: 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 14px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-.header-title {
+/* PHẦN 1: Tiêu đề chính */
+.admin-header-title {
     font-size: 28px;
     font-weight: 700;
     color: var(--text);
     letter-spacing: 1px;
+    width: 100%;
+    text-align: center;
+    padding: 16px 24px 12px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border-strong);
+}
+
+/* PHẦN 2: Ngày tháng và giờ - STICKY */
+.admin-header-datetime {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--white);
+    border-bottom: 1px solid var(--border-strong);
+    padding: 12px 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    width: 100%;
 }
 
 .header-controls {
     display: flex;
     align-items: center;
-    gap: 12px;
-    background: #475569;
+    gap: 12px;  
     padding: 8px 16px;
     border-radius: 10px;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
-.nav-btn {
+/* PHẦN 3: Tìm kiếm */
+.admin-header-search {
+    background: var(--white);
+    border-bottom: 1px solid var(--border-strong);
+    padding: 16px 24px;
+    width: 100%;
+}
+
+.search-box-wrap {
+    width: 100%;
+}
+
+.search-area {
+    width: 100%;
+}
+
+.page-toggle-bar {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 8px 0;
+}
+
+.toggle-page-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border-strong);
+    background: var(--white);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.toggle-page-btn.active {
+
+    color: white;
+    border-color: #475569;
+}.nav-btn {
     background: var(--white);
     border: 1px solid var(--text);
     color: var(--text);
@@ -1824,15 +1867,6 @@ body {
     letter-spacing: 1px;
 }
 
-.header-controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #475569;
-    padding: 8px 16px;
-    border-radius: 10px;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-}
 
 .nav-btn {
     background: var(--white);

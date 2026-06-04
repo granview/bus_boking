@@ -1351,7 +1351,7 @@ function loadReservations() {
 
                     <span class="guest-name-text">
                         ${item.name || ""}
-                    </span>様
+                    </span>
                     ${paxDisplay}
                     ${stayText}
                     <span class="lug-text-summary">
