@@ -1897,8 +1897,22 @@ searchInput.addEventListener("input", () => {
 const searchBtn =
     document.getElementById("searchBtn");
 
-const clearSearchBtn =
-    document.getElementById("clearSearchBtn");
+clearSearchBtn.addEventListener("click", () => {
+
+    searchInput.value = "";
+
+    document.querySelectorAll(".guest-line")
+        .forEach(line => {
+            line.style.display = "";
+        });
+
+    if (typeof searchResults !== "undefined") {
+        searchResults.innerHTML = "";
+    }
+
+    searchInput.focus();
+
+});
 searchBtn.addEventListener("click", () => {
 
     const keyword =
