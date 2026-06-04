@@ -2044,8 +2044,22 @@ async function exportExcel() {
 
             
 
-            const text =
-                `${item.room || ""}｜${item.name || ""}｜${item.adults || 0}名 ${luggage}${stay}`.trim();
+           const adults = Number(item.adults || 0);
+const inf = Number(item.soinet || 0);
+
+let paxText = `${adults}名`;
+
+if (inf > 0) {
+    const seatLabel =
+        item.soinetSeat === "ari"
+            ? "席あり"
+            : "席なし";
+
+    paxText += ` + ${inf}INF(${seatLabel})`;
+}
+
+const text =
+    `${item.room || ""}｜${item.name || ""}様｜${paxText} ${luggage}${stay}`.trim();
 
             grouped[key].push(text);
         });
