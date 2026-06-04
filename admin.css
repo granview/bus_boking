@@ -739,13 +739,25 @@ td.drag-over {
 }
 
 .clear-popup {
-    width: 640px !important;
-    max-height: 95vh;
+    width: 640px !important; /* Giữ nguyên độ rộng chuẩn của bạn */
     background: #ffffff !important;
     border: none !important;
     border-radius: 20px !important;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
-    overflow: hidden;
+
+    /* 1. ÉP ZOOM 80% BẰNG TRANSFORM (Mượt hơn, không lỗi căn giữa) */
+    transform: scale(0.8) !important;
+    transform-origin: center center !important;
+
+    /* CHÚ Ý: Nếu sau khi thêm dòng trên mà popup bị lệch hẳn sang một bên, 
+       hãy XOÁ dòng "transform: scale(0.8) !important;" ở trên đi 
+       và dùng dòng mở rộng dưới đây thay thế: */
+    /* transform: translate(-50%, -50%) scale(0.8) !important; */
+
+
+    /* 2. BẢO HIỂM CHỐNG TRÀN MÀN HÌNH (Hiện thanh cuộn nếu màn hình quá thấp) */
+    max-height: 95vh !important; /* Giới hạn chiều cao tối đa bằng 95% màn hình */
+    overflow-y: auto !important; /* Tự động hiện thanh cuộn dọc bên trong popup nếu cần */
 }
 
 .popup-header {
@@ -2486,16 +2498,6 @@ td.drag-over {
     display: none !important;
 }
 
-.clear-popup {
-    width: 640px !important;
-    max-height: 95vh;
-    background: #ffffff !important;
-    border: none !important;
-    border-radius: 20px !important;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
-    overflow: hidden;
-}
-
 .popup-header {
    
     background: #ffffff !important;
@@ -3530,6 +3532,8 @@ td.drag-over {
     align-items: center;
     justify-content: center;
     gap: 12px;
+    margin-top: 10px;
+    margin-bottom: 15px;
 }
 
 .time-label {
