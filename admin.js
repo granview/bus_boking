@@ -944,6 +944,12 @@ deleteBtn.addEventListener("click", async () => {
 
     executePendingAction("delete_form");
 });
+// ==========================================
+// KHAI BÁO BỔ SUNG CÁC BIẾN THIẾU Ở ĐẦU FILE (Nếu chưa có)
+// ==========================================
+const clearSearchBtn = document.getElementById("clearSearchBtn");
+const searchResults = document.getElementById("searchResults");
+
 
 // ── LOAD RESERVATIONS ──
 function loadReservations() {
@@ -1017,7 +1023,6 @@ function loadReservations() {
                     Object.entries(data).forEach(([id, item]) => {
                         item.id = id;
 
-                        // canceled + moved cũ KHÔNG tính ghế
                         if (
                             item.archived ||
                             item.status === "canceled" ||
@@ -1053,10 +1058,6 @@ function loadReservations() {
                 // UPDATE SEAT LABEL
                 // =========================
 
-                // =========================
-                // UPDATE SEAT LABEL
-                // =========================
-
                 Object.keys(seatMap).forEach(key => {
 
                     const [time, car] = key.split(/_(.+)/);
@@ -1077,7 +1078,6 @@ function loadReservations() {
                     const max = seatMap[key];
                     const remain = max - used;
 
-                    // Nếu FULL theo số ghế
                     if (remain <= 0) {
                         emptyText.innerHTML =
                             `予約済 <span class="seat-count-num">${used}</span>名 <span class="seat-full-label">満車</span>`;
@@ -1085,7 +1085,6 @@ function loadReservations() {
                         return;
                     }
 
-                    // Nếu FULL do admin bật
                     if (fullCarMap[key]) {
                         emptyText.innerHTML =
                             `予約済 <span class="seat-count-num">${used}</span>名 <span class="seat-full-label">満車</span>`;
@@ -1093,7 +1092,6 @@ function loadReservations() {
                         return;
                     }
 
-                    // Bình thường
                     emptyText.innerHTML =
                         `予約済 <span class="seat-count-num">${used}</span>名`;
 
@@ -1189,9 +1187,7 @@ function loadReservations() {
 
                 bookingList.forEach(item => {
 
-                    if (
-                        item.archived
-                    ) {
+                    if (item.archived) {
                         return;
                     }
 
@@ -1203,37 +1199,19 @@ function loadReservations() {
 
                     if (!btn) return;
 
-                    const td =
-                        btn.closest(".car-cell-box");
-
+                    const td = btn.closest(".car-cell-box");
                     if (!td) return;
 
-                    let guestRow =
-                        td.querySelector(".guest-row");
-
+                    let guestRow = td.querySelector(".guest-row");
                     if (!guestRow) {
-
-                        guestRow =
-                            document.createElement("div");
-
+                        guestRow = document.createElement("div");
                         guestRow.className = "guest-row";
-
                         td.prepend(guestRow);
-
                     }
 
-                    // =========================
-                    // STATUS
-                    // =========================
-
-                    const isCanceled =
-                        item.status === "canceled";
-
-                    const isMoved =
-                        item.status === "moved";
-
-                    const isDone =
-                        item.status === "done";
+                    const isCanceled = item.status === "canceled";
+                    const isMoved = item.status === "moved";
+                    const isDone = item.status === "done";
 
                     const isNewToday =
                         !isCanceled &&
@@ -1242,11 +1220,8 @@ function loadReservations() {
                         isTodayBooking(item.date) &&
                         isTodayTimestamp(item.createdAt);
 
-                    const roomKey =
-                        String(item.room || "").trim().toLowerCase();
-
-                    const nameKey =
-                        String(item.name || "").trim().toLowerCase();
+                    const roomKey = String(item.room || "").trim().toLowerCase();
+                    const nameKey = String(item.name || "").trim().toLowerCase();
 
                     const isDuplicateBooking =
                         !isCanceled &&
@@ -1256,238 +1231,93 @@ function loadReservations() {
                             (nameKey && nameCountMap[nameKey] > 1)
                         );
 
-                    // =========================
-                    // CREATE LINE
-                    // =========================
-
-                    const line =
-                        document.createElement("div");
-
+                    const line = document.createElement("div");
                     line.className = "guest-line";
                     line.dataset.time = item.time || "";
                     line.dataset.room = item.room || "";
                     line.dataset.name = item.name || "";
 
-                    if (isDone) {
-                        line.classList.add("is-done");
-                    }
+                    if (isDone) line.classList.add("is-done");
+                    if (isMoved) line.classList.add("is-moved");
+                    if (isCanceled) line.classList.add("is-canceled");
+                    if (isNewToday) line.classList.add("is-new-today");
+                    if (isDuplicateBooking) line.classList.add("is-duplicate-booking");
 
-                    if (isMoved) {
-                        line.classList.add("is-moved");
-                    }
+                    const adultsCount = Number(item.adults || 0);
+                    const soinetCount = Number(item.soinet || 0);
 
-                    if (isCanceled) {
-                        line.classList.add("is-canceled");
-                    }
-
-                    if (isNewToday) {
-                        line.classList.add("is-new-today");
-                    }
-
-                    if (isDuplicateBooking) {
-                        line.classList.add("is-duplicate-booking");
-                    }
-
-                    // =========================
-                    // PAX
-                    // =========================
-
-                    const adultsCount =
-                        Number(item.adults || 0);
-
-                    const soinetCount =
-                        Number(item.soinet || 0);
-
-                    let paxDisplay = `
-                    <span class="flat-pax">
-                        ${adultsCount}名
-                    </span>
-                `;
+                    let paxDisplay = `<span class="flat-pax">${adultsCount}名</span>`;
 
                     if (soinetCount > 0) {
-
-                        const seatLabel =
-                            item.soinetSeat === "ari"
-                                ? "席あり"
-                                : "席なし";
-
+                        const seatLabel = item.soinetSeat === "ari" ? "席あり" : "席なし";
                         paxDisplay += `
-                        <span class="flat-inf-label">
-                            + ${soinetCount}INF
-                        </span>
-
-                        <span class="flat-inf-bracket">
-                            (${seatLabel})
-                        </span>
-                    `;
-
+                            <span class="flat-inf-label">+ ${soinetCount}INF</span>
+                            <span class="flat-inf-bracket">(${seatLabel})</span>
+                        `;
                     }
-
-                    // =========================
-                    // LUGGAGE
-                    // =========================
 
                     let luggageText = "";
+                    if (Number(item.tokudai || 0) > 0) luggageText += ` (特大${item.tokudai})`;
+                    if (Number(item.large || 0) > 0) luggageText += ` 大${item.large})`;
+                    if (Number(item.medium || 0) > 0) luggageText += ` 中${item.medium})`;
+                    if (Number(item.small || 0) > 0) luggageText += ` 小${item.small})`;
 
-                    if (Number(item.tokudai || 0) > 0) {
-                        luggageText += ` (特大${item.tokudai})`;
+                    if (item.note && item.note.trim() !== "") {
+                        luggageText += ` (${item.note.trim()})`;
                     }
 
-                    if (Number(item.large || 0) > 0) {
-                        luggageText += ` (大${item.large})`;
-                    }
+                    const stayText = item.stay ? `<span class="stay-label">[ステイ]</span>` : "";
+                    const groupIconText = item.groupIcon ? `<span class="group-icon">${item.groupIcon}</span>` : "";
 
-                    if (Number(item.medium || 0) > 0) {
-                        luggageText += ` (中${item.medium})`;
-                    }
-
-                    if (Number(item.small || 0) > 0) {
-                        luggageText += ` (小${item.small})`;
-                    }
-
-                    if (
-                        item.note &&
-                        item.note.trim() !== ""
-                    ) {
-
-                        luggageText +=
-                            ` (${item.note.trim()})`;
-
-                    }
-
-                    // =========================
-                    // STAY
-                    // =========================
-
-                    const stayText = item.stay
-                        ? `<span class="stay-label">[ステイ]</span>`
-                        : "";
-                    const groupIconText =
-                        item.groupIcon
-                            ? `<span class="group-icon">${item.groupIcon}</span>`
-                            : "";
-                    // =========================
-                    // MAIN CONTENT
-                    // =========================
-
-                    const mainContentBlock =
-                        document.createElement("div");
-
-                    mainContentBlock.className =
-                        "guest-main-content-block";
-
+                    const mainContentBlock = document.createElement("div");
+                    mainContentBlock.className = "guest-main-content-block";
                     mainContentBlock.innerHTML = `
-                    
-    <span class="flat-room">
-        ${isDuplicateBooking
-                            ? "<span class='duplicate-star'>★</span>"
-                            : ""
-                        }
-        ${item.room ? `R${item.room}` : "-"}
-    </span>
-
-    <span class="guest-name-text">
-        ${item.name || ""}
-    </span>
-
-    ${paxDisplay}
-    ${stayText}
-
-    <span class="lug-text-summary">
-        ${luggageText}
-    </span>
-    ${groupIconText}
-
-`;
-                    // =========================
-                    // RIGHT SIDE
-                    // =========================
-
-                    const rightActionsBlock =
-                        document.createElement("div");
-
-                    rightActionsBlock.className =
-                        "guest-right-actions-block";
-
-                    // moved old booking
-                    if (isMoved && item.movedTo) {
-
-                        rightActionsBlock.innerHTML += `
-                        <span class="dest-label">
-                            → ${item.movedTo} 変
+                        <span class="flat-room">
+                            ${isDuplicateBooking ? "<span class='duplicate-star'>★</span>" : ""}
+                            ${item.room ? `R${item.room}` : "-"}
                         </span>
+                        <span class="guest-name-text">${item.name || ""}</span>
+                        ${paxDisplay}
+                        ${stayText}
+                        <span class="lug-text-summary">${luggageText}</span>
+                        ${groupIconText}
                     `;
 
+                    const rightActionsBlock = document.createElement("div");
+                    rightActionsBlock.className = "guest-right-actions-block";
+
+                    if (isMoved && item.movedTo) {
+                        rightActionsBlock.innerHTML += `<span class="dest-label">→ ${item.movedTo} 変</span>`;
                     }
 
                     if (isNewToday) {
-
-                        rightActionsBlock.innerHTML += `
-                        <span class="new-booking-label">
-                            新
-                        </span>
-                    `;
-
+                        rightActionsBlock.innerHTML += `<span class="new-booking-label">新</span>`;
                     }
 
-                    // canceled hoặc moved
                     if (isCanceled || isMoved) {
-
                         const statusLabel = document.createElement("span");
-
                         statusLabel.className = "cxl-label";
+                        statusLabel.textContent = isCanceled ? "CXL" : " ";
+                        rightActionsBlock.appendChild(statusLabel);
 
-                        statusLabel.textContent =
-                            isCanceled ? "CXL" : " ";
-
-                        rightActionsBlock.appendChild(
-                            statusLabel
-                        );
-
-                        const quickDelBtn =
-                            document.createElement("button");
-
-                        quickDelBtn.className =
-                            "quick-del-btn";
-
+                        const quickDelBtn = document.createElement("button");
+                        quickDelBtn.className = "quick-del-btn";
                         quickDelBtn.innerHTML = "&times;";
-
                         quickDelBtn.type = "button";
 
-                        quickDelBtn.addEventListener(
-                            "click",
-                            async (e) => {
+                        quickDelBtn.addEventListener("click", async (e) => {
+                            e.stopPropagation();
+                            const ok = await showConfirm(`R${item.room || "-"} ${item.name || ""}様\n\n完全削除しますか？`);
+                            if (!ok) return;
+                            executePendingAction("delete_quick", item);
+                        });
 
-                                e.stopPropagation();
-
-                                const ok = await showConfirm(
-                                    `R${item.room || "-"} ${item.name || ""}様\n\n完全削除しますか？`
-                                );
-
-                                if (!ok) return;
-
-                                executePendingAction(
-                                    "delete_quick",
-                                    item
-                                );
-
-                            }
-                        );
-
-                        rightActionsBlock.appendChild(
-                            quickDelBtn
-                        );
-
+                        rightActionsBlock.appendChild(quickDelBtn);
                     }
-
-                    // =========================
-                    // DRAG DESKTOP + IPAD
-                    // =========================
 
                     let suppressNextClick = false;
 
                     if (!isCanceled && !isMoved) {
-
                         line.draggable = false;
                         line.style.touchAction = "none";
 
@@ -1500,74 +1330,38 @@ function loadReservations() {
                         };
 
                         const getDropBoxAt = (clientX, clientY) => {
-                            const target =
-                                document.elementFromPoint(clientX, clientY);
-
-                            return target
-                                ? target.closest(".car-cell-box")
-                                : null;
+                            const target = document.elementFromPoint(clientX, clientY);
+                            return target ? target.closest(".car-cell-box") : null;
                         };
 
                         const highlightDropBox = (dropBox) => {
                             clearDragOverCells();
-
-                            if (dropBox) {
-                                dropBox.classList.add("drag-over");
-                            }
+                            if (dropBox) dropBox.classList.add("drag-over");
                         };
 
                         const switchPageWhileDragging = (clientX, clientY) => {
-                            const target =
-                                document.elementFromPoint(clientX, clientY);
-
-                            const pageButton =
-                                target
-                                    ? target.closest(".btnPageEarly, .btnPageLate")
-                                    : null;
-
+                            const target = document.elementFromPoint(clientX, clientY);
+                            const pageButton = target ? target.closest(".btnPageEarly, .btnPageLate") : null;
                             if (!pageButton) return;
-
                             const now = Date.now();
                             if (now - lastPageSwitchAt < 500) return;
-
                             lastPageSwitchAt = now;
                             pageButton.click();
                         };
 
                         const stopDocumentPointerDrag = () => {
-                            document.removeEventListener(
-                                "pointermove",
-                                handlePointerMove
-                            );
-                            document.removeEventListener(
-                                "pointerup",
-                                handlePointerUp
-                            );
-                            document.removeEventListener(
-                                "pointercancel",
-                                handlePointerCancel
-                            );
+                            document.removeEventListener("pointermove", handlePointerMove);
+                            document.removeEventListener("pointerup", handlePointerUp);
+                            document.removeEventListener("pointercancel", handlePointerCancel);
                         };
 
                         const handlePointerMove = (e) => {
-                            if (
-                                !pointerDragState ||
-                                pointerDragState.pointerId !== e.pointerId
-                            ) {
-                                return;
-                            }
+                            if (!pointerDragState || pointerDragState.pointerId !== e.pointerId) return;
 
-                            const moveX =
-                                Math.abs(e.clientX - pointerDragState.startX);
-                            const moveY =
-                                Math.abs(e.clientY - pointerDragState.startY);
+                            const moveX = Math.abs(e.clientX - pointerDragState.startX);
+                            const moveY = Math.abs(e.clientY - pointerDragState.startY);
 
-                            if (
-                                !pointerDragState.dragging &&
-                                Math.max(moveX, moveY) < 8
-                            ) {
-                                return;
-                            }
+                            if (!pointerDragState.dragging && Math.max(moveX, moveY) < 8) return;
 
                             if (!pointerDragState.dragging) {
                                 pointerDragState.dragging = true;
@@ -1579,37 +1373,21 @@ function loadReservations() {
                             }
 
                             e.preventDefault();
-
                             switchPageWhileDragging(e.clientX, e.clientY);
-
-                            highlightDropBox(
-                                getDropBoxAt(e.clientX, e.clientY)
-                            );
+                            highlightDropBox(getDropBoxAt(e.clientX, e.clientY));
                         };
 
                         const handlePointerUp = async (e) => {
-                            if (
-                                !pointerDragState ||
-                                pointerDragState.pointerId !== e.pointerId
-                            ) {
-                                return;
-                            }
+                            if (!pointerDragState || pointerDragState.pointerId !== e.pointerId) return;
 
-                            const wasDragging =
-                                pointerDragState.dragging;
-
+                            const wasDragging = pointerDragState.dragging;
                             pointerDragState = null;
                             stopDocumentPointerDrag();
 
-                            if (!wasDragging) {
-                                return;
-                            }
+                            if (!wasDragging) return;
 
                             e.preventDefault();
-
-                            const dropBox =
-                                getDropBoxAt(e.clientX, e.clientY);
-
+                            const dropBox = getDropBoxAt(e.clientX, e.clientY);
                             clearPointerDragUi();
 
                             if (!dropBox) {
@@ -1619,16 +1397,10 @@ function loadReservations() {
                                 return;
                             }
 
-                            pendingTargetTime =
-                                dropBox.dataset.time;
+                            pendingTargetTime = dropBox.dataset.time;
+                            pendingTargetCar = dropBox.dataset.car;
 
-                            pendingTargetCar =
-                                dropBox.dataset.car;
-
-                            if (
-                                item.time === pendingTargetTime &&
-                                item.car === pendingTargetCar
-                            ) {
+                            if (item.time === pendingTargetTime && item.car === pendingTargetCar) {
                                 dragBooking = null;
                                 touchDragBooking = null;
                                 touchDraggingEl = null;
@@ -1636,18 +1408,12 @@ function loadReservations() {
                             }
 
                             dragBooking = item;
-
-                            const ok = await showConfirm(
-                                `${item.room}を${pendingTargetTime}へ移動しますか？`
-                            );
-
+                            const ok = await showConfirm(`${item.room}を${pendingTargetTime}へ移動しますか？`);
                             if (ok) {
                                 executePendingAction("move");
-                            }
-                            else {
+                            } else {
                                 dragBooking = null;
                             }
-
                             touchDragBooking = null;
                             touchDraggingEl = null;
                         };
@@ -1672,227 +1438,104 @@ function loadReservations() {
                                 dragging: false
                             };
 
-                            document.addEventListener(
-                                "pointermove",
-                                handlePointerMove
-                            );
-                            document.addEventListener(
-                                "pointerup",
-                                handlePointerUp
-                            );
-                            document.addEventListener(
-                                "pointercancel",
-                                handlePointerCancel
-                            );
+                            document.addEventListener("pointermove", handlePointerMove);
+                            document.addEventListener("pointerup", handlePointerUp);
+                            document.addEventListener("pointercancel", handlePointerCancel);
                         });
-
                     }
-                    // =========================
-                    // SINGLE / DOUBLE CLICK
-                    // =========================
 
                     let clickTimer = null;
-
                     line.addEventListener("click", (e) => {
-
                         if (suppressNextClick) {
                             suppressNextClick = false;
                             return;
                         }
+                        if (e.target.classList.contains("quick-del-btn")) return;
 
-                        if (
-                            e.target.classList.contains(
-                                "quick-del-btn"
-                            )
-                        ) return;
-
-                        // DOUBLE CLICK
                         if (clickTimer) {
-
                             clearTimeout(clickTimer);
-
                             clickTimer = null;
-
                             toggleDoneStatus(item);
-
-                        }
-
-                        // SINGLE CLICK
-                        else {
-
+                        } else {
                             clickTimer = setTimeout(() => {
-
                                 openEditPopup(item);
-
                                 clickTimer = null;
-
                             }, 250);
-
                         }
-
                     });
 
-                    // =========================
-                    // OPEN EDIT
-                    // =========================
-
-                    function openEditPopup(item) {
-
-                        // clear preview khi mở
-                        document.getElementById("timePreview").innerHTML = "";
-
-                        popup.classList.remove("hidden");
-
-                        popup.dataset.editId = item.id;
-
-                        popup.dataset.editDate =
-                            item.date;
-
-                        popup.dataset.time =
-                            item.time;
-                        originalTime = item.time;
-                        // originalCar = item.car;
-                        bookingTime.value = item.time;
-
-                        document.getElementById("timePreview").innerHTML = "";
-                        groupIcon.value =
-                            item.groupIcon || "";
-
-                        populateExistingGroups(); // Cập nhật danh sách icon đang dùng
-                        existingGroupsSelect.value = item.groupIcon || ""; // Chọn sẵn icon của phòng này nếu có
-                        popup.dataset.car =
-                            item.car;
-
-                        inputRoom.value =
-                            item.room || "";
-
-                        inputName.value =
-                            item.name || "";
-
-                        inputNote.value =
-                            item.note || "";
-
-                        selAdults.value =
-                            item.adults || 0;
-
-                        selSoinet.value =
-                            item.soinet || 0;
-
-                        soinetSeatStatus =
-                            item.soinetSeat || "";
-
-                        updateSeatBtns();
-
-                        stayActive =
-                            item.stay || false;
-
-                        stayToggle.textContent =
-                            stayActive ? "ON" : "OFF";
-
-                        stayToggle.classList.toggle(
-                            "active",
-                            stayActive
-                        );
-
-                        lugTokudai.value =
-                            item.tokudai || 0;
-
-                        lugLarge.value =
-                            item.large || 0;
-
-                        lugMedium.value =
-                            item.medium || 0;
-
-                        lugSmall.value =
-                            item.small || 0;
-
-                    }
-
-                    // =========================
-                    // DONE TOGGLE
-                    // =========================
-
-                    async function toggleDoneStatus(item) {
-                        const isCanceled = item.status === "canceled";
-                        const isMoved = item.status === "moved";
-                        const isDone = item.status === "done";
-                        if (
-                            !isTodayBooking(item.date)
-                        ) return;
-
-                        if (isMoved) return;
-
-                        const ref = db.ref(
-                            "reservations/" +
-                            item.date +
-                            "/" +
-                            item.id
-                        );
-
-                        try {
-
-                            // done -> normal
-                            if (isDone) {
-
-                                await ref.child(
-                                    "status"
-                                ).remove();
-
-                            }
-
-                            // canceled -> normal
-                            else if (isCanceled) {
-
-                                await ref.child(
-                                    "status"
-                                ).remove();
-
-                            }
-
-                            // normal -> done
-                            else {
-
-                                await ref.update({
-                                    status: "done"
-                                });
-
-                            }
-
-                        }
-                        catch (error) {
-
-                            console.error(error);
-
-                            showToast("更新失敗");
-
-                        }
-
-                    }
-                    // =========================
-                    // APPEND
-                    // =========================
-
                     line.appendChild(mainContentBlock);
-
                     line.appendChild(rightActionsBlock);
-
                     guestRow.appendChild(line);
-
-
                 });
 
                 applySearchFilter();
-
             });
-
         })
         .catch(error => {
             console.error(error);
             showToast("予約データの読み込みに失敗しました");
         });
-}
-bookingTime.addEventListener("change", () => {
+} // <--- ĐÓNG ĐÚNG HÀM loadReservations TẠI ĐÂY!
 
+
+// ==========================================
+// CÁC HÀM PHỤ TRỢ & SỰ KIỆN TOÀN CỤC (ĐƯỢC ĐƯA RA NGOÀI)
+// ==========================================
+
+function openEditPopup(item) {
+    document.getElementById("timePreview").innerHTML = "";
+    popup.classList.remove("hidden");
+    popup.dataset.editId = item.id;
+    popup.dataset.editDate = item.date;
+    popup.dataset.time = item.time;
+    originalTime = item.time;
+    bookingTime.value = item.time;
+
+    groupIcon.value = item.groupIcon || "";
+    populateExistingGroups(); 
+    if (existingGroupsSelect) existingGroupsSelect.value = item.groupIcon || "";
+    
+    popup.dataset.car = item.car;
+    inputRoom.value = item.room || "";
+    inputName.value = item.name || "";
+    inputNote.value = item.note || "";
+    selAdults.value = item.adults || 0;
+    selSoinet.value = item.soinet || 0;
+    soinetSeatStatus = item.soinetSeat || "";
+    updateSeatBtns();
+
+    stayActive = item.stay || false;
+    stayToggle.textContent = stayActive ? "ON" : "OFF";
+    stayToggle.classList.toggle("active", stayActive);
+
+    lugTokudai.value = item.tokudai || 0;
+    lugLarge.value = item.large || 0;
+    lugMedium.value = item.medium || 0;
+    lugSmall.value = item.small || 0;
+}
+
+async function toggleDoneStatus(item) {
+    const isCanceled = item.status === "canceled";
+    const isMoved = item.status === "moved";
+    const isDone = item.status === "done";
+    if (!isTodayBooking(item.date)) return;
+    if (isMoved) return;
+
+    const ref = db.ref("reservations/" + item.date + "/" + item.id);
+    try {
+        if (isDone || isCanceled) {
+            await ref.child("status").remove();
+        } else {
+            await ref.update({ status: "done" });
+        }
+    } catch (error) {
+        console.error(error);
+        showToast("更新失敗");
+    }
+}
+
+bookingTime.addEventListener("change", () => {
     const newTime = bookingTime.value;
     const wrap = document.getElementById("timePreview");
 
@@ -1907,126 +1550,107 @@ bookingTime.addEventListener("change", () => {
         <span class="new-time">${newTime}</span>
     `;
 });
+
 document.querySelectorAll('.stepper-input').forEach(stepper => {
-    const minusBtn = stepper.querySelector('.minus'); const plusBtn = stepper.querySelector('.plus'); const input = stepper.querySelector('input[type="number"]');
-    minusBtn.addEventListener('click', () => { let val = parseInt(input.value) || 0; let min = parseInt(input.min) || 0; if (val > min) input.value = val - 1; });
-    plusBtn.addEventListener('click', () => { let val = parseInt(input.value) || 0; let max = parseInt(input.max) || 99; if (val < max) input.value = val + 1; });
+    const minusBtn = stepper.querySelector('.minus'); 
+    const plusBtn = stepper.querySelector('.plus'); 
+    const input = stepper.querySelector('input[type="number"]');
+    
+    minusBtn.addEventListener('click', () => { 
+        let val = parseInt(input.value) || 0; 
+        let min = parseInt(input.min) || 0; 
+        if (val > min) input.value = val - 1; 
+    });
+    plusBtn.addEventListener('click', () => { 
+        let val = parseInt(input.value) || 0; 
+        let max = parseInt(input.max) || 99; 
+        if (val < max) input.value = val + 1; 
+    });
 });
+
 function isTodayBooking(dateStr) {
     const today = new Date();
-
     const y = today.getFullYear();
     const m = String(today.getMonth() + 1).padStart(2, "0");
     const d = String(today.getDate()).padStart(2, "0");
-
     return dateStr === `${y}-${m}-${d}`;
 }
 
 function isTodayTimestamp(timestamp) {
     if (!timestamp) return false;
-
     const createdDate = new Date(Number(timestamp));
     if (Number.isNaN(createdDate.getTime())) return false;
-
     return getDateString(createdDate) === getTodayString();
 }
 
 searchInput.addEventListener("input", () => {
     applySearchFilter();
 });
-const searchBtn =
-    document.getElementById("searchBtn");
 
-clearSearchBtn.addEventListener("click", () => {
+const searchBtn = document.getElementById("searchBtn");
 
-    searchInput.value = "";
-
-    document.querySelectorAll(".guest-line")
-        .forEach(line => {
+if (clearSearchBtn) {
+    clearSearchBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        document.querySelectorAll(".guest-line").forEach(line => {
             line.style.display = "";
         });
+        if (searchResults) {
+            searchResults.innerHTML = "";
+        }
+        searchInput.focus();
+    });
+}
 
-    if (typeof searchResults !== "undefined") {
+// ========================================
+// XỬ LÝ SỰ KIỆN TÌM KIẾM & CLICK MỞ POPUP (ĐÃ CẬP NHẬT CHUẨN)
+// ========================================
+if (searchBtn) {
+    searchBtn.addEventListener("click", () => {
+        const keyword = searchInput.value.trim().toLowerCase();
+        if (!searchResults) return;
         searchResults.innerHTML = "";
-    }
 
-    searchInput.focus();
+        document.querySelectorAll(".guest-line").forEach(line => {
+            const room = (line.dataset.room || "").toLowerCase();
+            const name = (line.dataset.name || "").toLowerCase();
+            const time = (line.dataset.time || "").toLowerCase();
 
-});
-// ========================================
-// XỬ LÝ SỰ KIỆN TÌM KIẾM & MỞ POPUP SỬA
-// ========================================
-searchBtn.addEventListener("click", () => {
-
-    const keyword =
-        searchInput.value.trim().toLowerCase();
-
-    searchResults.innerHTML = "";
-
-    document.querySelectorAll(".guest-line")
-        .forEach(line => {
-
-            const room =
-                (line.dataset.room || "").toLowerCase();
-
-            const name =
-                (line.dataset.name || "").toLowerCase();
-
-            // Lấy giờ xe chạy từ dataset đã lưu
-            const time = 
-                (line.dataset.time || "").toLowerCase();
-
-            // Cho phép tìm kiếm bằng cả Phòng, Tên hoặc Số giờ xe chạy
-            if (
-                room.includes(keyword) ||
-                name.includes(keyword) ||
-                time.includes(keyword)
-            ) {
-
-                // 1. Tạo phần tử div chứa kết quả tìm kiếm để có thể gán sự kiện click
+            if (room.includes(keyword) || name.includes(keyword) || time.includes(keyword)) {
+                // Tạo phần tử div kết quả tìm kiếm để gán sự kiện click trực tiếp
                 const resultItem = document.createElement("div");
                 resultItem.className = "searchResults";
+                resultItem.style.cssText = "padding: 8px 10px; border-bottom: 1px solid #e2e8f0; cursor: pointer;";
                 
-                // Thêm style con trỏ chuột dạng bàn tay để người dùng biết có thể ấn vào được
-                resultItem.style.cssText = "padding: 6px 10px; border-bottom: 1px solid #e2e8f0; cursor: pointer;";
-                
-                // Thêm nội dung hiển thị giống hệt như cũ của bạn
                 resultItem.innerHTML = `
                     <span style="font-weight: bold; color: #2563eb; margin-right: 8px;">[${line.dataset.time || "-"}]</span> 
                     ${line.innerText}
                 `;
 
-                // 2. KHI ẤN VÀO KẾT QUẢ TÌM KIẾM:
-                // Tự động giả lập hành vi click thẳng vào dòng dữ liệu gốc (.guest-line) ở bảng chính
+                // Giả lập hành vi click vào dòng gốc ở bảng chính khi click vào kết quả này
                 resultItem.addEventListener("click", () => {
-                    line.click();
+                    line.click(); 
                 });
 
-                // Đưa kết quả vào khung hiển thị
                 searchResults.appendChild(resultItem);
             }
         });
+    });
+}
 
-});
 // ========================================
 // EXPORT EXCEL
 // ========================================
+document.querySelectorAll(".exportExcelBtn").forEach(btn => {
+    btn.addEventListener("click", exportExcel);
+});
 
-document
-    .querySelectorAll(".exportExcelBtn")
-    .forEach(btn => {
-
-        btn.addEventListener(
-            "click",
-            exportExcel
-        );
-
-    });
-
+// ========================================
+// XUẤT EXCEL HỖ TRỢ HIỂN THỊ XE ĐẦY (FULLCARS)
+// ========================================
 async function exportExcel() {
     try {
         const date = adminDate.value;
-
         const response = await fetch("./bus_booking1.xlsx");
         const arrayBuffer = await response.arrayBuffer();
 
@@ -2036,130 +1660,103 @@ async function exportExcel() {
         const sheetEarly = workbook.getWorksheet("6-7");
         const sheetLate = workbook.getWorksheet("7-10");
 
-        // =========================
-        // DATE HEADER
-        // =========================
         const weekList = ["日", "月", "火", "水", "木", "金", "土"];
-
         const dateObj = new Date(date);
         const week = weekList[dateObj.getDay()];
         const [year, month, day] = date.split("-");
 
         const headerText = `${Number(month)}月 ${Number(day)}日（${week}）`;
-        sheetEarly.getCell("D1").value = headerText;
-        sheetLate.getCell("D1").value = headerText;
+        if (sheetEarly) sheetEarly.getCell("D1").value = headerText;
+        if (sheetLate) sheetLate.getCell("D1").value = headerText;
 
-        // =========================
-        // LOAD DATA
-        // =========================
+        // 1. LẤY DỮ LIỆU ĐẶT PHÒNG KHÁCH HÀNG
         const snapshot = await db.ref("reservations/" + date).get();
-        const data = snapshot.val();
+        const data = snapshot.val() || {};
+
+        // 2. LẤY DỮ LIỆU KHÓA XE ĐẦY (FULLCARS) THEO YÊU CẦU CỦA BẠN
         const fullSnap = await db.ref("fullCars/" + date).once("value");
         const fullCars = fullSnap.val() || {};
 
-        if (!data) {
+        // Kiểm tra nếu cả lịch đặt xe lẫn danh sách khóa xe đều trống thì mới báo không có dữ liệu
+        if (Object.keys(data).length === 0 && Object.keys(fullCars).length === 0) {
             alert("データなし");
             return;
         }
 
-        // =========================
-        // CLEAN TARGET CELLS (IMPORTANT)
-        // =========================
         const earlyMap = {
-            "06:05_ラッキータクシー": "C5",
-            "06:05_ホテル": "D5",
-
-            "06:20_ラッキータクシー": "C15",
-            "06:20_ホテル": "D15",
-
-            "06:40_ラッキータクシー": "C25",
-            "06:40_ホテル": "D25",
-
-            "07:00_ラッキータクシー": "C35",
-            "07:00_ホテル": "D35"
+            "06:05_ラッキータクシー": "C5", "06:05_ホテル": "D5",
+            "06:20_ラッキータクシー": "C15", "06:20_ホテル": "D15",
+            "06:40_ラッキータクシー": "C25", "06:40_ホテル": "D25",
+            "07:00_ラッキータクシー": "C35", "07:00_ホテル": "D35"
         };
         const lateMap = {
-            "07:30_ホテル": "B3",
-            "08:00_ホテル": "B14",
-            "08:30_ホテル": "B25",
-
-            "09:00_ホテル": "D3",
-            "09:30_ホテル": "D14",
-            "10:00_ホテル": "D25"
+            "07:30_ホテル": "B3", "08:00_ホテル": "B14", "08:30_ホテル": "B25",
+            "09:00_ホテル": "D3", "09:30_ホテル": "D14", "10:00_ホテル": "D25"
         };
 
-        Object.values(earlyMap).forEach(addr => {
-            sheetEarly.getCell(addr).value = "";
-        });
+        // Xóa dữ liệu cũ trên các ô trong file mẫu trước khi điền dữ liệu mới
+        if (sheetEarly) {
+            Object.values(earlyMap).forEach(addr => { sheetEarly.getCell(addr).value = ""; });
+        }
+        if (sheetLate) {
+            Object.values(lateMap).forEach(addr => { sheetLate.getCell(addr).value = ""; });
+        }
 
-        Object.values(lateMap).forEach(addr => {
-            sheetLate.getCell(addr).value = "";
-        });
-
-        // =========================
-        // GROUP BOOKINGS BY SLOT
-        // =========================
+        // Khởi tạo mảng trống cho tất cả các tuyến cố định nhằm đảm bảo kiểm tra được trạng thái khóa xe
         const grouped = {};
+        const allKeys = [...Object.keys(earlyMap), ...Object.keys(lateMap)];
+        allKeys.forEach(key => {
+            grouped[key] = [];
+        });
 
+        // 3. GOM NHÓM DANH SÁCH KHÁCH HÀNG ĐẶT XE ĐANG HOẠT ĐỘNG
         Object.values(data).forEach(item => {
-
             if (item.archived || item.status === "canceled" || item.status === "moved") return;
 
             const key = item.time + "_" + item.car;
-
             if (!grouped[key]) grouped[key] = [];
 
             let luggage = "";
-
             if (item.tokudai > 0) luggage += `特大${item.tokudai} `;
             if (item.large > 0) luggage += `大${item.large} `;
             if (item.medium > 0) luggage += `中${item.medium} `;
             if (item.small > 0) luggage += `小${item.small} `;
             const stay = item.stay ? "ステイ" : "";
-            // Add note in parentheses
+            
             if (item.note && item.note.trim()) {
                 luggage += `(${item.note.trim()}) `;
             }
 
-
-
             const adults = Number(item.adults || 0);
             const inf = Number(item.soinet || 0);
-
             let paxText = `${adults}名`;
 
             if (inf > 0) {
-                const seatLabel =
-                    item.soinetSeat === "ari"
-                        ? "席あり"
-                        : "席なし";
-
+                const seatLabel = item.soinetSeat === "ari" ? "席あり" : "席なし";
                 paxText += ` + ${inf}INF(${seatLabel})`;
             }
 
             const iconText = item.groupIcon ? ` ${item.groupIcon}` : "";
-            const text =
-                `${item.room || ""}｜${item.name || ""}様｜${paxText} ${luggage}${iconText}${stay}`.trim();
+            const text = `${item.room || ""}｜${item.name || ""}様｜${paxText} ${luggage}${iconText}${stay}`.trim();
 
             grouped[key].push(text);
         });
 
-        // =========================
-        // WRITE TO EXCEL (1 booking = 1 row)
-        // =========================
-        Object.entries(grouped).forEach(([key, list]) => {
+        // 4. KIỂM TRA TRẠNG THÁI KHÓA XE (FULLCARS) ĐỂ ĐƯA VÀO FILE EXCEL
+        allKeys.forEach(key => {
+            if (fullCars[key]) {
+                // Nếu tuyến xe này bị bấm nút "満車" trên giao diện Admin, thêm nhãn cảnh báo vào Excel
+                grouped[key].push("★満車★");
+            }
+        });
 
+        // 5. TIẾN HÀNH GHI DỮ LIỆU ĐÃ GOM NHÓM XUỐNG CÁC Ô SỰ KIỆN TRONG EXCEL
+        Object.entries(grouped).forEach(([key, list]) => {
             let sheet = null;
             let baseCell = null;
 
-            if (earlyMap[key]) {
-                sheet = sheetEarly;
-                baseCell = earlyMap[key];
-            }
-            else if (lateMap[key]) {
-                sheet = sheetLate;
-                baseCell = lateMap[key];
-            }
+            if (earlyMap[key]) { sheet = sheetEarly; baseCell = earlyMap[key]; }
+            else if (lateMap[key]) { sheet = sheetLate; baseCell = lateMap[key]; }
 
             if (!sheet || !baseCell) return;
 
@@ -2167,24 +1764,13 @@ async function exportExcel() {
             const baseRow = parseInt(baseCell.replace(/\D/g, ""));
 
             list.forEach((text, i) => {
-
                 const row = baseRow + i;
-
                 sheet.getCell(`${col}${row}`).value = text;
-
             });
-
         });
 
-        // =========================
-        // EXPORT FILE
-        // =========================
         const buffer = await workbook.xlsx.writeBuffer();
-
-        saveAs(
-            new Blob([buffer]),
-            `bus_${date}.xlsx`
-        );
+        saveAs(new Blob([buffer]), `bus_${date}.xlsx`);
 
     } catch (error) {
         console.error(error);
@@ -2196,217 +1782,67 @@ async function exportExcel() {
 // ALL BOOKINGS POPUP
 // =====================================
 document.querySelectorAll(".showAllBookingsBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+        const date = adminDate.value;
+        const snapshot = await db.ref("reservations/" + date).get();
+        const data = snapshot.val();
 
-    btn.addEventListener(
-        "click",
-        async () => {
+        allBookingsList.innerHTML = "";
 
-            const date = adminDate.value;
-
-            const snapshot =
-                await db.ref(
-                    "reservations/" + date
-                ).get();
-
-            const data = snapshot.val();
-            let list = [];
-
-            if (data) {
-                list = Object.entries(data).map(([id, item]) => ({
-                    id,
-                    ...item
-                }));
-            }
-
-            // Sắp xếp: booking có groupIcon lên đầu
-            list.sort((a, b) => {
-                const ag = a.groupIcon ? 1 : 0;
-                const bg = b.groupIcon ? 1 : 0;
-
-                if (ag !== bg) return bg - ag;
-
-                return (a.createdAt || 0) - (b.createdAt || 0);
-            });
-
-
-            allBookingsList.innerHTML = "";
-
-            if (!data) {
-
-                allBookingsList.innerHTML =
-                    "<div>データなし</div>";
-
-                allBookingsPopup.classList.remove(
-                    "hidden"
-                );
-
-                return;
-
-            }
-
-            // ARRAY
-            const arr = Object.entries(data)
-                .map(([id, item]) => ({
-
-                    id,
-                    ...item
-
-                }));
-
-            // FILTER
-            const filtered =
-                arr.filter(item =>
-
-                    !item.archived
-                    &&
-                    item.status !== "canceled"
-                    && item.status !== "moved"
-
-
-                );
-
-            // SORT ROOM
-            filtered.sort((a, b) => {
-
-                const roomA =
-                    parseInt(a.room) || 0;
-
-                const roomB =
-                    parseInt(b.room) || 0;
-
-                return roomA - roomB;
-
-            });
-
-            // RENDER
-            filtered.forEach(item => {
-
-                const div =
-                    document.createElement("div");
-
-                div.className =
-                    "booking-list-line";
-
-                let luggage = "";
-
-                if (item.tokudai > 0) {
-
-                    luggage += ` 特大${item.tokudai}`;
-
-                }
-
-                if (item.large > 0) {
-
-                    luggage += ` 大${item.large}`;
-
-                }
-
-                if (item.medium > 0) {
-
-                    luggage += ` 中${item.medium}`;
-
-                }
-
-                if (item.small > 0) {
-
-                    luggage += ` 小${item.small}`;
-
-                }
-
-                div.innerHTML = `
-<div class="booking-time">
-    ${item.time}
-    </div>
-
-    <div class="booking-room">
-    R${item.room || "-"}
-    </div>
-
-    <div class="booking-name">
-    ${item.name || ""}
-    ${luggage}
-    </div>
-
-    <div class="booking-pax">
-    ${item.adults || 0}名
-    </div>
-        `;
-
-                allBookingsList.appendChild(div);
-
-            });
-
-            allBookingsPopup.classList.remove(
-                "hidden"
-            );
-
+        if (!data) {
+            allBookingsList.innerHTML = "<div>データなし</div>";
+            allBookingsPopup.classList.remove("hidden");
+            return;
         }
-    );
 
+        const arr = Object.entries(data).map(([id, item]) => ({ id, ...item }));
+        const filtered = arr.filter(item => !item.archived && item.status !== "canceled" && item.status !== "moved");
+
+        filtered.sort((a, b) => (parseInt(a.room) || 0) - (parseInt(b.room) || 0));
+
+        filtered.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "booking-list-line";
+
+            let luggage = "";
+            if (item.tokudai > 0) luggage += ` 特大${item.tokudai}`;
+            if (item.large > 0) luggage += ` 大${item.large}`;
+            if (item.medium > 0) luggage += ` 中${item.medium}`;
+            if (item.small > 0) luggage += ` 小${item.small}`;
+
+            div.innerHTML = `
+                <div class="booking-time">${item.time}</div>
+                <div class="booking-room">R${item.room || "-"}</div>
+                <div class="booking-name">${item.name || ""}${luggage}</div>
+                <div class="booking-pax">${item.adults || 0}名</div>
+            `;
+            allBookingsList.appendChild(div);
+        });
+
+        allBookingsPopup.classList.remove("hidden");
+    });
 });
-// ==========================================
-// TỰ ĐỘNG LỌC CÁC ICON GROUP ĐANG ĐƯỢC DÙNG
-// ==========================================
+
 function populateExistingGroups() {
     if (!existingGroupsSelect) return;
-
-    // Lấy icon hiện tại đang được chọn (hữu ích khi ở chế độ chỉnh sửa phòng cũ)
-    const currentSelectedIcon = groupIcon ? groupIcon.value : "";
-
-    // 1. XỬ LÝ Ô CHỌN NHÓM ĐÃ CÓ (existingGroupsSelect)
-    // Xóa danh sách cũ đi để cập nhật mới
     existingGroupsSelect.innerHTML = '<option value="">選択...</option>';
-
     const usedIcons = new Set();
 
-    // Quét qua toàn bộ dữ liệu xe chạy trong ngày
     Object.values(globalCurrentData).forEach(item => {
         if (item.archived || item.status === "canceled" || item.status === "moved") return;
-
-        // Nếu có phòng nào đã chọn Icon, thì giữ icon đó lại
         if (item.groupIcon && item.groupIcon.trim() !== "") {
             usedIcons.add(item.groupIcon);
         }
     });
 
-    // Nạp các icon tìm được vào ô lựa chọn グループ済
     usedIcons.forEach(icon => {
         const option = document.createElement("option");
         option.value = icon;
         option.textContent = icon;
         existingGroupsSelect.appendChild(option);
     });
-
-
-    // 2. TỰ ĐỘNG LỌC Ô CHỌN ICON CHÍNH (groupIcon)
-    if (groupIcon) {
-        // Danh sách toàn bộ 10 icon mẫu cố định hệ thống của bạn
-        const ALL_ICONS = ['●', '○', '■', '□', '▲', '△', '◆', '◇', '★', '☆'];
-
-        // Xóa trắng ô chọn chính và nạp lại tùy chọn mặc định "なし"
-        groupIcon.innerHTML = '<option value="">なし</option>';
-
-        ALL_ICONS.forEach(icon => {
-            // ĐIỀU KIỆN: Nếu icon ĐÃ ĐƯỢC DÙNG (có trong usedIcons)
-            // VÀ icon đó KHÔNG PHẢI là icon của chính phòng đang mở lên để sửa (currentSelectedIcon)
-            // thì ta bỏ qua (ẩn đi, không cho hiện ở danh sách tạo nhóm mới nữa)
-            if (usedIcons.has(icon) && icon !== currentSelectedIcon) {
-                return;
-            }
-
-            // Nếu chưa được dùng, hoặc là của chính phòng đang sửa thì tạo option hiển thị bình thường
-            const option = document.createElement("option");
-            option.value = icon;
-            option.textContent = icon + ' ';
-            groupIcon.appendChild(option);
-        });
-
-        // Khôi phục lại đúng vị trí icon được chọn ban đầu cho phòng
-        groupIcon.value = currentSelectedIcon;
-    }
 }
 
-// Khi chọn một nhóm đã có trong danh sách, tự động điền vào ô GROUP chính
 if (existingGroupsSelect) {
     existingGroupsSelect.addEventListener("change", function () {
         if (this.value !== "") {
@@ -2415,23 +1851,19 @@ if (existingGroupsSelect) {
     });
 }
 
-// ĐÓNG POPUP
-closeAllBookingsBtn.addEventListener("click", () => {
-
-    allBookingsPopup.classList.add("hidden");
-
-});
-
-// CLICK NGOÀI ĐỂ ĐÓNG
-allBookingsPopup.addEventListener("click", (e) => {
-
-    if (e.target === allBookingsPopup) {
-
+if (closeAllBookingsBtn) {
+    closeAllBookingsBtn.addEventListener("click", () => {
         allBookingsPopup.classList.add("hidden");
+    });
+}
 
-    }
+if (allBookingsPopup) {
+    allBookingsPopup.addEventListener("click", (e) => {
+        if (e.target === allBookingsPopup) {
+            allBookingsPopup.classList.add("hidden");
+        }
+    });
+}
 
-});
-
-
+// Chạy khởi tạo dữ liệu lần đầu tiên khi tải trang
 loadReservations();
