@@ -1315,16 +1315,16 @@ function loadReservations() {
                         rightActionsBlock.appendChild(quickDelBtn);
                     }
 
+                    // ── TỐI ƯU HÓA LOGIC KÉO THẢ (DRAG & DROP) ──
                     let suppressNextClick = false;
 
                     if (!isCanceled && !isMoved) {
                         line.draggable = false;
-                        line.style.touchAction = "none";
-
+                        line.style.touchAction = "none"; // Ngăn trình duyệt cuộn trang khi đang kéo thả
                         let pointerDragState = null;
                         let lastPageSwitchAt = 0;
 
-                        const clearPointerDragUi = () => {
+                        const clearDragUi = () => {
                             line.classList.remove("dragging");
                             clearDragOverCells();
                         };
@@ -1334,102 +1334,96 @@ function loadReservations() {
                             return target ? target.closest(".car-cell-box") : null;
                         };
 
-                        const highlightDropBox = (dropBox) => {
-                            clearDragOverCells();
-                            if (dropBox) dropBox.classList.add("drag-over");
-                        };
-
-                        const switchPageWhileDragging = (clientX, clientY) => {
-                            const target = document.elementFromPoint(clientX, clientY);
-                            const pageButton = target ? target.closest(".btnPageEarly, .btnPageLate") : null;
-                            if (!pageButton) return;
-                            const now = Date.now();
-                            if (now - lastPageSwitchAt < 500) return;
-                            lastPageSwitchAt = now;
-                            pageButton.click();
-                        };
-
-                        const stopDocumentPointerDrag = () => {
-                            document.removeEventListener("pointermove", handlePointerMove);
-                            document.removeEventListener("pointerup", handlePointerUp);
-                            document.removeEventListener("pointercancel", handlePointerCancel);
-                        };
-
                         const handlePointerMove = (e) => {
                             if (!pointerDragState || pointerDragState.pointerId !== e.pointerId) return;
 
                             const moveX = Math.abs(e.clientX - pointerDragState.startX);
                             const moveY = Math.abs(e.clientY - pointerDragState.startY);
 
+                            // Nếu chưa kích hoạt trạng thái kéo và di chuyển chưa đủ 8px thì bỏ qua
                             if (!pointerDragState.dragging && Math.max(moveX, moveY) < 8) return;
 
+                            // Bắt đầu trạng thái kéo
                             if (!pointerDragState.dragging) {
                                 pointerDragState.dragging = true;
-                                suppressNextClick = true;
+                                suppressNextClick = true; // Chặn sự kiện click mở popup
                                 dragBooking = item;
-                                touchDragBooking = item;
-                                touchDraggingEl = line;
                                 line.classList.add("dragging");
                             }
 
                             e.preventDefault();
-                            switchPageWhileDragging(e.clientX, e.clientY);
-                            highlightDropBox(getDropBoxAt(e.clientX, e.clientY));
+
+                            // 1. Xử lý tự động chuyển trang/tab khi rê qua nút Sáng/Chiều
+                            const targetEl = document.elementFromPoint(e.clientX, e.clientY);
+                            const pageButton = targetEl ? targetEl.closest(".btnPageEarly, .btnPageLate") : null;
+                            if (pageButton) {
+                                const now = Date.now();
+                                if (now - lastPageSwitchAt > 500) { // Giới hạn kiểm tra mỗi 500ms
+                                    lastPageSwitchAt = now;
+                                    pageButton.click();
+                                }
+                            }
+
+                            // 2. Highlight ô (Cell) đang rê chuột qua
+                            const dropBox = getDropBoxAt(e.clientX, e.clientY);
+                            clearDragOverCells();
+                            if (dropBox) dropBox.classList.add("drag-over");
                         };
 
                         const handlePointerUp = async (e) => {
                             if (!pointerDragState || pointerDragState.pointerId !== e.pointerId) return;
-
+                            
                             const wasDragging = pointerDragState.dragging;
                             pointerDragState = null;
-                            stopDocumentPointerDrag();
+                            
+                            // Gỡ bỏ các event lắng nghe toàn cục
+                            document.removeEventListener("pointermove", handlePointerMove);
+                            document.removeEventListener("pointerup", handlePointerUp);
+                            document.removeEventListener("pointercancel", handlePointerCancel);
 
-                            if (!wasDragging) return;
+                            if (!wasDragging) return; // Nếu chỉ là click thông thường thì dừng lại ở đây
 
                             e.preventDefault();
                             const dropBox = getDropBoxAt(e.clientX, e.clientY);
-                            clearPointerDragUi();
+                            clearDragUi();
 
                             if (!dropBox) {
                                 dragBooking = null;
-                                touchDragBooking = null;
-                                touchDraggingEl = null;
                                 return;
                             }
 
                             pendingTargetTime = dropBox.dataset.time;
                             pendingTargetCar = dropBox.dataset.car;
 
+                            // Nếu thả trúng ngay ô cũ thì hủy bỏ hành động
                             if (item.time === pendingTargetTime && item.car === pendingTargetCar) {
                                 dragBooking = null;
-                                touchDragBooking = null;
-                                touchDraggingEl = null;
                                 return;
                             }
 
-                            dragBooking = item;
-                            const ok = await showConfirm(`${item.room}を${pendingTargetTime}へ移動しますか？`);
+                            // Xác nhận và thực hiện di chuyển
+                            const displayRoom = item.room ? `R${item.room}` : "部屋なし";
+                            const ok = await showConfirm(`${displayRoom} を ${pendingTargetTime} (${pendingTargetCar}) へ 移動しますか？`);
                             if (ok) {
                                 executePendingAction("move");
                             } else {
-                                dragBooking = null;
+                                dragBooking = null; // Reset nếu hủy
                             }
-                            touchDragBooking = null;
-                            touchDraggingEl = null;
                         };
 
                         const handlePointerCancel = () => {
                             pointerDragState = null;
-                            stopDocumentPointerDrag();
+                            document.removeEventListener("pointermove", handlePointerMove);
+                            document.removeEventListener("pointerup", handlePointerUp);
+                            document.removeEventListener("pointercancel", handlePointerCancel);
                             dragBooking = null;
-                            touchDragBooking = null;
-                            touchDraggingEl = null;
-                            clearPointerDragUi();
+                            clearDragUi();
                         };
 
+                        // Đăng ký sự kiện nhấn xuống ban đầu
                         line.addEventListener("pointerdown", (e) => {
-                            if (e.target.closest(".quick-del-btn")) return;
-                            if (e.pointerType === "mouse" && e.button !== 0) return;
+                            if (e.target.closest(".quick-del-btn")) return; // Không kích hoạt kéo khi bấm nút xóa nhanh
+                            if (e.pointerType === "mouse" && e.button !== 0) return; // Chỉ cho phép chuột trái
 
                             pointerDragState = {
                                 pointerId: e.pointerId,
@@ -1438,7 +1432,7 @@ function loadReservations() {
                                 dragging: false
                             };
 
-                            document.addEventListener("pointermove", handlePointerMove);
+                            document.addEventListener("pointermove", handlePointerMove, { passive: false });
                             document.addEventListener("pointerup", handlePointerUp);
                             document.addEventListener("pointercancel", handlePointerCancel);
                         });

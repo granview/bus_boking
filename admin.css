@@ -3657,4 +3657,9 @@ td.drag-over {
     outline: none !important;
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important;
 }
-
+.guest-line {
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+}
