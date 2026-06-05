@@ -1817,24 +1817,66 @@ document.querySelectorAll(".showAllBookingsBtn").forEach(btn => {
     });
 });
 
+// ==========================================
+// TỰ ĐỘNG LỌC CÁC ICON GROUP ĐANG ĐƯỢC DÙNG
+// ==========================================
 function populateExistingGroups() {
     if (!existingGroupsSelect) return;
+
+    // Lấy icon hiện tại đang được chọn (hữu ích khi ở chế độ chỉnh sửa phòng cũ)
+    const currentSelectedIcon = groupIcon ? groupIcon.value : "";
+
+    // 1. XỬ LÝ Ô CHỌN NHÓM ĐÃ CÓ (existingGroupsSelect)
+    // Xóa danh sách cũ đi để cập nhật mới
     existingGroupsSelect.innerHTML = '<option value="">選択...</option>';
+
     const usedIcons = new Set();
 
+    // Quét qua toàn bộ dữ liệu xe chạy trong ngày
     Object.values(globalCurrentData).forEach(item => {
         if (item.archived || item.status === "canceled" || item.status === "moved") return;
+
+        // Nếu có phòng nào đã chọn Icon, thì giữ icon đó lại
         if (item.groupIcon && item.groupIcon.trim() !== "") {
             usedIcons.add(item.groupIcon);
         }
     });
 
+    // Nạp các icon tìm được vào ô lựa chọn グループ済
     usedIcons.forEach(icon => {
         const option = document.createElement("option");
         option.value = icon;
         option.textContent = icon;
         existingGroupsSelect.appendChild(option);
     });
+
+
+    // 2. TỰ ĐỘNG LỌC Ô CHỌN ICON CHÍNH (groupIcon)
+    if (groupIcon) {
+        // Danh sách toàn bộ 10 icon mẫu cố định hệ thống của bạn
+        const ALL_ICONS = ['●', '○', '■', '□', '▲', '△', '◆', '◇', '★', '☆'];
+
+        // Xóa trắng ô chọn chính và nạp lại tùy chọn mặc định "なし"
+        groupIcon.innerHTML = '<option value="">なし</option>';
+
+        ALL_ICONS.forEach(icon => {
+            // ĐIỀU KIỆN: Nếu icon ĐÃ ĐƯỢC DÙNG (có trong usedIcons)
+            // VÀ icon đó KHÔNG PHẢI là icon của chính phòng đang mở lên để sửa (currentSelectedIcon)
+            // thì ta bỏ qua (ẩn đi, không cho hiện ở danh sách tạo nhóm mới nữa)
+            if (usedIcons.has(icon) && icon !== currentSelectedIcon) {
+                return;
+            }
+
+            // Nếu chưa được dùng, hoặc là của chính phòng đang sửa thì tạo option hiển thị bình thường
+            const option = document.createElement("option");
+            option.value = icon;
+            option.textContent = icon + ' ';
+            groupIcon.appendChild(option);
+        });
+
+        // Khôi phục lại đúng vị trí icon được chọn ban đầu cho phòng
+        groupIcon.value = currentSelectedIcon;
+    }
 }
 
 if (existingGroupsSelect) {
