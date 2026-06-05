@@ -909,11 +909,6 @@ async function executeAction() {
     }
 }
 function applySearchFilter() {
-    console.log("SEARCH RUNNING");
-    console.log(
-        document.querySelectorAll(".guest-line").length
-    );
-
     const keyword =
         searchInput.value
             .trim()
@@ -922,17 +917,15 @@ function applySearchFilter() {
     document.querySelectorAll(".guest-line")
         .forEach(line => {
 
-            const room =
-                (line.dataset.room || "")
-                    .toLowerCase();
+            const room = (line.dataset.room || "").toLowerCase();
+            const name = (line.dataset.name || "").toLowerCase();
+            const time = (line.dataset.time || "").toLowerCase(); // Thêm lấy dữ liệu giờ
 
-            const name =
-                (line.dataset.name || "")
-                    .toLowerCase();
-
+            // Thêm điều kiện lọc theo giờ xe chạy
             const matched =
                 room.includes(keyword) ||
-                name.includes(keyword);
+                name.includes(keyword) ||
+                time.includes(keyword);
 
             line.style.display =
                 matched ? "" : "none";
@@ -1271,7 +1264,7 @@ function loadReservations() {
                         document.createElement("div");
 
                     line.className = "guest-line";
-
+                    line.dataset.time = item.time || "";
                     line.dataset.room = item.room || "";
                     line.dataset.name = item.name || "";
 
@@ -1384,9 +1377,7 @@ function loadReservations() {
                         "guest-main-content-block";
 
                     mainContentBlock.innerHTML = `
-
-    
-
+                    
     <span class="flat-room">
         ${isDuplicateBooking
                             ? "<span class='duplicate-star'>★</span>"
@@ -1962,6 +1953,9 @@ clearSearchBtn.addEventListener("click", () => {
     searchInput.focus();
 
 });
+// ========================================
+// XỬ LÝ SỰ KIỆN TÌM KIẾM & MỞ POPUP SỬA
+// ========================================
 searchBtn.addEventListener("click", () => {
 
     const keyword =
@@ -1978,16 +1972,38 @@ searchBtn.addEventListener("click", () => {
             const name =
                 (line.dataset.name || "").toLowerCase();
 
+            // Lấy giờ xe chạy từ dataset đã lưu
+            const time = 
+                (line.dataset.time || "").toLowerCase();
+
+            // Cho phép tìm kiếm bằng cả Phòng, Tên hoặc Số giờ xe chạy
             if (
                 room.includes(keyword) ||
-                name.includes(keyword)
+                name.includes(keyword) ||
+                time.includes(keyword)
             ) {
 
-                searchResults.innerHTML += `
-                    <div class="searchResults">
-                        ${line.innerText}
-                    </div>
+                // 1. Tạo phần tử div chứa kết quả tìm kiếm để có thể gán sự kiện click
+                const resultItem = document.createElement("div");
+                resultItem.className = "searchResults";
+                
+                // Thêm style con trỏ chuột dạng bàn tay để người dùng biết có thể ấn vào được
+                resultItem.style.cssText = "padding: 6px 10px; border-bottom: 1px solid #e2e8f0; cursor: pointer;";
+                
+                // Thêm nội dung hiển thị giống hệt như cũ của bạn
+                resultItem.innerHTML = `
+                    <span style="font-weight: bold; color: #2563eb; margin-right: 8px;">[${line.dataset.time || "-"}]</span> 
+                    ${line.innerText}
                 `;
+
+                // 2. KHI ẤN VÀO KẾT QUẢ TÌM KIẾM:
+                // Tự động giả lập hành vi click thẳng vào dòng dữ liệu gốc (.guest-line) ở bảng chính
+                resultItem.addEventListener("click", () => {
+                    line.click();
+                });
+
+                // Đưa kết quả vào khung hiển thị
+                searchResults.appendChild(resultItem);
             }
         });
 
@@ -2298,24 +2314,22 @@ document.querySelectorAll(".showAllBookingsBtn").forEach(btn => {
                 }
 
                 div.innerHTML = `
+<div class="booking-time">
+    ${item.time}
+    </div>
 
-            <div class="booking-room">
-            R${item.room || "-"}
-            </div>
+    <div class="booking-room">
+    R${item.room || "-"}
+    </div>
 
-            <div class="booking-time">
-            ${item.time}
-            </div>
+    <div class="booking-name">
+    ${item.name || ""}
+    ${luggage}
+    </div>
 
-            <div class="booking-name">
-            ${item.name || ""}
-            ${luggage}
-            </div>
-
-            <div class="booking-pax">
-            ${item.adults || 0}名
-            </div>
-
+    <div class="booking-pax">
+    ${item.adults || 0}名
+    </div>
         `;
 
                 allBookingsList.appendChild(div);
@@ -2336,6 +2350,10 @@ document.querySelectorAll(".showAllBookingsBtn").forEach(btn => {
 function populateExistingGroups() {
     if (!existingGroupsSelect) return;
 
+    // Lấy icon hiện tại đang được chọn (hữu ích khi ở chế độ chỉnh sửa phòng cũ)
+    const currentSelectedIcon = groupIcon ? groupIcon.value : "";
+
+    // 1. XỬ LÝ Ô CHỌN NHÓM ĐÃ CÓ (existingGroupsSelect)
     // Xóa danh sách cũ đi để cập nhật mới
     existingGroupsSelect.innerHTML = '<option value="">選択...</option>';
 
@@ -2358,6 +2376,34 @@ function populateExistingGroups() {
         option.textContent = icon;
         existingGroupsSelect.appendChild(option);
     });
+
+
+    // 2. TỰ ĐỘNG LỌC Ô CHỌN ICON CHÍNH (groupIcon)
+    if (groupIcon) {
+        // Danh sách toàn bộ 10 icon mẫu cố định hệ thống của bạn
+        const ALL_ICONS = ['●', '○', '■', '□', '▲', '△', '◆', '◇', '★', '☆'];
+
+        // Xóa trắng ô chọn chính và nạp lại tùy chọn mặc định "なし"
+        groupIcon.innerHTML = '<option value="">なし</option>';
+
+        ALL_ICONS.forEach(icon => {
+            // ĐIỀU KIỆN: Nếu icon ĐÃ ĐƯỢC DÙNG (có trong usedIcons)
+            // VÀ icon đó KHÔNG PHẢI là icon của chính phòng đang mở lên để sửa (currentSelectedIcon)
+            // thì ta bỏ qua (ẩn đi, không cho hiện ở danh sách tạo nhóm mới nữa)
+            if (usedIcons.has(icon) && icon !== currentSelectedIcon) {
+                return;
+            }
+
+            // Nếu chưa được dùng, hoặc là của chính phòng đang sửa thì tạo option hiển thị bình thường
+            const option = document.createElement("option");
+            option.value = icon;
+            option.textContent = icon + ' ';
+            groupIcon.appendChild(option);
+        });
+
+        // Khôi phục lại đúng vị trí icon được chọn ban đầu cho phòng
+        groupIcon.value = currentSelectedIcon;
+    }
 }
 
 // Khi chọn một nhóm đã có trong danh sách, tự động điền vào ô GROUP chính
