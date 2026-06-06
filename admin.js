@@ -1258,9 +1258,9 @@ function loadReservations() {
 
                     let luggageText = "";
                     if (Number(item.tokudai || 0) > 0) luggageText += ` (特大${item.tokudai})`;
-                    if (Number(item.large || 0) > 0) luggageText += ` 大${item.large})`;
-                    if (Number(item.medium || 0) > 0) luggageText += ` 中${item.medium})`;
-                    if (Number(item.small || 0) > 0) luggageText += ` 小${item.small})`;
+                    if (Number(item.large || 0) > 0) luggageText += ` (大${item.large})`;
+                    if (Number(item.medium || 0) > 0) luggageText += ` (中${item.medium})`;
+                    if (Number(item.small || 0) > 0) luggageText += ` (小${item.small})`;
 
                     if (item.note && item.note.trim() !== "") {
                         luggageText += ` (${item.note.trim()})`;
