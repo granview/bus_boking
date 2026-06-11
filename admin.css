@@ -3663,3 +3663,54 @@ td.drag-over {
     -ms-user-select: none !important;
     user-select: none !important;
 }
+.hotel-header{
+    display:flex !important;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+}
+
+.stop-btn{
+    background:#dc2626;
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    padding:4px 10px;
+    margin-left: 21px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.stop-btn.active{
+    background:#7f1d1d;
+}
+.big-stop-x{
+    position:absolute;
+    inset:0;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    color:#dc2626;
+    font-size:180px;
+    font-weight:900;
+    line-height:1;
+
+    z-index:999;
+
+    /* Quan trọng cho in */
+    print-color-adjust:exact;
+    -webkit-print-color-adjust:exact;
+}
+@media print {
+
+    .big-stop-x{
+        color:#dc2626 !important;
+        print-color-adjust:exact;
+        -webkit-print-color-adjust:exact;
+    }
+
+}
+

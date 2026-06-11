@@ -952,9 +952,19 @@ const searchResults = document.getElementById("searchResults");
 
 
 // ── LOAD RESERVATIONS ──
-function loadReservations() {
+async function loadReservations() {
 
-    const selectedDate = adminDate.value;
+
+   const selectedDate = adminDate.value;
+
+    const stopSnap =
+        await db.ref(
+            "stopHotelEarly/" + selectedDate
+        ).get();
+
+    const hotelEarlyStop =
+        stopSnap.exists();
+
     const requestId = ++loadReservationsRequestId;
 
     fullCarMap = {};
@@ -1059,6 +1069,12 @@ function loadReservations() {
                 // =========================
 
                 Object.keys(seatMap).forEach(key => {
+const hotelEarlyTimes = [
+    "06:05",
+    "06:20",
+    "06:40",
+    "07:00"
+];
 
                     const [time, car] = key.split(/_(.+)/);
 
@@ -1077,6 +1093,16 @@ function loadReservations() {
                     const used = usedMap[key] || 0;
                     const max = seatMap[key];
                     const remain = max - used;
+if (
+    hotelEarlyStop &&
+    car === "ホテル" &&
+    hotelEarlyTimes.includes(time)
+) {
+
+emptyText.innerHTML = `
+<div class="big-stop-x">✕</div>
+`;    return;
+}
 
                     if (remain <= 0) {
                         emptyText.innerHTML =
@@ -1915,6 +1941,44 @@ if (allBookingsPopup) {
         }
     });
 }
+document.addEventListener("click", async (e) => {
+
+    const btn = e.target.closest("#hotelStopBtn");
+    if (!btn) return;
+
+    const ref = db.ref(
+        `stopHotelEarly/${adminDate.value}`
+    );
+
+    const snap = await ref.get();
+
+    if (snap.exists()) {
+
+        const ok = await showConfirm(
+            "STOPを解除しますか？"
+        );
+
+        if (!ok) return;
+
+        await ref.remove();
+
+    } else {
+
+        const ok = await showConfirm(
+            "06:05～07:00 ホテル車を停止しますか？"
+        );
+
+        if (!ok) return;
+
+        await ref.set({
+            stop: true,
+            updatedAt: Date.now()
+        });
+
+    }
+
+    loadReservations();
+});
 
 // Chạy khởi tạo dữ liệu lần đầu tiên khi tải trang
 loadReservations();
