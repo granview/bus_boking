@@ -1880,11 +1880,26 @@ function populateExistingGroups() {
 }
 
 if (existingGroupsSelect) {
-    existingGroupsSelect.addEventListener("change", function () {
-        if (this.value !== "") {
-            document.getElementById("groupIcon").value = this.value;
-        }
-    });
+   existingGroupsSelect.addEventListener("change", function () {
+
+    if (!this.value) return;
+
+    const icon = this.value;
+
+    let option = [...groupIcon.options]
+        .find(o => o.value === icon);
+
+    if (!option) {
+
+        option = document.createElement("option");
+        option.value = icon;
+        option.textContent = icon;
+
+        groupIcon.appendChild(option);
+    }
+
+    groupIcon.value = icon;
+});
 }
 
 if (closeAllBookingsBtn) {
