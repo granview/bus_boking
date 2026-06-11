@@ -1697,6 +1697,9 @@ async function exportExcel() {
         const fullSnap = await db.ref("fullCars/" + date).once("value");
         const fullCars = fullSnap.val() || {};
 
+const stopSnap = await db.ref("stopHotelEarly/" + date).once("value");
+const isStopped = stopSnap.exists(); // Kết quả là true nếu ngày đó có "STOP"
+
         // Kiểm tra nếu cả lịch đặt xe lẫn danh sách khóa xe đều trống thì mới báo không có dữ liệu
         if (Object.keys(data).length === 0 && Object.keys(fullCars).length === 0) {
             alert("データなし");
@@ -1788,7 +1791,13 @@ async function exportExcel() {
                 sheet.getCell(`${col}${row}`).value = text;
             });
         });
-
+	 if (isStopped) {
+    // Ghi vào sheetEarly ô A1 (hoặc ô nào bạn muốn)
+    const cell = sheetEarly.getCell("A1"); 
+    cell.value = "X";
+    cell.font = { color: { argb: "FFFF0000" }, bold: true, size: 20 }; // Chữ đỏ, đậm, to
+    cell.alignment = { horizontal: "center" };
+}
         const buffer = await workbook.xlsx.writeBuffer();
         saveAs(new Blob([buffer]), `bus_${date}.xlsx`);
 
