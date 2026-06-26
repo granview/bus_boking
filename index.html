@@ -300,9 +300,6 @@
 
     <div id="reservePopup" class="popup hidden">
         <div class="popup-box clear-popup">
-            <div class="popup-header">
-                <div class="popup-title-centered">予約登録</div>
-            </div>
             <div class="popup-time-row">
                 <label class="time-label">予約時間</label>
 
@@ -411,10 +408,6 @@
                         <div class="group-section">
 
                             <label>グループ選択</label>
-                           <small style="display:block; margin-top:4px; color:#666;">
-                            ※ 同じグループを使用する場合は、2人目以降は「選択済み」から選択してください。
-                            </small>
-
                             <select id="groupIcon">
                                 <option value="">なし</option>
 
@@ -442,6 +435,13 @@
                         </div>
                         <div class="form-group" style="margin-top: 14px;">
                             <label class="field-label">備考・その他の荷物</label>
+                            <div class="note-suggestions">
+                                <button type="button" class="note-chip" data-value="なし">なし</button>
+                                <button type="button" class="note-chip" data-value="手荷物">手荷物</button>
+                                <button type="button" class="note-chip" data-value="ルック">ルック</button>
+                                <button type="button" class="note-chip" data-value="ゴルフバッグ">ゴルフバッグ</button>
+                                <button type="button" class="note-chip" data-value="ベビーカー">ベビーカー</button>
+                            </div>
                             <input type="text" id="inputNote">
                         </div>
                     </div>
@@ -483,6 +483,28 @@
 
     <script src="./admin.js"></script>
     <div id="toastContainer"></div>
+    <script>
+        document.addEventListener('click', function(e) {
+            const chip = e.target.closest('.note-chip');
+            if (!chip) return;
+            const inputNote = document.getElementById('inputNote');
+            if (!inputNote) return;
+
+            const val = chip.dataset.value;
+            chip.classList.toggle('active');
+
+            // Thu thập tất cả chip đang active
+            const activeChips = Array.from(document.querySelectorAll('.note-chip.active'))
+                .map(c => c.dataset.value);
+
+            inputNote.value = activeChips.join('・');
+        });
+
+        // Reset chip states khi popup mở (gọi từ admin.js nếu cần)
+        function resetNoteChips() {
+            document.querySelectorAll('.note-chip').forEach(c => c.classList.remove('active'));
+        }
+    </script>
 </body>
 
 </html>
