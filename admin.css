@@ -739,25 +739,13 @@ td.drag-over {
 }
 
 .clear-popup {
-    width: 640px !important; /* Giữ nguyên độ rộng chuẩn của bạn */
+    width: 720px !important;
     background: #ffffff !important;
     border: none !important;
     border-radius: 20px !important;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
-
-    /* 1. ÉP ZOOM 80% BẰNG TRANSFORM (Mượt hơn, không lỗi căn giữa) */
-    transform: scale(0.8) !important;
-    transform-origin: center center !important;
-
-    /* CHÚ Ý: Nếu sau khi thêm dòng trên mà popup bị lệch hẳn sang một bên, 
-       hãy XOÁ dòng "transform: scale(0.8) !important;" ở trên đi 
-       và dùng dòng mở rộng dưới đây thay thế: */
-    /* transform: translate(-50%, -50%) scale(0.8) !important; */
-
-
-    /* 2. BẢO HIỂM CHỐNG TRÀN MÀN HÌNH (Hiện thanh cuộn nếu màn hình quá thấp) */
-    max-height: 95vh !important; /* Giới hạn chiều cao tối đa bằng 95% màn hình */
-    overflow-y: auto !important; /* Tự động hiện thanh cuộn dọc bên trong popup nếu cần */
+    max-height: 95vh !important;
+    overflow-y: auto !important;
 }
 
 .popup-header {
@@ -818,7 +806,7 @@ td.drag-over {
 }
 
 .field-label {
-    font-size: 13px !important;
+    font-size: 16px !important;
     font-weight: 700 !important;
     color: #6b7280 !important;
     margin-bottom: 8px !important;
@@ -855,7 +843,7 @@ td.drag-over {
 .highlight-label,
 .infant-label {
     color: #6b7280 !important;
-    font-size: 13px !important;
+    font-size: 16px !important;
     font-weight: 700 !important;
 }
 
@@ -867,7 +855,7 @@ td.drag-over {
     padding: 12px 14px !important;
     border: 1px solid #bfdbfe !important;
     border-radius: 10px !important;
-    font-size: 15px !important;
+    font-size: 18px !important;
     color: #3b82f6 !important;
     font-family: inherit;
     background: #eff6ff !important;
@@ -1049,7 +1037,7 @@ td.drag-over {
 }
 
 .lug-label-text {
-    font-size: 14px !important;
+    font-size: 17px !important;
     font-weight: 700 !important;
     color: #374151 !important;
 }
@@ -1073,8 +1061,8 @@ td.drag-over {
 .clear-popup .popup-btn-row .delete-btn,
 .clear-popup .popup-btn-row .close-btn {
     flex: 1 !important;
-    height: 48px !important;
-    font-size: 15px !important;
+    height: 52px !important;
+    font-size: 18px !important;
     font-weight: 700 !important;
     border-radius: 12px !important;
     border: none !important;
@@ -1799,17 +1787,17 @@ td.drag-over {
 }
 
 .time-label {
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 17px;
+    font-weight: 700;
     color: #374151;
 }
 
 .time-select {
-    width: 140px;
-    padding: 8px 10px;
+    width: 160px;
+    padding: 10px 12px;
     border: 1px solid #d1d5db;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 18px;
     background: #fff;
     outline: none;
     cursor: pointer;
@@ -2556,7 +2544,7 @@ td.drag-over {
 }
 
 .field-label {
-    font-size: 13px !important;
+    font-size: 16px !important;
     font-weight: 700 !important;
     color: #6b7280 !important;
     margin-bottom: 8px !important;
@@ -2593,7 +2581,7 @@ td.drag-over {
 .highlight-label,
 .infant-label {
     color: #6b7280 !important;
-    font-size: 13px !important;
+    font-size: 16px !important;
     font-weight: 700 !important;
 }
 
@@ -2605,7 +2593,7 @@ td.drag-over {
     padding: 12px 14px !important;
     border: 1px solid #bfdbfe !important;
     border-radius: 10px !important;
-    font-size: 15px !important;
+    font-size: 18px !important;
     color: #3b82f6 !important;
     font-family: inherit;
     background: #eff6ff !important;
@@ -2787,7 +2775,7 @@ td.drag-over {
 }
 
 .lug-label-text {
-    font-size: 14px !important;
+    font-size: 17px !important;
     font-weight: 700 !important;
     color: #374151 !important;
 }
@@ -2811,8 +2799,8 @@ td.drag-over {
 .clear-popup .popup-btn-row .delete-btn,
 .clear-popup .popup-btn-row .close-btn {
     flex: 1 !important;
-    height: 48px !important;
-    font-size: 15px !important;
+    height: 52px !important;
+    font-size: 18px !important;
     font-weight: 700 !important;
     border-radius: 12px !important;
     border: none !important;
@@ -3530,17 +3518,17 @@ td.drag-over {
 
 
 .time-label {
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 17px;
+    font-weight: 700;
     color: #374151;
 }
 
 .time-select {
-    width: 140px;
-    padding: 8px 10px;
+    width: 160px;
+    padding: 10px 12px;
     border: 1px solid #d1d5db;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 18px;
     background: #fff;
     outline: none;
     cursor: pointer;
@@ -3618,7 +3606,7 @@ td.drag-over {
 
 /* Style cho tiêu đề chữ (Label) */
 .group-section label {
-    font-size: 13px !important;
+    font-size: 16px !important;
     font-weight: 700 !important;
     color: #6b7280 !important;
     margin-bottom: 2px !important;
@@ -3630,7 +3618,7 @@ td.drag-over {
     padding: 12px 14px !important;
     border: 1px solid #bfdbfe !important;
     border-radius: 10px !important; /* Bo góc mượt mà */
-    font-size: 15px !important;
+    font-size: 18px !important;
     color: #3b82f6 !important; /* Chữ màu xanh dương */
     font-family: inherit;
     background: #eff6ff !important; /* Nền xanh nhạt giống ô nhập phòng/tên */
@@ -3714,3 +3702,39 @@ td.drag-over {
 
 }
 
+
+/* ===== NOTE SUGGESTION CHIPS ===== */
+.note-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.note-chip {
+    padding: 7px 16px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background: #e5e7eb;
+    color: #374151;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.note-chip:hover {
+    background: #d1d5db;
+}
+
+.note-chip.active {
+    background: #dbeafe;
+    color: #1d4ed8;
+    border-color: #3b82f6;
+}
+
+.note-chip:active {
+    transform: scale(0.97);
+}
