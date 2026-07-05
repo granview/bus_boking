@@ -955,11 +955,12 @@ const searchResults = document.getElementById("searchResults");
 // ── LOAD RESERVATIONS ──
 async function loadReservations() {
 
-
    const selectedDate = adminDate.value;
+   // THÊM 2 DÒNG NÀY VÀO ĐÂY:
+   const days = ["日", "月", "火", "水", "木", "金", "土"];
+   document.getElementById("dayOfWeek").innerText = `(${days[new Date(selectedDate).getDay()]})`;
 
-    const stopSnap =
-        await db.ref(
+    const stopSnap =        await db.ref(
             "stopHotelEarly/" + selectedDate
         ).get();
 
