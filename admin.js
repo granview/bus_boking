@@ -955,14 +955,14 @@ const searchResults = document.getElementById("searchResults");
 // ── LOAD RESERVATIONS ──
 async function loadReservations() {
 
-   const selectedDate = adminDate.value;
-   // THÊM 2 DÒNG NÀY VÀO ĐÂY:
-   const days = ["日", "月", "火", "水", "木", "金", "土"];
-   document.getElementById("dayOfWeek").innerText = `(${days[new Date(selectedDate).getDay()]})`;
+    const selectedDate = adminDate.value;
+    // THÊM 2 DÒNG NÀY VÀO ĐÂY:
+    const days = ["日", "月", "火", "水", "木", "金", "土"];
+    document.getElementById("dayOfWeek").innerText = `(${days[new Date(selectedDate).getDay()]})`;
 
-    const stopSnap =        await db.ref(
-            "stopHotelEarly/" + selectedDate
-        ).get();
+    const stopSnap = await db.ref(
+        "stopHotelEarly/" + selectedDate
+    ).get();
 
     const hotelEarlyStop =
         stopSnap.exists();
@@ -1083,12 +1083,12 @@ async function loadReservations() {
                 // =========================
 
                 Object.keys(seatMap).forEach(key => {
-const hotelEarlyTimes = [
-    "06:05",
-    "06:20",
-    "06:40",
-    "07:00"
-];
+                    const hotelEarlyTimes = [
+                        "06:05",
+                        "06:20",
+                        "06:40",
+                        "07:00"
+                    ];
 
                     const [time, car] = key.split(/_(.+)/);
 
@@ -1107,16 +1107,16 @@ const hotelEarlyTimes = [
                     const used = usedMap[key] || 0;
                     const max = seatMap[key];
                     const remain = max - used;
-if (
-    hotelEarlyStop &&
-    car === "ホテル" &&
-    hotelEarlyTimes.includes(time)
-) {
+                    if (
+                        hotelEarlyStop &&
+                        car === "ホテル" &&
+                        hotelEarlyTimes.includes(time)
+                    ) {
 
-emptyText.innerHTML = `
+                        emptyText.innerHTML = `
 <div class="big-stop-x">✕</div>
-`;    return;
-}
+`; return;
+                    }
 
                     if (remain <= 0) {
                         emptyText.innerHTML =
@@ -1422,7 +1422,7 @@ emptyText.innerHTML = `
                             // Di chuyển ghost theo con trỏ
                             if (ghostEl) {
                                 ghostEl.style.left = (e.clientX - pointerDragState.offsetX) + "px";
-                                ghostEl.style.top  = (e.clientY - pointerDragState.offsetY) + "px";
+                                ghostEl.style.top = (e.clientY - pointerDragState.offsetY) + "px";
                             }
 
                             // 1. Xử lý tự động chuyển trang/tab khi rê qua nút Sáng/Chiều
@@ -1444,10 +1444,10 @@ emptyText.innerHTML = `
 
                         const handlePointerUp = async (e) => {
                             if (!pointerDragState || pointerDragState.pointerId !== e.pointerId) return;
-                            
+
                             const wasDragging = pointerDragState.dragging;
                             pointerDragState = null;
-                            
+
                             // Gỡ bỏ các event lắng nghe toàn cục
                             document.removeEventListener("pointermove", handlePointerMove);
                             document.removeEventListener("pointerup", handlePointerUp);
@@ -1562,9 +1562,9 @@ function openEditPopup(item) {
     bookingTime.value = item.time;
 
     groupIcon.value = item.groupIcon || "";
-    populateExistingGroups(); 
+    populateExistingGroups();
     if (existingGroupsSelect) existingGroupsSelect.value = item.groupIcon || "";
-    
+
     popup.dataset.car = item.car;
     inputRoom.value = item.room || "";
     inputName.value = item.name || "";
@@ -1621,19 +1621,19 @@ bookingTime.addEventListener("change", () => {
 });
 
 document.querySelectorAll('.stepper-input').forEach(stepper => {
-    const minusBtn = stepper.querySelector('.minus'); 
-    const plusBtn = stepper.querySelector('.plus'); 
+    const minusBtn = stepper.querySelector('.minus');
+    const plusBtn = stepper.querySelector('.plus');
     const input = stepper.querySelector('input[type="number"]');
-    
-    minusBtn.addEventListener('click', () => { 
-        let val = parseInt(input.value) || 0; 
-        let min = parseInt(input.min) || 0; 
-        if (val > min) input.value = val - 1; 
+
+    minusBtn.addEventListener('click', () => {
+        let val = parseInt(input.value) || 0;
+        let min = parseInt(input.min) || 0;
+        if (val > min) input.value = val - 1;
     });
-    plusBtn.addEventListener('click', () => { 
-        let val = parseInt(input.value) || 0; 
-        let max = parseInt(input.max) || 99; 
-        if (val < max) input.value = val + 1; 
+    plusBtn.addEventListener('click', () => {
+        let val = parseInt(input.value) || 0;
+        let max = parseInt(input.max) || 99;
+        if (val < max) input.value = val + 1;
     });
 });
 
@@ -1690,7 +1690,7 @@ if (searchBtn) {
                 const resultItem = document.createElement("div");
                 resultItem.className = "searchResults";
                 resultItem.style.cssText = "padding: 8px 10px; border-bottom: 1px solid #e2e8f0; cursor: pointer;";
-                
+
                 resultItem.innerHTML = `
                     <span style="font-weight: bold; color: #2563eb; margin-right: 8px;">[${line.dataset.time || "-"}]</span> 
                     ${line.innerText}
@@ -1698,7 +1698,7 @@ if (searchBtn) {
 
                 // Giả lập hành vi click vào dòng gốc ở bảng chính khi click vào kết quả này
                 resultItem.addEventListener("click", () => {
-                    line.click(); 
+                    line.click();
                 });
 
                 searchResults.appendChild(resultItem);
@@ -1746,8 +1746,8 @@ async function exportExcel() {
         const fullSnap = await db.ref("fullCars/" + date).once("value");
         const fullCars = fullSnap.val() || {};
 
-const stopSnap = await db.ref("stopHotelEarly/" + date).once("value");
-const isStopped = stopSnap.exists(); // Kết quả là true nếu ngày đó có "STOP"
+        const stopSnap = await db.ref("stopHotelEarly/" + date).once("value");
+        const isStopped = stopSnap.exists(); // Kết quả là true nếu ngày đó có "STOP"
 
         // Kiểm tra nếu cả lịch đặt xe lẫn danh sách khóa xe đều trống thì mới báo không có dữ liệu
         if (Object.keys(data).length === 0 && Object.keys(fullCars).length === 0) {
@@ -1794,7 +1794,7 @@ const isStopped = stopSnap.exists(); // Kết quả là true nếu ngày đó c�
             if (item.medium > 0) luggage += `中${item.medium} `;
             if (item.small > 0) luggage += `小${item.small} `;
             const stay = item.stay ? "ステイ" : "";
-            
+
             if (item.note && item.note.trim()) {
                 luggage += `(${item.note.trim()}) `;
             }
@@ -1809,9 +1809,74 @@ const isStopped = stopSnap.exists(); // Kết quả là true nếu ngày đó c�
             }
 
             const iconText = item.groupIcon ? ` ${item.groupIcon}` : "";
-            const text = `${item.room || ""}｜${item.name || ""}様｜${paxText} ${luggage}${iconText}${stay}`.trim();
+            function buildBookingText(item) {
 
-            grouped[key].push(text);
+                const adults = Number(item.adults || 0);
+                const inf = Number(item.soinet || 0);
+
+                let pax = `${adults}名`;
+
+                if (inf > 0) {
+                    pax += ` +${inf}INF`;
+                    pax += item.soinetSeat === "ari"
+                        ? "(席あり)"
+                        : "(席なし)";
+                }
+
+                let luggage = "";
+
+                if (item.tokudai > 0) luggage += ` 特大${item.tokudai}`;
+                if (item.large > 0) luggage += ` 大${item.large}`;
+                if (item.medium > 0) luggage += ` 中${item.medium}`;
+                if (item.small > 0) luggage += ` 小${item.small}`;
+
+                if (item.note?.trim()) {
+                    luggage += ` (${item.note.trim()})`;
+                }
+
+                if (item.groupIcon) {
+                    luggage += ` ${item.groupIcon}`;
+                }
+
+                if (item.stay) {
+                    luggage += " ステイ";
+                }
+
+                const firstLine =
+                    `${item.room || ""}｜${item.name || ""}様｜${pax}`;
+
+                //---------------------------------
+                // THỬ GHÉP TẤT CẢ
+                //---------------------------------
+
+                const fullText = firstLine + luggage;
+
+                //---------------------------------
+                // Nếu đủ ngắn thì chỉ dùng 1 dòng
+                //---------------------------------
+
+                if (fullText.length <= 30) {
+
+                    return {
+                        line1: fullText,
+                        line2: ""
+                    };
+
+                }
+
+                //---------------------------------
+                // Nếu quá dài mới xuống dòng
+                //---------------------------------
+
+                return {
+                    line1: firstLine,
+                    line2: luggage.trim()
+                };
+
+            }
+            grouped[key].push(
+                buildBookingText(item)
+            );
         });
 
         // 4. KIỂM TRA TRẠNG THÁI KHÓA XE (FULLCARS) ĐỂ ĐƯA VÀO FILE EXCEL
@@ -1835,18 +1900,50 @@ const isStopped = stopSnap.exists(); // Kết quả là true nếu ngày đó c�
             const col = baseCell.replace(/[0-9]/g, "");
             const baseRow = parseInt(baseCell.replace(/\D/g, ""));
 
-            list.forEach((text, i) => {
-                const row = baseRow + i;
-                sheet.getCell(`${col}${row}`).value = text;
+            let row = baseRow;
+
+            list.forEach(item => {
+                if (item.line2) {
+
+                    // Merge 2 ô
+                    sheet.mergeCells(`${col}${row}:${col}${row + 1}`);
+
+                    const cell = sheet.getCell(`${col}${row}`);
+
+                    cell.value = `${item.line1}\n${item.line2}`;
+
+                    cell.alignment = {
+                        wrapText: true,
+                        vertical: "center",      // Căn giữa theo chiều dọc
+                        horizontal: "center"       // hoặc "center" nếu muốn giữa ngang
+                    };
+
+                    row += 2;
+
+                } else {
+
+                    const cell = sheet.getCell(`${col}${row}`);
+
+                    cell.value = item.line1;
+
+                    cell.alignment = {
+                        vertical: "middle",
+                        horizontal: "left"
+                    };
+
+                    row++;
+
+                }
+
             });
         });
-	 if (isStopped) {
-    // Ghi vào sheetEarly ô A1 (hoặc ô nào bạn muốn)
-    const cell = sheetEarly.getCell("A1"); 
-    cell.value = "X";
-    cell.font = { color: { argb: "FFFF0000" }, bold: true, size: 20 }; // Chữ đỏ, đậm, to
-    cell.alignment = { horizontal: "center" };
-}
+        if (isStopped) {
+            // Ghi vào sheetEarly ô A1 (hoặc ô nào bạn muốn)
+            const cell = sheetEarly.getCell("A1");
+            cell.value = "X";
+            cell.font = { color: { argb: "FFFF0000" }, bold: true, size: 20 }; // Chữ đỏ, đậm, to
+            cell.alignment = { horizontal: "center" };
+        }
         const buffer = await workbook.xlsx.writeBuffer();
         saveAs(new Blob([buffer]), `bus_${date}.xlsx`);
 
@@ -1964,26 +2061,26 @@ function populateExistingGroups() {
 }
 
 if (existingGroupsSelect) {
-   existingGroupsSelect.addEventListener("change", function () {
+    existingGroupsSelect.addEventListener("change", function () {
 
-    if (!this.value) return;
+        if (!this.value) return;
 
-    const icon = this.value;
+        const icon = this.value;
 
-    let option = [...groupIcon.options]
-        .find(o => o.value === icon);
+        let option = [...groupIcon.options]
+            .find(o => o.value === icon);
 
-    if (!option) {
+        if (!option) {
 
-        option = document.createElement("option");
-        option.value = icon;
-        option.textContent = icon;
+            option = document.createElement("option");
+            option.value = icon;
+            option.textContent = icon;
 
-        groupIcon.appendChild(option);
-    }
+            groupIcon.appendChild(option);
+        }
 
-    groupIcon.value = icon;
-});
+        groupIcon.value = icon;
+    });
 }
 
 if (closeAllBookingsBtn) {
