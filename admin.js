@@ -450,6 +450,9 @@ document.addEventListener("click", (e) => {
     popup.classList.remove("hidden");
     resetForm();
     populateExistingGroups();
+    setTimeout(() => {
+        inputRoom.focus();
+    }, 0);
 });
 
 function resetForm() {
