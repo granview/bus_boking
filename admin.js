@@ -1717,6 +1717,34 @@ document.querySelectorAll(".exportExcelBtn").forEach(btn => {
     btn.addEventListener("click", exportExcel);
 });
 
+function createStopLineImageId(workbook) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1000;
+    canvas.height = 1800;
+
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 12;
+    ctx.lineCap = "square";
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(canvas.width, canvas.height);
+    ctx.stroke();
+
+    return workbook.addImage({
+        base64: canvas.toDataURL("image/png"),
+        extension: "png"
+    });
+}
+
+function markHotelStopCells(workbook, sheet) {
+    if (!sheet) return;
+
+    const imageId = createStopLineImageId(workbook);
+    sheet.addImage(imageId, "D5:D44");
+}
+
 // ========================================
 // XUẤT EXCEL HỖ TRỢ HIỂN THỊ XE ĐẦY (FULLCARS)
 // ========================================
@@ -1941,11 +1969,9 @@ async function exportExcel() {
             });
         });
         if (isStopped) {
-            // Ghi vào sheetEarly ô A1 (hoặc ô nào bạn muốn)
-            const cell = sheetEarly.getCell("A1");
-            cell.value = "X";
-            cell.font = { color: { argb: "FFFF0000" }, bold: true, size: 20 }; // Chữ đỏ, đậm, to
-            cell.alignment = { horizontal: "center" };
+            sheetEarly.getCell("C3").value = "ホテル";
+            sheetEarly.getCell("D3").value = "ラッキータクシー";
+            markHotelStopCells(workbook, sheetEarly);
         }
         const buffer = await workbook.xlsx.writeBuffer();
         saveAs(new Blob([buffer]), `bus_${date}.xlsx`);
