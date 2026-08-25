@@ -1725,7 +1725,7 @@ function createStopLineImageId(workbook) {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 12;
+    ctx.lineWidth = 14;
     ctx.lineCap = "square";
     ctx.beginPath();
     ctx.moveTo(0, 0);
@@ -1743,6 +1743,59 @@ function markHotelStopCells(workbook, sheet) {
 
     const imageId = createStopLineImageId(workbook);
     sheet.addImage(imageId, "D5:D44");
+}
+
+function createStopTextImageId(workbook) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 220;
+    canvas.height = 520;
+
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 12;
+    ctx.beginPath();
+    ctx.ellipse(
+        canvas.width / 2,
+        canvas.height / 2,
+        92,
+        232,
+        0,
+        0,
+        Math.PI * 2
+    );
+    ctx.stroke();
+
+    ctx.fillStyle = "#000000";
+    ctx.font = "bold 70px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    ["S", "T", "O", "P"].forEach((letter, index) => {
+        ctx.fillText(letter, canvas.width / 2, 75 + index * 112);
+    });
+
+    return workbook.addImage({
+        base64: canvas.toDataURL("image/png"),
+        extension: "png"
+    });
+}
+
+function markEarlyTimeStopLabel(workbook, sheet, time) {
+    if (!sheet) return;
+
+    const stopLabelRows = {
+        "06:05": 11,
+        "06:20": 21,
+        "06:40": 31,
+        "07:00": 41
+    };
+
+    const startRow = stopLabelRows[time];
+    if (!startRow) return;
+
+    const imageId = createStopTextImageId(workbook);
+    sheet.addImage(imageId, `B${startRow}:B${startRow + 3}`);
 }
 
 // ========================================
@@ -1813,11 +1866,19 @@ async function exportExcel() {
         });
 
         // 3. GOM NHÓM DANH SÁCH KHÁCH HÀNG ĐẶT XE ĐANG HOẠT ĐỘNG
+        const usedSeatMap = {};
+
         Object.values(data).forEach(item => {
             if (item.archived || item.status === "canceled" || item.status === "moved") return;
 
             const key = item.time + "_" + item.car;
             if (!grouped[key]) grouped[key] = [];
+
+            let totalSeats = Number(item.adults || 0);
+            if (item.soinetSeat === "ari") {
+                totalSeats += Number(item.soinet || 0);
+            }
+            usedSeatMap[key] = (usedSeatMap[key] || 0) + totalSeats;
 
             let luggage = "";
             if (item.tokudai > 0) luggage += `特大${item.tokudai} `;
@@ -1911,10 +1972,27 @@ async function exportExcel() {
         });
 
         // 4. KIỂM TRA TRẠNG THÁI KHÓA XE (FULLCARS) ĐỂ ĐƯA VÀO FILE EXCEL
+        const earlyFullTimes = new Set();
+
         allKeys.forEach(key => {
             if (fullCars[key]) {
-                // Nếu tuyến xe này bị bấm nút "満車" trên giao diện Admin, thêm nhãn cảnh báo vào Excel
-                grouped[key].push("★満車★");
+                if (earlyMap[key]) {
+                    const [time] = key.split("_");
+                    earlyFullTimes.add(time);
+                } else {
+                    // Nếu tuyến xe này bị bấm nút "満車" trên giao diện Admin, thêm nhãn cảnh báo vào Excel
+                    grouped[key].push({
+                        line1: "★満車★",
+                        line2: ""
+                    });
+                }
+            }
+        });
+
+        allKeys.forEach(key => {
+            if (earlyMap[key] && usedSeatMap[key] >= seatMap[key]) {
+                const [time] = key.split("_");
+                earlyFullTimes.add(time);
             }
         });
 
@@ -1968,6 +2046,11 @@ async function exportExcel() {
 
             });
         });
+
+        earlyFullTimes.forEach(time => {
+            markEarlyTimeStopLabel(workbook, sheetEarly, time);
+        });
+
         if (isStopped) {
             sheetEarly.getCell("C3").value = "ホテル";
             sheetEarly.getCell("D3").value = "ラッキータクシー";
