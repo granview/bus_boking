@@ -1781,21 +1781,37 @@ function createStopTextImageId(workbook) {
     });
 }
 
-function markEarlyTimeStopLabel(workbook, sheet, time) {
+function markTimeStopLabel(workbook, sheet, time) {
     if (!sheet) return;
 
-    const stopLabelRows = {
+    const earlyStopLabelRows = {
         "06:05": 11,
         "06:20": 21,
         "06:40": 31,
         "07:00": 41
     };
 
-    const startRow = stopLabelRows[time];
-    if (!startRow) return;
+    const lateStopLabelRows = {
+        "07:30": { col: "A", row: 10 },
+        "08:00": { col: "A", row: 21 },
+        "08:30": { col: "A", row: 32 },
+        "09:00": { col: "C", row: 10 },
+        "09:30": { col: "C", row: 21 },
+        "10:00": { col: "C", row: 32 }
+    };
+
+    if (earlyStopLabelRows[time] !== undefined) {
+        const startRow = earlyStopLabelRows[time];
+        const imageId = createStopTextImageId(workbook);
+        sheet.addImage(imageId, `B${startRow}:B${startRow + 3}`);
+        return;
+    }
+
+    const lateInfo = lateStopLabelRows[time];
+    if (!lateInfo) return;
 
     const imageId = createStopTextImageId(workbook);
-    sheet.addImage(imageId, `B${startRow}:B${startRow + 3}`);
+    sheet.addImage(imageId, `${lateInfo.col}${lateInfo.row}:${lateInfo.col}${lateInfo.row + 3}`);
 }
 
 // ========================================
@@ -1973,26 +1989,33 @@ async function exportExcel() {
 
         // 4. KIỂM TRA TRẠNG THÁI KHÓA XE (FULLCARS) ĐỂ ĐƯA VÀO FILE EXCEL
         const earlyFullTimes = new Set();
+        const lateFullTimes = new Set();
 
         allKeys.forEach(key => {
-            if (fullCars[key]) {
-                if (earlyMap[key]) {
-                    const [time] = key.split("_");
-                    earlyFullTimes.add(time);
-                } else {
-                    // Nếu tuyến xe này bị bấm nút "満車" trên giao diện Admin, thêm nhãn cảnh báo vào Excel
-                    grouped[key].push({
-                        line1: "★満車★",
-                        line2: ""
-                    });
-                }
+            if (!fullCars[key]) return;
+
+            const [time] = key.split("_");
+
+            if (earlyMap[key]) {
+                earlyFullTimes.add(time);
+            } else if (lateMap[key]) {
+                lateFullTimes.add(time);
+            } else {
+                // Nếu tuyến xe này bị bấm nút "満車" trên giao diện Admin, thêm nhãn cảnh báo vào Excel
+                grouped[key].push({
+                    line1: "★満車★",
+                    line2: ""
+                });
             }
         });
 
         allKeys.forEach(key => {
+            const [time] = key.split("_");
+
             if (earlyMap[key] && usedSeatMap[key] >= seatMap[key]) {
-                const [time] = key.split("_");
                 earlyFullTimes.add(time);
+            } else if (lateMap[key] && usedSeatMap[key] >= seatMap[key]) {
+                lateFullTimes.add(time);
             }
         });
 
@@ -2048,7 +2071,11 @@ async function exportExcel() {
         });
 
         earlyFullTimes.forEach(time => {
-            markEarlyTimeStopLabel(workbook, sheetEarly, time);
+            markTimeStopLabel(workbook, sheetEarly, time);
+        });
+
+        lateFullTimes.forEach(time => {
+            markTimeStopLabel(workbook, sheetLate, time);
         });
 
         if (isStopped) {
