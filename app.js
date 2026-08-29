@@ -1,3 +1,7 @@
+if (!document.getElementById("bookingForm") || !document.getElementById("popup")) {
+    throw new Error("Booking page required");
+}
+
 // =========================
 // FIREBASE
 // =========================
@@ -58,9 +62,19 @@ const firebaseConfig = {
 
 };
 
-firebase.initializeApp(firebaseConfig);
+if (window.firebase && (!firebase.apps || firebase.apps.length === 0)) {
+  firebase.initializeApp(firebaseConfig);
+}
 
-const db = firebase.database();
+const db = window.firebase ? firebase.database() : null;
+
+function ensureDbReady() {
+  if (!db) {
+    alert("Firebase が未接続です");
+    return false;
+  }
+  return true;
+}
 
 
 // =========================
@@ -365,6 +379,8 @@ currentBooking.medium || 0;
 
 function renderSlots(){
 
+  if (!ensureDbReady()) return;
+
   const selectedDate =
   busDate.value;
 
@@ -513,6 +529,7 @@ editingMode = false;
 
 bookingForm.addEventListener("submit",(e)=>{
 
+  if (!ensureDbReady()) return;
   e.preventDefault();
 
   const inputs =

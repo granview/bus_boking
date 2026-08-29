@@ -1,7 +1,9 @@
+if (!document.getElementById("reservePopup") || !document.getElementById("adminDate")) {
+    throw new Error("Admin page required");
+}
+
 // ── FIREBASE CONFIG ──
 window.addEventListener("touchcancel", () => {
-
-    touchDragBooking = null;
     dragBooking = null;
 
     if (touchDraggingEl) {
@@ -10,22 +12,18 @@ window.addEventListener("touchcancel", () => {
     }
 
     clearDragOverCells();
-
 });
+
 let fullCarMap = {};
 let originalTime = "";
 let dragBooking = null;
-let touchDragBooking = null;
 let pendingTargetTime = null;
 let pendingTargetCar = null;
 let touchDraggingEl = null;
 let loadReservationsRequestId = 0;
 
-
-
 let pendingActionType = null; // 'delete_form', 'delete_quick', 'move'
 let pendingItemData = null;
-let originalCar = "";
 
 
 function clearDragOverCells() {
@@ -51,8 +49,19 @@ const firebaseConfig = {
     appId: "1:536319278949:web:3bf4ce8021e2b326086b8c"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+if (window.firebase && (!firebase.apps || firebase.apps.length === 0)) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+const db = window.firebase ? firebase.database() : null;
+
+function ensureDbReady() {
+    if (!db) {
+        showToast("Firebase が未接続です");
+        return false;
+    }
+    return true;
+}
 
 function showToast(message, type = "info") {
     const toast = document.createElement("div");
@@ -134,10 +143,12 @@ function showSelect(message, options = []) {
 }
 
 // ── ELEMENTS ──
-
-const reserveBtns = document.querySelectorAll(".reserve-btn");
 document.querySelectorAll(".reserve-btn")
     .forEach(btn => {
+        const existingFullBtn = btn.parentElement.querySelector(`.full-btn[data-time="${btn.dataset.time}"][data-car="${btn.dataset.car}"]`);
+        if (existingFullBtn) {
+            return;
+        }
 
         const fullBtn =
             document.createElement("a");
@@ -164,6 +175,8 @@ document.addEventListener("click", async (e) => {
     const btn = e.target.closest(".full-btn");
 
     if (!btn) return;
+    if (!adminDate || !adminDate.value) return;
+    if (!ensureDbReady()) return;
 
     const time = btn.dataset.time;
     const car = btn.dataset.car;
@@ -230,11 +243,6 @@ const groupIcon =
     document.getElementById("groupIcon");
 const existingGroupsSelect = document.getElementById("existingGroupsSelect");
 let globalCurrentData = {};
-const btnPageEarlys =
-    document.querySelectorAll(".btnPageEarly");
-
-const btnPageLates =
-    document.querySelectorAll(".btnPageLate");
 const pageEarlyView = document.getElementById("pageEarlyView");
 const pageLateView = document.getElementById("pageLateView");
 
@@ -300,6 +308,9 @@ function normalizeGuestNameInput() {
     }
 }
 
+const EARLY_HOURS = ["06:05", "06:20", "06:40", "07:00"];
+const LATE_HOURS = ["07:30", "08:00", "08:30", "09:00", "09:30", "10:00"];
+
 const seatMap = {
     "06:05_ラッキータクシー": 8, "06:05_ホテル": 6,
     "06:20_ラッキータクシー": 8, "06:20_ホテル": 6,
@@ -316,39 +327,36 @@ function getTodayString() {
     return `${y}-${m}-${d}`;
 }
 
-// FIX MẤT HÀM GỐC
-function isFutureDate(dateStr) {
-    return dateStr > getTodayString();
+// ── TRANG TOGGLE ──
+function setPageView(mode) {
+    const isEarly = mode === "early";
+
+    if (pageEarlyView) {
+        pageEarlyView.classList.toggle("hidden", !isEarly);
+    }
+
+    if (pageLateView) {
+        pageLateView.classList.toggle("hidden", isEarly);
+    }
+
+    document.querySelectorAll(".btnPageEarly")
+        .forEach(btn => btn.classList.toggle("active", isEarly));
+
+    document.querySelectorAll(".btnPageLate")
+        .forEach(btn => btn.classList.toggle("active", !isEarly));
 }
-// ── TRANG TOGGLE ──
-// ── TRANG TOGGLE ──
 
 document.addEventListener("click", function (e) {
-
-    if (e.target.closest(".btnPageEarly")) {
-
-        pageEarlyView.classList.remove("hidden");
-        pageLateView.classList.add("hidden");
-
-        document.querySelectorAll(".btnPageEarly")
-            .forEach(btn => btn.classList.add("active"));
-
-        document.querySelectorAll(".btnPageLate")
-            .forEach(btn => btn.classList.remove("active"));
+    const target = e.target.closest(".btnPageEarly");
+    if (target) {
+        setPageView("early");
+        return;
     }
 
-    if (e.target.closest(".btnPageLate")) {
-
-        pageLateView.classList.remove("hidden");
-        pageEarlyView.classList.add("hidden");
-
-        document.querySelectorAll(".btnPageLate")
-            .forEach(btn => btn.classList.add("active"));
-
-        document.querySelectorAll(".btnPageEarly")
-            .forEach(btn => btn.classList.remove("active"));
+    const lateTarget = e.target.closest(".btnPageLate");
+    if (lateTarget) {
+        setPageView("late");
     }
-
 });
 function getDateString(d) {
     const y = d.getFullYear();
@@ -357,14 +365,11 @@ function getDateString(d) {
     return `${y}-${m}-${day}`;
 }
 function switchPageByTime(time) {
-    const earlyHours = ["06:05", "06:20", "06:40", "07:00"];
-    const lateHours = ["07:30", "08:00", "08:30", "09:00", "09:30", "10:00"];
-
-    if (lateHours.includes(time)) {
-        btnPageLates[0].click();
+    if (LATE_HOURS.includes(time)) {
+        setPageView("late");
     }
-    else if (earlyHours.includes(time)) {
-        btnPageEarlys[0].click();
+    else if (EARLY_HOURS.includes(time)) {
+        setPageView("early");
     }
 }
 const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
@@ -435,9 +440,8 @@ selAdults.addEventListener("keydown", (e) => {
     reserveForm.requestSubmit();
 });
 
-document.addEventListener("click", (e) => {
-    const btn = e.target.closest(".reserve-btn");
-    if (!btn) return;
+function openCreateBookingPopup(btn) {
+    if (!btn || !popup) return;
 
     popup.dataset.time = btn.dataset.time;
     popup.dataset.car = btn.dataset.car;
@@ -451,36 +455,48 @@ document.addEventListener("click", (e) => {
     resetForm();
     populateExistingGroups();
     setTimeout(() => {
-        inputRoom.focus();
+        if (inputRoom) inputRoom.focus();
     }, 0);
+}
+
+document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".reserve-btn");
+    if (!btn) return;
+
+    openCreateBookingPopup(btn);
 });
 
 function resetForm() {
-    reserveForm.reset(); soinetSeatStatus = ""; updateSeatBtns(); stayActive = false;
-    stayToggle.textContent = "OFF"; stayToggle.classList.remove("active");
+    if (reserveForm) reserveForm.reset();
+    soinetSeatStatus = "";
+    updateSeatBtns();
+    stayActive = false;
+    if (stayToggle) {
+        stayToggle.textContent = "OFF";
+        stayToggle.classList.remove("active");
+    }
     document.querySelectorAll('.stepper-input input').forEach(input => input.value = 0);
-    groupIcon.value = "";
+    if (groupIcon) groupIcon.value = "";
     if (existingGroupsSelect) existingGroupsSelect.value = "";
     document.querySelectorAll('.note-chip').forEach(c => c.classList.remove('active'));
 }
 
-closePopup.addEventListener("click", () => { popup.classList.add("hidden"); });
-popup.addEventListener("click", (e) => {
+if (closePopup) {
+    closePopup.addEventListener("click", () => { popup.classList.add("hidden"); });
+}
 
-    // chỉ khi click vào nền popup
-    if (e.target === popup) {
-
-        popup.classList.add("hidden");
-
-        resetForm();
-
-        popup.dataset.editId = "";
-
-    }
-
-});
+if (popup) {
+    popup.addEventListener("click", (e) => {
+        if (e.target === popup) {
+            popup.classList.add("hidden");
+            resetForm();
+            popup.dataset.editId = "";
+        }
+    });
+}
 
 reserveForm.addEventListener("submit", async (e) => {
+    if (!ensureDbReady()) return;
     e.preventDefault();
 
     // 1. Kiểm tra bắt buộc nhập Số phòng (Không được để trống)
@@ -510,21 +526,6 @@ reserveForm.addEventListener("submit", async (e) => {
 
     // Nếu thỏa mãn cả 2 điều kiện trên thì tiến hành lưu dữ liệu lên Firebase
     const now = Date.now();
-    const earlyHours = [
-        "06:05",
-        "06:20",
-        "06:40",
-        "07:00"
-    ];
-
-    const lateHours = [
-        "07:30",
-        "08:00",
-        "08:30",
-        "09:00",
-        "09:30",
-        "10:00"
-    ];
 
     const oldTime = editId ? originalTime : bookingTime.value;
     const newTime = bookingTime.value;
@@ -533,16 +534,16 @@ reserveForm.addEventListener("submit", async (e) => {
 
     // sớm -> muộn
     if (
-        earlyHours.includes(oldTime) &&
-        lateHours.includes(newTime)
+        EARLY_HOURS.includes(oldTime) &&
+        LATE_HOURS.includes(newTime)
     ) {
         targetCar = "ホテル";
     }
 
     // muộn -> sớm
     else if (
-        lateHours.includes(oldTime) &&
-        earlyHours.includes(newTime)
+        LATE_HOURS.includes(oldTime) &&
+        EARLY_HOURS.includes(newTime)
     ) {
 
         const carChoice = await showSelect(
@@ -750,6 +751,7 @@ function executePendingAction(actionType, extraData = null) {
 }
 
 async function executeAction() {
+    if (!ensureDbReady()) return;
     try {
         if (pendingActionType === "delete_form") {
             const ref = db.ref(
@@ -891,14 +893,11 @@ async function executeAction() {
 
             await parentRef.update(updates);
 
-            const earlyHours = ["06:05", "06:20", "06:40", "07:00"];
-            const lateHours = ["07:30", "08:00", "08:30", "09:00", "09:30", "10:00"];
-
-            if (lateHours.includes(pendingTargetTime)) {
-                btnPageLates[0].click();
+            if (LATE_HOURS.includes(pendingTargetTime)) {
+                setPageView("late");
             }
-            else if (earlyHours.includes(pendingTargetTime)) {
-                btnPageEarlys[0].click();
+            else if (EARLY_HOURS.includes(pendingTargetTime)) {
+                setPageView("early");
             }
 
             dragBooking = null;
@@ -913,41 +912,32 @@ async function executeAction() {
     }
 }
 function applySearchFilter() {
-    const keyword =
-        searchInput.value
-            .trim()
-            .toLowerCase();
+    if (!searchInput) return;
 
-    document.querySelectorAll(".guest-line")
-        .forEach(line => {
+    const keyword = searchInput.value.trim().toLowerCase();
 
-            const room = (line.dataset.room || "").toLowerCase();
-            const name = (line.dataset.name || "").toLowerCase();
-            const time = (line.dataset.time || "").toLowerCase(); // Thêm lấy dữ liệu giờ
+    document.querySelectorAll(".guest-line").forEach(line => {
+        const room = (line.dataset.room || "").toLowerCase();
+        const name = (line.dataset.name || "").toLowerCase();
+        const time = (line.dataset.time || "").toLowerCase();
 
-            // Thêm điều kiện lọc theo giờ xe chạy
-            const matched =
-                room.includes(keyword) ||
-                name.includes(keyword) ||
-                time.includes(keyword);
-
-            line.style.display =
-                matched ? "" : "none";
-
-        });
-
+        const matched = room.includes(keyword) || name.includes(keyword) || time.includes(keyword);
+        line.style.display = matched ? "" : "none";
+    });
 }
-deleteBtn.addEventListener("click", async () => {
-    if (!popup.dataset.editId) return;
+if (deleteBtn) {
+    deleteBtn.addEventListener("click", async () => {
+        if (!popup || !popup.dataset.editId) return;
 
-    const ok = await showConfirm(
-        `R${inputRoom.value || "-"} ${inputName.value || ""}様 の予約をキャンセルしますか？`
-    );
+        const ok = await showConfirm(
+            `R${inputRoom.value || "-"} ${inputName.value || ""}様 の予約をキャンセルしますか？`
+        );
 
-    if (!ok) return;
+        if (!ok) return;
 
-    executePendingAction("delete_form");
-});
+        executePendingAction("delete_form");
+    });
+}
 // ==========================================
 // KHAI BÁO BỔ SUNG CÁC BIẾN THIẾU Ở ĐẦU FILE (Nếu chưa có)
 // ==========================================
@@ -957,6 +947,10 @@ const searchResults = document.getElementById("searchResults");
 
 // ── LOAD RESERVATIONS ──
 async function loadReservations() {
+
+    if (!adminDate || !adminDate.value || !db) {
+        return;
+    }
 
     const selectedDate = adminDate.value;
     // THÊM 2 DÒNG NÀY VÀO ĐÂY:
@@ -1685,6 +1679,7 @@ if (clearSearchBtn) {
 // ========================================
 if (searchBtn) {
     searchBtn.addEventListener("click", () => {
+        if (!searchInput) return;
         const keyword = searchInput.value.trim().toLowerCase();
         if (!searchResults) return;
         searchResults.innerHTML = "";
@@ -1825,6 +1820,11 @@ function markTimeStopLabel(workbook, sheet, time) {
 // ========================================
 async function exportExcel() {
     try {
+        if (!adminDate || !adminDate.value) return;
+        if (!db) {
+            showToast("Firebase が未接続です");
+            return;
+        }
         const date = adminDate.value;
         const response = await fetch("./bus_booking1.xlsx");
         const arrayBuffer = await response.arrayBuffer();
