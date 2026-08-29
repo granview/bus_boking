@@ -1364,8 +1364,10 @@ async function loadReservations() {
                     if (!isCanceled && !isMoved) {
                         line.draggable = false;
                         line.style.touchAction = "none"; // Ngăn trình duyệt cuộn trang khi đang kéo thả
+                        const HOLD_TO_DRAG_MS = 1000;
                         let pointerDragState = null;
                         let lastPageSwitchAt = 0;
+                        let holdTimer = null;
 
                         let ghostEl = null;
 
@@ -1379,56 +1381,47 @@ async function loadReservations() {
                         };
 
                         const getDropBoxAt = (clientX, clientY) => {
-                            // Ẩn ghost tạm để elementFromPoint xuyên qua được
                             if (ghostEl) ghostEl.style.pointerEvents = "none";
                             const target = document.elementFromPoint(clientX, clientY);
                             if (ghostEl) ghostEl.style.pointerEvents = "none";
                             return target ? target.closest(".car-cell-box") : null;
                         };
 
+                        const startDragGhost = (clientX, clientY) => {
+                            if (!pointerDragState || pointerDragState.dragging) return;
+
+                            pointerDragState.dragging = true;
+                            suppressNextClick = true;
+                            dragBooking = item;
+                            line.classList.add("dragging");
+
+                            ghostEl = line.cloneNode(true);
+                            ghostEl.style.cssText = `
+                                position: fixed;
+                                z-index: 9999;
+                                pointer-events: none;
+                                opacity: 0.85;
+                                box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+                                border-radius: 8px;
+                                width: ${line.offsetWidth}px;
+                                transform: rotate(2deg) scale(1.04);
+                                transition: transform 0.1s;
+                                left: ${clientX - pointerDragState.offsetX}px;
+                                top: ${clientY - pointerDragState.offsetY}px;
+                            `;
+                            document.body.appendChild(ghostEl);
+                        };
+
                         const handlePointerMove = (e) => {
                             if (!pointerDragState || pointerDragState.pointerId !== e.pointerId) return;
-
-                            const moveX = Math.abs(e.clientX - pointerDragState.startX);
-                            const moveY = Math.abs(e.clientY - pointerDragState.startY);
-
-                            // Nếu chưa kích hoạt trạng thái kéo và di chuyển chưa đủ 8px thì bỏ qua
-                            if (!pointerDragState.dragging && Math.max(moveX, moveY) < 8) return;
-
-                            // Bắt đầu trạng thái kéo
-                            if (!pointerDragState.dragging) {
-                                pointerDragState.dragging = true;
-                                suppressNextClick = true;
-                                dragBooking = item;
-                                line.classList.add("dragging");
-
-                                // Tạo ghost element theo chuột
-                                ghostEl = line.cloneNode(true);
-                                ghostEl.style.cssText = `
-                                    position: fixed;
-                                    z-index: 9999;
-                                    pointer-events: none;
-                                    opacity: 0.85;
-                                    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-                                    border-radius: 8px;
-                                    width: ${line.offsetWidth}px;
-                                    transform: rotate(2deg) scale(1.04);
-                                    transition: transform 0.1s;
-                                    left: ${e.clientX - pointerDragState.offsetX}px;
-                                    top: ${e.clientY - pointerDragState.offsetY}px;
-                                `;
-                                document.body.appendChild(ghostEl);
-                            }
+                            if (!pointerDragState.dragging) return;
 
                             e.preventDefault();
-
-                            // Di chuyển ghost theo con trỏ
                             if (ghostEl) {
                                 ghostEl.style.left = (e.clientX - pointerDragState.offsetX) + "px";
                                 ghostEl.style.top = (e.clientY - pointerDragState.offsetY) + "px";
                             }
 
-                            // 1. Xử lý tự động chuyển trang/tab khi rê qua nút Sáng/Chiều
                             const targetEl = document.elementFromPoint(e.clientX, e.clientY);
                             const pageButton = targetEl ? targetEl.closest(".btnPageEarly, .btnPageLate") : null;
                             if (pageButton) {
@@ -1439,7 +1432,6 @@ async function loadReservations() {
                                 }
                             }
 
-                            // 2. Highlight ô đang rê chuột qua
                             const dropBox = getDropBoxAt(e.clientX, e.clientY);
                             clearDragOverCells();
                             if (dropBox) dropBox.classList.add("drag-over");
@@ -1448,15 +1440,19 @@ async function loadReservations() {
                         const handlePointerUp = async (e) => {
                             if (!pointerDragState || pointerDragState.pointerId !== e.pointerId) return;
 
+                            if (holdTimer) {
+                                clearTimeout(holdTimer);
+                                holdTimer = null;
+                            }
+
                             const wasDragging = pointerDragState.dragging;
                             pointerDragState = null;
 
-                            // Gỡ bỏ các event lắng nghe toàn cục
                             document.removeEventListener("pointermove", handlePointerMove);
                             document.removeEventListener("pointerup", handlePointerUp);
                             document.removeEventListener("pointercancel", handlePointerCancel);
 
-                            if (!wasDragging) return; // Nếu chỉ là click thông thường thì dừng lại ở đây
+                            if (!wasDragging) return;
 
                             e.preventDefault();
                             const dropBox = getDropBoxAt(e.clientX, e.clientY);
@@ -1487,6 +1483,10 @@ async function loadReservations() {
                         };
 
                         const handlePointerCancel = () => {
+                            if (holdTimer) {
+                                clearTimeout(holdTimer);
+                                holdTimer = null;
+                            }
                             pointerDragState = null;
                             document.removeEventListener("pointermove", handlePointerMove);
                             document.removeEventListener("pointerup", handlePointerUp);
@@ -1495,20 +1495,26 @@ async function loadReservations() {
                             clearDragUi();
                         };
 
-                        // Đăng ký sự kiện nhấn xuống ban đầu
                         line.addEventListener("pointerdown", (e) => {
-                            if (e.target.closest(".quick-del-btn")) return; // Không kích hoạt kéo khi bấm nút xóa nhanh
-                            if (e.pointerType === "mouse" && e.button !== 0) return; // Chỉ cho phép chuột trái
+                            if (e.target.closest(".quick-del-btn")) return;
+                            if (e.pointerType === "mouse" && e.button !== 0) return;
 
                             const rect = line.getBoundingClientRect();
                             pointerDragState = {
                                 pointerId: e.pointerId,
                                 startX: e.clientX,
                                 startY: e.clientY,
+                                startTime: Date.now(),
                                 offsetX: e.clientX - rect.left,
                                 offsetY: e.clientY - rect.top,
                                 dragging: false
                             };
+
+                            if (holdTimer) clearTimeout(holdTimer);
+                            holdTimer = setTimeout(() => {
+                                if (!pointerDragState) return;
+                                startDragGhost(e.clientX, e.clientY);
+                            }, HOLD_TO_DRAG_MS);
 
                             document.addEventListener("pointermove", handlePointerMove, { passive: false });
                             document.addEventListener("pointerup", handlePointerUp);
