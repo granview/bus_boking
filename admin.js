@@ -2279,6 +2279,12 @@ document.addEventListener("click", async (e) => {
 
     loadReservations();
 });
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Home") {
+        event.preventDefault();
 
+        document.getElementById("updateBtn").click();
+    }
+});
 // Chạy khởi tạo dữ liệu lần đầu tiên khi tải trang
 loadReservations();
